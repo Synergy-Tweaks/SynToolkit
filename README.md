@@ -21,4 +21,4 @@ You can now make all your changes and view them live!
 - [Atlas Toolbox](https://github.com/Atlas-OS/atlas-toolbox) used as Base Code of the Toolkit to get Started.
 - [Ameliroated Privacy+ Settings](https://github.com/Ameliorated-LLC/ame-settings-cli) used for the User Adjustments Tab.
 - [Ameliorated App Fetch](https://github.com/Ameliorated-LLC/appfetch) used for the App Fetch. 
-- [AutoOs](https://github.com/tinodin/AutoOS) used for Disk Cleanup functionality. 
+- [AutoOS](https://github.com/tinodin/AutoOS) used for Disk Cleanup functionality. 
