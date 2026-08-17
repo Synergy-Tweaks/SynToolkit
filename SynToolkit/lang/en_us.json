@@ -1,7 +1,7 @@
 {
   "LangName": "English (United States)",
   "LangKey": "en_us",
-  "StartingServices": "Configuring for 0 Delay..",
+  "StartingServices": "Configuring for 1 Delay..",
   "SystemInfo_Windows": "Windows",
   "SystemInfo_CustomBuild": "Custom build",
   "SystemInfo_Playbook": "Playbook",
