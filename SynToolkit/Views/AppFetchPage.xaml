@@ -45,10 +45,10 @@
                     <TextBlock
                         FontSize="30"
                         FontWeight="SemiBold"
-                        Text="Installers" />
+                        Text="Installers" local:LocalizedText.TextKey="AppFetchPageText67A0C620AF19" />
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Get everyday apps from trusted sources, or search the Microsoft Store catalog."
+                        Text="Get everyday apps from trusted sources, or search the Microsoft Store catalog." local:LocalizedText.TextKey="AppFetchPageText3026BA63725A"
                         TextWrapping="Wrap" />
                 </StackPanel>
             </Grid>
@@ -56,9 +56,9 @@
             <InfoBar
                 IsClosable="False"
                 IsOpen="True"
-                Message="Selected apps use Microsoft's WinGet package catalog. Every card also keeps a publisher link for manual downloads."
+                Message="Selected apps use Microsoft's WinGet package catalog. Every card also keeps a publisher link for manual downloads." local:LocalizedText.MessageKey="AppFetchPageMessage161B2EDB70D9"
                 Severity="Success"
-                Title="Official sources" />
+                Title="Official sources" local:LocalizedText.TitleKey="AppFetchPageTitle708CC1A604F0" />
 
             <!--  Curated installer controls  -->
             <Grid>
@@ -70,10 +70,10 @@
                     <TextBlock
                         FontSize="20"
                         FontWeight="SemiBold"
-                        Text="App catalog" />
+                        Text="App catalog" local:LocalizedText.TextKey="AppFetchPageTextBFDC5E280E8C" />
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Search the curated library, filter by category, or start with the Essentials preset."
+                        Text="Search the curated library, filter by category, or start with the Essentials preset." local:LocalizedText.TextKey="AppFetchPageTextCD82567A5BEE"
                         TextWrapping="Wrap" />
                     <TextBlock
                         FontSize="12"
@@ -88,7 +88,7 @@
                         Visibility="{Binding IsRefreshingInstallerStates, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <Button
                         Command="{Binding RefreshInstallerStatesCommand}"
-                        Content="Refresh status"
+                        Content="Refresh status" local:LocalizedText.ContentKey="AppFetchPageContent2AB48378ABE3"
                         IsEnabled="{Binding CanRefreshInstallerStates, Mode=OneWay}" />
                 </StackPanel>
             </Grid>
@@ -106,7 +106,7 @@
                     </Grid.ColumnDefinitions>
                     <AutoSuggestBox
                         MinWidth="280"
-                        PlaceholderText="Search apps — try browser, Git, music..."
+                        PlaceholderText="Search apps — try browser, Git, music..." local:LocalizedText.PlaceholderTextKey="AppFetchPagePlaceholderText5141A9F33B95"
                         Text="{Binding CatalogSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                         <AutoSuggestBox.QueryIcon>
                             <FontIcon Glyph="&#xE721;" />
@@ -116,7 +116,7 @@
                         <TextBlock
                             VerticalAlignment="Center"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Category" />
+                            Text="Category" local:LocalizedText.TextKey="AppFetchPageText9F2D0D0AB06B" />
                         <ComboBox
                             MinWidth="165"
                             ItemsSource="{Binding Categories, Mode=OneWay}"
@@ -151,10 +151,10 @@
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button
                                 Command="{Binding SelectEssentialsCommand}"
-                                Content="Add essentials" />
+                                Content="Add essentials" local:LocalizedText.ContentKey="AppFetchPageContent228F711511BB" />
                             <Button
                                 Command="{Binding ClearInstallerSelectionCommand}"
-                                Content="Clear queue" />
+                                Content="Clear queue" local:LocalizedText.ContentKey="AppFetchPageContentABEB855B4156" />
                         </StackPanel>
                         <TextBlock
                             FontSize="12"
@@ -191,7 +191,7 @@
                             <TextBlock
                                 FontSize="18"
                                 FontWeight="SemiBold"
-                                Text="Installation queue" />
+                                Text="Installation queue" local:LocalizedText.TextKey="AppFetchPageText0B8013CF2C7A" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="{Binding QueueSummary, Mode=OneWay}"
@@ -200,16 +200,16 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                             <Button
                                 Command="{Binding RetryFailedCommand}"
-                                Content="Retry failed"
+                                Content="Retry failed" local:LocalizedText.ContentKey="AppFetchPageContent762515BE0BB5"
                                 IsEnabled="{Binding CanRetryFailed, Mode=OneWay}"
                                 Style="{StaticResource AccentButtonStyle}" />
                             <Button
                                 Command="{Binding CancelInstallQueueCommand}"
-                                Content="Cancel queue"
+                                Content="Cancel queue" local:LocalizedText.ContentKey="AppFetchPageContentD35A08A87AA1"
                                 IsEnabled="{Binding IsInstallingQueue, Mode=OneWay}" />
                             <Button
                                 Command="{Binding DismissInstallQueueCommand}"
-                                Content="Close"
+                                Content="Close" local:LocalizedText.ContentKey="AppFetchPageContentE4D96BC06E38"
                                 IsEnabled="{Binding CanDismissQueue, Mode=OneWay}" />
                         </StackPanel>
                     </Grid>
@@ -335,7 +335,7 @@
                                                 <TextBlock
                                                     FontSize="10"
                                                     Foreground="White"
-                                                    Text="Essential" />
+                                                    Text="Essential" local:LocalizedText.TextKey="AppFetchPageTextB91F12E76200" />
                                             </Border>
                                         </StackPanel>
                                     </StackPanel>
@@ -449,11 +449,11 @@
                         HorizontalAlignment="Center"
                         FontSize="18"
                         FontWeight="SemiBold"
-                        Text="No apps found" />
+                        Text="No apps found" local:LocalizedText.TextKey="AppFetchPageTextD073A8F13879" />
                     <TextBlock
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Try another name or switch the category to All."
+                        Text="Try another name or switch the category to All." local:LocalizedText.TextKey="AppFetchPageText960727FF28C2"
                         TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
@@ -470,10 +470,10 @@
                         <TextBlock
                             FontSize="20"
                             FontWeight="SemiBold"
-                            Text="Microsoft Store search" />
+                            Text="Microsoft Store search" local:LocalizedText.TextKey="AppFetchPageText08D995568EAB" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Search by app name, publisher, or product ID."
+                            Text="Search by app name, publisher, or product ID." local:LocalizedText.TextKey="AppFetchPageText4B4E9224FD31"
                             TextWrapping="Wrap" />
                     </StackPanel>
                     <Grid>
@@ -484,7 +484,7 @@
                         <AutoSuggestBox
                             x:Name="SearchBox"
                             MinWidth="240"
-                            PlaceholderText="Try Spotify, PowerToys, or WhatsApp"
+                            PlaceholderText="Try Spotify, PowerToys, or WhatsApp" local:LocalizedText.PlaceholderTextKey="AppFetchPagePlaceholderText8D94D6072F17"
                             QuerySubmitted="SearchBox_QuerySubmitted">
                             <AutoSuggestBox.QueryIcon>
                                 <FontIcon Glyph="&#xE721;" />
@@ -494,7 +494,7 @@
                             Grid.Column="1"
                             Margin="10,0,0,0"
                             Click="SearchButton_Click"
-                            Content="Search"
+                            Content="Search" local:LocalizedText.ContentKey="AppFetchPageContent13F898CC2532"
                             Style="{StaticResource AccentButtonStyle}" />
                     </Grid>
                 </StackPanel>
@@ -507,18 +507,18 @@
                     IsOpen="{Binding HasError, Mode=OneWay}"
                     Message="{Binding ErrorMessage, Mode=OneWay}"
                     Severity="Error"
-                    Title="Installers" />
+                    Title="Installers" local:LocalizedText.TitleKey="AppFetchPageTitleC1B1A65A8077" />
 
                 <InfoBar
                     IsClosable="False"
                     IsOpen="{Binding IsXboxServicesTweakApplied, Mode=OneWay}"
-                    Message="SynToolkit's Xbox-services tweak can prevent some games and Xbox apps from installing or running. Revert it here if an install fails."
+                    Message="SynToolkit's Xbox-services tweak can prevent some games and Xbox apps from installing or running. Revert it here if an install fails." local:LocalizedText.MessageKey="AppFetchPageMessage0F37F891C40C"
                     Severity="Warning"
-                    Title="Some apps may need Xbox services">
+                    Title="Some apps may need Xbox services" local:LocalizedText.TitleKey="AppFetchPageTitle334C04027D82">
                     <InfoBar.ActionButton>
                         <Button
                             Command="{Binding RevertXboxServicesTweakCommand}"
-                            Content="Revert tweak"
+                            Content="Revert tweak" local:LocalizedText.ContentKey="AppFetchPageContentE3EC6F22138E"
                             IsEnabled="{Binding IsRevertXboxServicesButtonEnabled, Mode=OneWay}" />
                     </InfoBar.ActionButton>
                 </InfoBar>
@@ -560,11 +560,11 @@
                                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
                                         <HyperlinkButton
                                             Padding="8,4"
-                                            Content="Store page"
+                                            Content="Store page" local:LocalizedText.ContentKey="AppFetchPageContent7E0F37EE3622"
                                             NavigateUri="{Binding StorePageUri, Mode=OneWay}" />
                                         <Button
                                             Command="{Binding CancelCommand, Mode=OneWay}"
-                                            Content="Cancel"
+                                            Content="Cancel" local:LocalizedText.ContentKey="AppFetchPageContent33AFBAF2F078"
                                             Visibility="{Binding IsCancelable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                         <Button
                                             Command="{Binding InstallOrUninstallCommand, Mode=OneWay}"

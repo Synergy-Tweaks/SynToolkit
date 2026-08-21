@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:SynToolkit.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Loaded="Page_Loaded"
     Unloaded="Page_Unloaded"
@@ -23,11 +24,11 @@
             <TextBlock
                 Margin="0,24,36,8"
                 Style="{StaticResource TitleTextBlockStyle}"
-                Text="Power plans" />
+                Text="Power plans" local:LocalizedText.TextKey="PowerPlansPageText2EC4CBA35614" />
             <TextBlock
                 Margin="0,0,36,24"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Import and manage Windows power plans directly from SynToolkit. Nothing is changed during setup."
+                Text="Import and manage Windows power plans directly from SynToolkit. Nothing is changed during setup." local:LocalizedText.TextKey="PowerPlansPageTextA41C747FB104"
                 TextWrapping="Wrap" />
 
             <InfoBar
@@ -35,9 +36,9 @@
                 Margin="0,0,36,18"
                 IsClosable="False"
                 IsOpen="False"
-                Message="Power-plan changes are disabled in this session. Restart SynToolkit as administrator to import, activate, restore, or remove plans."
+                Message="Power-plan changes are disabled in this session. Restart SynToolkit as administrator to import, activate, restore, or remove plans." local:LocalizedText.MessageKey="PowerPlansPageMessage159CDB6E910C"
                 Severity="Warning"
-                Title="Administrator access required" />
+                Title="Administrator access required" local:LocalizedText.TitleKey="PowerPlansPageTitle34B02AE972E2" />
 
             <InfoBar
                 x:Name="OperationInfoBar"
@@ -49,14 +50,14 @@
                 Margin="0,0,36,18"
                 IsClosable="False"
                 IsOpen="True"
-                Message="The supplied SOS.pow settings are preserved exactly. SynToolkit imports and activates it only when you choose Import and activate, and records your current plan for recovery."
+                Message="The supplied SOS.pow settings are preserved exactly. SynToolkit imports and activates it only when you choose Import and activate, and records your current plan for recovery." local:LocalizedText.MessageKey="PowerPlansPageMessage43FB7E05A3A7"
                 Severity="Informational"
-                Title="Safe, explicit import" />
+                Title="Safe, explicit import" local:LocalizedText.TitleKey="PowerPlansPageTitleBC4F98976E4B" />
 
-            <TextBlock Style="{StaticResource CategoryTitle}" Text="Status" />
+            <TextBlock Style="{StaticResource CategoryTitle}" Text="Status" local:LocalizedText.TextKey="PowerPlansPageText586894BC9EF1" />
             <controls:SettingsCard
-                Header="Current power plan"
-                Description="The plan Windows is using right now."
+                Header="Current power plan" local:LocalizedText.HeaderKey="PowerPlansPageHeader9EF26DE51104"
+                Description="The plan Windows is using right now." local:LocalizedText.DescriptionKey="PowerPlansPageDescription320073B0E4BC"
                 Style="{StaticResource ConfigurationSettingsCardTemplate}">
                 <controls:SettingsCard.HeaderIcon>
                     <ImageIcon Source="ms-appx:///assets/Icons/Energy.png" />
@@ -70,7 +71,7 @@
                         <TextBlock
                             x:Name="CurrentPlanName"
                             FontWeight="SemiBold"
-                            Text="Reading Windows power settings..."
+                            Text="Reading Windows power settings..." local:LocalizedText.TextKey="PowerPlansPageText24F29FA5EA9E"
                             TextTrimming="CharacterEllipsis" />
                         <TextBlock
                             x:Name="CurrentPlanId"
@@ -94,15 +95,15 @@
                         <Button
                             x:Name="RefreshButton"
                             Click="RefreshButton_Click"
-                            Content="Refresh" />
+                            Content="Refresh" local:LocalizedText.ContentKey="PowerPlansPageContent7AEA1A0ACF33" />
                     </StackPanel>
                 </Grid>
             </controls:SettingsCard>
 
-            <TextBlock Style="{StaticResource CategoryTitle}" Text="Manage plans" />
+            <TextBlock Style="{StaticResource CategoryTitle}" Text="Manage plans" local:LocalizedText.TextKey="PowerPlansPageTextC5BE90F1D6A5" />
             <controls:SettingsExpander
-                Header="SynToolkit SOS Performance"
-                Description="The official SOS.pow plan, embedded securely inside SynToolkit."
+                Header="SynToolkit SOS Performance" local:LocalizedText.HeaderKey="PowerPlansPageHeaderEC2BEE95E81C"
+                Description="The official SOS.pow plan, embedded securely inside SynToolkit." local:LocalizedText.DescriptionKey="PowerPlansPageDescription00DF1C96DB4F"
                 Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
                 <controls:SettingsExpander.HeaderIcon>
                     <BitmapIcon ShowAsMonochrome="False" UriSource="/assets/logo/SynToolkit.ico" />
@@ -115,40 +116,40 @@
                         x:Name="BuiltInPlanState"
                         FontSize="12"
                         FontWeight="SemiBold"
-                        Text="Checking..." />
+                        Text="Checking..." local:LocalizedText.TextKey="PowerPlansPageText938CA32A96AA" />
                 </Border>
                 <controls:SettingsExpander.Items>
                     <controls:SettingsCard
-                        Header="Import and activate"
-                        Description="Imports a fresh copy of SOS.pow and makes it the active Windows plan.">
+                        Header="Import and activate" local:LocalizedText.HeaderKey="PowerPlansPageHeader96571F9BC38E"
+                        Description="Imports a fresh copy of SOS.pow and makes it the active Windows plan." local:LocalizedText.DescriptionKey="PowerPlansPageDescriptionC1BD75967247">
                         <Button
                             x:Name="ImportBuiltInButton"
                             Click="ImportBuiltInButton_Click"
-                            Content="Import and activate"
+                            Content="Import and activate" local:LocalizedText.ContentKey="PowerPlansPageContentD405C33784A6"
                             Style="{StaticResource AccentButtonStyle}" />
                     </controls:SettingsCard>
                     <controls:SettingsCard
-                        Header="Activate existing plan"
-                        Description="Switches to the SynToolkit plan without importing it again.">
+                        Header="Activate existing plan" local:LocalizedText.HeaderKey="PowerPlansPageHeaderBBFA1C9D07DB"
+                        Description="Switches to the SynToolkit plan without importing it again." local:LocalizedText.DescriptionKey="PowerPlansPageDescription1D7E8FE3180D">
                         <Button
                             x:Name="ActivateBuiltInButton"
                             Click="ActivateBuiltInButton_Click"
-                            Content="Activate" />
+                            Content="Activate" local:LocalizedText.ContentKey="PowerPlansPageContent3AED82A973BC" />
                     </controls:SettingsCard>
                     <controls:SettingsCard
-                        Header="Remove SynToolkit plan"
-                        Description="Restores the previous plan when needed, then removes only SynToolkit's plan.">
+                        Header="Remove SynToolkit plan" local:LocalizedText.HeaderKey="PowerPlansPageHeaderF0E06FE0A377"
+                        Description="Restores the previous plan when needed, then removes only SynToolkit's plan." local:LocalizedText.DescriptionKey="PowerPlansPageDescription7E9008F88BF9">
                         <Button
                             x:Name="RemoveBuiltInButton"
                             Click="RemoveBuiltInButton_Click"
-                            Content="Remove" />
+                            Content="Remove" local:LocalizedText.ContentKey="PowerPlansPageContentECB59C22D98B" />
                     </controls:SettingsCard>
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>
 
             <controls:SettingsCard
-                Header="Import a .pow file"
-                Description="Choose any local Windows power-plan file. SynToolkit imports it with a new ID and activates it."
+                Header="Import a .pow file" local:LocalizedText.HeaderKey="PowerPlansPageHeaderDE35348C21CF"
+                Description="Choose any local Windows power-plan file. SynToolkit imports it with a new ID and activates it." local:LocalizedText.DescriptionKey="PowerPlansPageDescription2589AEE1F281"
                 Style="{StaticResource ConfigurationSettingsCardTemplate}">
                 <controls:SettingsCard.HeaderIcon>
                     <ImageIcon Source="ms-appx:///assets/Icons/External.png" />
@@ -156,7 +157,7 @@
                 <Button
                     x:Name="ImportCustomButton"
                     Click="ImportCustomButton_Click"
-                    Content="Choose .pow file" />
+                    Content="Choose .pow file" local:LocalizedText.ContentKey="PowerPlansPageContent3F40A12565D0" />
             </controls:SettingsCard>
 
             <Grid Margin="0,8,36,16">
@@ -168,10 +169,10 @@
                     <TextBlock
                         FontSize="15"
                         FontWeight="SemiBold"
-                        Text="Bundled power plans" />
+                        Text="Bundled power plans" local:LocalizedText.TextKey="PowerPlansPageText5AEE5ED5062B" />
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Pre-packaged power plans from the community. Select one to import and activate it." />
+                        Text="Pre-packaged power plans from the community. Select one to import and activate it." local:LocalizedText.TextKey="PowerPlansPageText8B0EFF361274" />
                 </StackPanel>
                 <StackPanel
                     Grid.Column="1"
@@ -180,7 +181,7 @@
                     <Button
                         x:Name="RefreshBundledPlansButton"
                         Click="RefreshBundledPlansButton_Click"
-                        Content="Refresh" />
+                        Content="Refresh" local:LocalizedText.ContentKey="PowerPlansPageContent7AEA1A0ACF33" />
                     <Button
                         x:Name="ListViewButton"
                         Width="32"
@@ -216,7 +217,7 @@
                 Visibility="Collapsed">
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                    Text="No bundled power plans found. The Assets\PowerPlans folder may be missing."
+                    Text="No bundled power plans found. The Assets\PowerPlans folder may be missing." local:LocalizedText.TextKey="PowerPlansPageText0920E57AFDEA"
                     TextWrapping="Wrap" />
             </StackPanel>
 
@@ -240,7 +241,7 @@
                             </controls:SettingsCard.HeaderIcon>
                             <Button
                                 Click="ImportBundledPlanButton_Click"
-                                Content="Import and activate"
+                                Content="Import and activate" local:LocalizedText.ContentKey="PowerPlansPageContentD405C33784A6"
                                 Tag="{Binding}" />
                         </controls:SettingsCard>
                     </DataTemplate>
@@ -300,7 +301,7 @@
                                     Grid.Row="2"
                                     HorizontalAlignment="Stretch"
                                     Click="ImportBundledPlanButton_Click"
-                                    Content="Import and activate"
+                                    Content="Import and activate" local:LocalizedText.ContentKey="PowerPlansPageContentD405C33784A6"
                                     Tag="{Binding}" />
                             </Grid>
                         </Border>
@@ -309,8 +310,8 @@
             </ItemsControl>
 
             <controls:SettingsExpander
-                Header="Recovery"
-                Description="Return to the plan you were using before, or select Windows Balanced."
+                Header="Recovery" local:LocalizedText.HeaderKey="PowerPlansPageHeader3F93D5248728"
+                Description="Return to the plan you were using before, or select Windows Balanced." local:LocalizedText.DescriptionKey="PowerPlansPageDescriptionCF5ED4E3758A"
                 Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
                 <controls:SettingsExpander.HeaderIcon>
                     <ImageIcon Source="ms-appx:///assets/Icons/Update.png" />
@@ -318,40 +319,40 @@
                 <TextBlock
                     x:Name="PreviousPlanState"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="No previous plan has been recorded."
+                    Text="No previous plan has been recorded." local:LocalizedText.TextKey="PowerPlansPageText49DC49CF4885"
                     TextTrimming="CharacterEllipsis"
                     TextWrapping="Wrap" />
                 <controls:SettingsExpander.Items>
                     <controls:SettingsCard
-                        Header="Restore previous plan"
-                        Description="Returns to the plan that was active before the last SynToolkit import or activation.">
+                        Header="Restore previous plan" local:LocalizedText.HeaderKey="PowerPlansPageHeader89FC59E6657A"
+                        Description="Returns to the plan that was active before the last SynToolkit import or activation." local:LocalizedText.DescriptionKey="PowerPlansPageDescription5C7E9ABF6892">
                         <Button
                             x:Name="RestorePreviousButton"
                             Click="RestorePreviousButton_Click"
-                            Content="Restore" />
+                            Content="Restore" local:LocalizedText.ContentKey="PowerPlansPageContent772D7B9C2CDC" />
                     </controls:SettingsCard>
                     <controls:SettingsCard
-                        Header="Windows Balanced"
-                        Description="Activates the standard Windows Balanced plan.">
+                        Header="Windows Balanced" local:LocalizedText.HeaderKey="PowerPlansPageHeader9C530FD0F4A6"
+                        Description="Activates the standard Windows Balanced plan." local:LocalizedText.DescriptionKey="PowerPlansPageDescription4F78D5A8D023">
                         <Button
                             x:Name="ActivateBalancedButton"
                             Click="ActivateBalancedButton_Click"
-                            Content="Activate Balanced" />
+                            Content="Activate Balanced" local:LocalizedText.ContentKey="PowerPlansPageContent8783830A1560" />
                     </controls:SettingsCard>
                     <controls:SettingsCard
-                        Header="Windows power settings"
-                        Description="Open the Windows Settings power and sleep page.">
+                        Header="Windows power settings" local:LocalizedText.HeaderKey="PowerPlansPageHeaderD277261A7D71"
+                        Description="Open the Windows Settings power and sleep page." local:LocalizedText.DescriptionKey="PowerPlansPageDescription044496606394">
                         <Button
                             Click="OpenPowerSettingsButton_Click"
-                            Content="Open settings" />
+                            Content="Open settings" local:LocalizedText.ContentKey="PowerPlansPageContent2D89BEEF4648" />
                     </controls:SettingsCard>
                     <controls:SettingsCard
-                        Header="Restore default power plans"
-                        Description="Resets every Windows power plan to its default configuration, removing SynToolkit's plan and any other custom plans. This cannot be undone.">
+                        Header="Restore default power plans" local:LocalizedText.HeaderKey="PowerPlansPageHeader812CAC4AAD68"
+                        Description="Resets every Windows power plan to its default configuration, removing SynToolkit's plan and any other custom plans. This cannot be undone." local:LocalizedText.DescriptionKey="PowerPlansPageDescription05CCD93E4D67">
                         <Button
                             x:Name="RestoreDefaultSchemesButton"
                             Click="RestoreDefaultSchemesButton_Click"
-                            Content="Restore defaults" />
+                            Content="Restore defaults" local:LocalizedText.ContentKey="PowerPlansPageContent38E36992B8A4" />
                     </controls:SettingsCard>
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>

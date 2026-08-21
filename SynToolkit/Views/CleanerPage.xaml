@@ -21,11 +21,11 @@
             <TextBlock
                 Margin="0,24,36,8"
                 Style="{StaticResource TitleTextBlockStyle}"
-                Text="Disk Cleanup" />
+                Text="Disk Cleanup" local:LocalizedText.TextKey="CleanerPageTitle" />
             <TextBlock
                 Margin="0,0,36,24"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Clean up temporary files, caches, and other junk to free up disk space."
+                Text="Clean up temporary files, caches, and other junk to free up disk space." local:LocalizedText.TextKey="CleanerPageDescription"
                 TextWrapping="Wrap" />
 
             <InfoBar
@@ -35,7 +35,7 @@
                 IsOpen="{Binding HasError, Mode=OneWay}"
                 Message="{Binding StatusMessage, Mode=OneWay}"
                 Severity="Error"
-                Title="Disk Cleanup" />
+                Title="Disk Cleanup" local:LocalizedText.TitleKey="CleanerPageErrorTitle" />
 
             <InfoBar
                 x:Name="SuccessInfoBar"
@@ -43,18 +43,18 @@
                 IsClosable="True"
                 IsOpen="False"
                 Severity="Success"
-                Title="Cleanup complete" />
+                Title="Cleanup complete" local:LocalizedText.TitleKey="CleanerPageSuccessTitle" />
 
             <TextBlock
                 Margin="0,0,0,10"
                 FontSize="15"
                 FontWeight="SemiBold"
-                Text="Disk Space" />
+                Text="Disk Space" local:LocalizedText.TextKey="CleanerPageDiskSpace" />
 
             <controls:SettingsExpander
                 Margin="0,0,36,16"
-                Description="View storage usage and run Windows Disk Cleanup."
-                Header="Drives"
+                Description="View storage usage and run Windows Disk Cleanup." local:LocalizedText.DescriptionKey="CleanerPageDrivesDescription"
+                Header="Drives" local:LocalizedText.HeaderKey="CleanerPageDrives"
                 IsExpanded="True">
                 <controls:SettingsExpander.HeaderIcon>
                     <ImageIcon Source="ms-appx:///assets/Icons/DiskCleanup.png" />
@@ -62,7 +62,7 @@
                 <Button
                     x:Name="RunDiskCleanupButton"
                     Click="RunDiskCleanupButton_Click"
-                    Content="Run Disk Cleanup"
+                    Content="Run Disk Cleanup" local:LocalizedText.ContentKey="CleanerPageRunDiskCleanup"
                     Style="{StaticResource AccentButtonStyle}" />
                 <controls:SettingsExpander.Items>
                     <controls:SettingsCard x:Name="DrivesCard" Padding="16">
@@ -112,12 +112,12 @@
                 Margin="0,8,0,10"
                 FontSize="15"
                 FontWeight="SemiBold"
-                Text="Junk Files" />
+                Text="Junk Files" local:LocalizedText.TextKey="CleanerPageJunkFiles" />
 
             <controls:SettingsCard
                 Margin="0,0,36,2"
-                Description="Scan and clean temporary files, caches, logs, and other junk."
-                Header="Scan &amp; Clean">
+                Description="Scan and clean temporary files, caches, logs, and other junk." local:LocalizedText.DescriptionKey="CleanerPageScanCleanDescription"
+                Header="Scan &amp; Clean" local:LocalizedText.HeaderKey="CleanerPageScanClean">
                 <controls:SettingsCard.HeaderIcon>
                     <ImageIcon Source="ms-appx:///assets/Icons/DiskCleanup.png" />
                 </controls:SettingsCard.HeaderIcon>
@@ -125,12 +125,12 @@
                     <Button
                         x:Name="ScanButton"
                         Click="ScanButton_Click"
-                        Content="Scan"
+                        Content="Scan" local:LocalizedText.ContentKey="CleanerPageScan"
                         Style="{StaticResource AccentButtonStyle}" />
                     <Button
                         x:Name="CleanSelectedButton"
                         Click="CleanSelectedButton_Click"
-                        Content="Clean selected"
+                        Content="Clean selected" local:LocalizedText.ContentKey="CleanerPageCleanSelected"
                         Visibility="{Binding HasScanned, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <ProgressRing
                         Width="20"
@@ -156,8 +156,8 @@
                             Margin="0,0,0,12"
                             Orientation="Horizontal"
                             Spacing="16">
-                            <Button x:Name="SelectAllButton" Click="SelectAllButton_Click" Content="Select all" />
-                            <Button x:Name="SelectNoneButton" Click="SelectNoneButton_Click" Content="Select none" />
+                            <Button x:Name="SelectAllButton" Click="SelectAllButton_Click" Content="Select all" local:LocalizedText.ContentKey="CleanerPageSelectAll" />
+                            <Button x:Name="SelectNoneButton" Click="SelectNoneButton_Click" Content="Select none" local:LocalizedText.ContentKey="CleanerPageSelectNone" />
                             <TextBlock
                                 VerticalAlignment="Center"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -204,7 +204,7 @@
 
             <controls:SettingsCard
                 Margin="0,0,36,2"
-                Description="Launch WizTree portable (detailed disk usage information)"
+                Description="Launch WizTree portable (detailed disk usage information)" local:LocalizedText.DescriptionKey="CleanerPageWizTreeDescription"
                 Header="WizTree">
                 <controls:SettingsCard.HeaderIcon>
                     <ImageIcon Source="ms-appx:///assets/Icons/DiskCleanup.png" />
@@ -213,7 +213,7 @@
                 <Button
                     x:Name="LaunchWizTreeButton"
                     Click="LaunchWizTreeButton_Click"
-                    Content="Launch WizTree"
+                    Content="Launch WizTree" local:LocalizedText.ContentKey="CleanerPageLaunchWizTree"
                     Style="{StaticResource AccentButtonStyle}" />
             </controls:SettingsCard>
 

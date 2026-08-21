@@ -29,12 +29,12 @@
             Grid.Row="0"
             Margin="0,24,36,8"
             Style="{StaticResource TitleTextBlockStyle}"
-            Text="Specs" />
+            Text="Specs" local:LocalizedText.TextKey="SpecsPageTitle" />
         <TextBlock
             Grid.Row="1"
             Margin="0,0,36,18"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-            Text="A read-only snapshot of this system's hardware and Windows version. Nothing here can be changed."
+            Text="A read-only snapshot of this system's hardware and Windows version. Nothing here can be changed." local:LocalizedText.TextKey="SpecsPageDescription"
             TextWrapping="Wrap" />
 
         <InfoBar
@@ -44,7 +44,7 @@
             IsOpen="{Binding HasError, Mode=OneWay}"
             Message="{Binding ErrorMessage, Mode=OneWay}"
             Severity="Error"
-            Title="Specs" />
+            Title="Specs" local:LocalizedText.TitleKey="SpecsPageErrorTitle" />
 
         <ProgressRing
             Grid.Row="3"
@@ -58,31 +58,118 @@
 
         <ScrollViewer Grid.Row="3">
             <StackPanel Margin="0,0,36,48">
-
-                <controls:SettingsCard
+                <controls:SettingsExpander
                     Margin="0,0,0,10"
+                    Collapsed="CpuDetailsExpander_Collapsed"
                     Description="{Binding CpuDetailsText, Mode=OneWay}"
+                    Expanded="CpuDetailsExpander_Expanded"
                     Header="{Binding CpuName, Mode=OneWay}"
-                    Style="{StaticResource ConfigurationSettingsCardTemplate}">
-                    <controls:SettingsCard.HeaderIcon>
+                    Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
+                    <controls:SettingsExpander.HeaderIcon>
                         <ImageIcon Source="ms-appx:///assets/Icons/Cpu.png" />
-                    </controls:SettingsCard.HeaderIcon>
-                </controls:SettingsCard>
-
-                <controls:SettingsCard
-                    Margin="0,0,0,10"
-                    Header="Motherboard"
-                    Style="{StaticResource ConfigurationSettingsCardTemplate}">
-                    <controls:SettingsCard.HeaderIcon>
-                        <ImageIcon Source="ms-appx:///assets/Icons/Motherboard.png" />
-                    </controls:SettingsCard.HeaderIcon>
-                    <TextBlock VerticalAlignment="Center" Text="{Binding MotherboardText, Mode=OneWay}" />
-                </controls:SettingsCard>
+                    </controls:SettingsExpander.HeaderIcon>
+                    <controls:SettingsExpander.Items>
+                        <controls:SettingsCard ContentAlignment="Left">
+                            <StackPanel Spacing="8">
+                                <Grid Margin="0,4,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Utilization (live)" local:LocalizedText.TextKey="SpecsPageCpuUtilization" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="10,0,0,0"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding CpuUtilizationText, Mode=OneWay}" />
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Current frequency (live)" local:LocalizedText.TextKey="SpecsPageCpuCurrentFrequency" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="10,0,0,0"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding CpuCurrentFrequencyText, Mode=OneWay}" />
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Observed frequency (this visit)" local:LocalizedText.TextKey="SpecsPageCpuObservedFrequency" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="10,0,0,0"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding CpuObservedFrequencyText, Mode=OneWay}" />
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding CpuDetails}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="viewmodel:CpuDetailDisplay">
+                                            <Grid Margin="0,4,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Margin="10,0,0,0"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Text="{x:Bind Value, Mode=OneTime}"
+                                                    TextWrapping="Wrap" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </controls:SettingsCard>
+                    </controls:SettingsExpander.Items>
+                </controls:SettingsExpander>
 
                 <controls:SettingsExpander
                     Margin="0,0,0,10"
-                    Description="{Binding TotalMemoryText, Mode=OneWay}"
-                    Header="Memory"
+                    Description="{Binding MotherboardText, Mode=OneWay}"
+                    Expanded="MotherboardDetailsExpander_Expanded"
+                    Header="Motherboard" local:LocalizedText.HeaderKey="SpecsPageMotherboard"
+                    Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
+                    <controls:SettingsExpander.HeaderIcon>
+                        <ImageIcon Source="ms-appx:///assets/Icons/Motherboard.png" />
+                    </controls:SettingsExpander.HeaderIcon>
+                    <controls:SettingsExpander.Items>
+                        <controls:SettingsCard ContentAlignment="Left">
+                            <ItemsControl ItemsSource="{Binding MotherboardDetails}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="viewmodel:MotherboardDetailDisplay">
+                                        <Grid Margin="0,4,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="150" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                Margin="12,0,0,0"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                HorizontalAlignment="Stretch"
+                                                Text="{x:Bind Value, Mode=OneTime}"
+                                                TextWrapping="Wrap" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </controls:SettingsCard>
+                    </controls:SettingsExpander.Items>
+                </controls:SettingsExpander>
+
+                <controls:SettingsExpander
+                    Margin="0,0,0,10"
+                    Description="{Binding MemoryDescriptionText, Mode=OneWay}"
+                    Header="Memory" local:LocalizedText.HeaderKey="SpecsPageMemory"
                     Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
                     <controls:SettingsExpander.HeaderIcon>
                         <ImageIcon Source="ms-appx:///assets/Icons/Ram.png" />
@@ -113,7 +200,7 @@
 
                 <controls:SettingsExpander
                     Margin="0,0,0,10"
-                    Header="Graphics"
+                    Header="Graphics" local:LocalizedText.HeaderKey="SpecsPageGraphics"
                     Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
                     <controls:SettingsExpander.HeaderIcon>
                         <ImageIcon Source="{Binding GraphicsHeaderIcon, Mode=OneWay, Converter={StaticResource ImageSourceConverter}}" />
@@ -133,9 +220,8 @@
                                                 Width="24"
                                                 Height="24"
                                                 Margin="0,0,10,0"
-                                                VerticalAlignment="Top"
                                                 Source="{x:Bind IconPath, Mode=OneTime, Converter={StaticResource ImageSourceConverter}}" />
-                                            <StackPanel Grid.Column="1">
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                 <TextBlock Text="{x:Bind Name, Mode=OneTime}" TextWrapping="Wrap" />
                                                 <TextBlock
                                                     FontSize="12"
@@ -145,6 +231,7 @@
                                             <TextBlock
                                                 Grid.Column="2"
                                                 Margin="10,0,0,0"
+                                                VerticalAlignment="Center"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="{x:Bind VramText, Mode=OneTime}" />
                                         </Grid>
@@ -154,10 +241,9 @@
                         </controls:SettingsCard>
                     </controls:SettingsExpander.Items>
                 </controls:SettingsExpander>
-
                 <controls:SettingsExpander
                     Margin="0,0,0,10"
-                    Header="Storage"
+                    Header="Storage" local:LocalizedText.HeaderKey="SpecsPageStorage"
                     Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
                     <controls:SettingsExpander.HeaderIcon>
                         <ImageIcon Source="ms-appx:///assets/Icons/Storage.png" />
@@ -195,7 +281,7 @@
                 <controls:SettingsExpander
                     Margin="0,0,0,10"
                     Description="{Binding NetworkSummaryText, Mode=OneWay}"
-                    Header="Network"
+                    Header="Network" local:LocalizedText.HeaderKey="SpecsPageNetwork"
                     Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
                     <controls:SettingsExpander.HeaderIcon>
                         <ImageIcon Source="ms-appx:///assets/Icons/Network.png" />
@@ -243,7 +329,7 @@
                 </controls:SettingsExpander>
                 <controls:SettingsCard
                     Margin="0,0,0,10"
-                    Header="Windows"
+                    Header="Windows" local:LocalizedText.HeaderKey="SpecsPageWindows"
                     Style="{StaticResource ConfigurationSettingsCardTemplate}">
                     <controls:SettingsCard.HeaderIcon>
                         <ImageIcon Source="ms-appx:///assets/Icons/Windows.png" />

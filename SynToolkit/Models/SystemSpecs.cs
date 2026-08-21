@@ -6,7 +6,14 @@ namespace SynToolkit.Models
 
     public sealed record GpuSpec(string Name, ulong? AdapterRamBytes, string? DriverVersion, string IconPath);
 
-    public sealed record MemoryModuleSpec(string? Manufacturer, ulong CapacityBytes, uint? SpeedMHz);
+    public sealed record MemoryModuleSpec(
+        string? Manufacturer,
+        ulong CapacityBytes,
+        uint? SpeedMHz,
+        string? MemoryType = null,
+        string? SlotLabel = null,
+        string? TimingText = null,
+        bool IsMemoryStick = false);
 
     public sealed record StorageDriveSpec(string Model, ulong SizeBytes, string? MediaType, string? InterfaceType);
 
@@ -20,6 +27,8 @@ namespace SynToolkit.Models
         bool IsConnected);
 
     public sealed record MotherboardSpec(string? Manufacturer, string? Product);
+
+    public sealed record MotherboardDetail(string Label, string Value);
 
     public sealed record SystemSpecsSnapshot(
         CpuSpec? Cpu,

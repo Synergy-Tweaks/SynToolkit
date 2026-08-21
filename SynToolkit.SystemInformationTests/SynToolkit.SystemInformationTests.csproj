@@ -12,6 +12,7 @@
   <ItemGroup>
     <Compile Include="..\SynToolkit\Commands\AsyncCommandBase.cs" Link="Commands\AsyncCommandBase.cs" />
     <Compile Include="..\SynToolkit\Models\SystemInformationSnapshot.cs" Link="Models\SystemInformationSnapshot.cs" />
+    <Compile Include="..\SynToolkit\Models\SystemSpecs.cs" Link="Models\SystemSpecs.cs" />
     <Compile Include="..\SynToolkit\Services\AmePlaybookDetector.cs" Link="Services\AmePlaybookDetector.cs" />
     <Compile Include="..\SynToolkit\Services\Bcd\BcdContract.cs" Link="Services\Bcd\BcdContract.cs" />
     <Compile Include="..\SynToolkit\Services\Bcd\IBcdWmiProvider.cs" Link="Services\Bcd\IBcdWmiProvider.cs" />
@@ -20,6 +21,10 @@
     <Compile Include="..\SynToolkit\Services\LegacyProfileMigrationPolicy.cs" Link="Services\LegacyProfileMigrationPolicy.cs" />
     <Compile Include="..\SynToolkit\Services\LegacyProfileMigrationService.cs" Link="Services\LegacyProfileMigrationService.cs" />
     <Compile Include="..\SynToolkit\Services\LocalUserDisplayNameCommand.cs" Link="Services\LocalUserDisplayNameCommand.cs" />
+    <Compile Include="..\SynToolkit\Services\MemoryModuleInventoryNormalizer.cs" Link="Services\MemoryModuleInventoryNormalizer.cs" />
+    <Compile Include="..\SynToolkit\Services\CpuZMemoryTimingParser.cs" Link="Services\CpuZMemoryTimingParser.cs" />
+    <Compile Include="..\SynToolkit\Services\CpuZProcessorDetailsParser.cs" Link="Services\CpuZProcessorDetailsParser.cs" />
+    <Compile Include="..\SynToolkit\Services\CpuZMainboardDetailsParser.cs" Link="Services\CpuZMainboardDetailsParser.cs" />
     <Compile Include="..\SynToolkit\Services\NvidiaProfileInspector\NvidiaProfilePreviewService.cs" Link="Services\NvidiaProfileInspector\NvidiaProfilePreviewService.cs" />
     <Compile Include="..\SynToolkit\Services\RadeonSlimmer\RadeonSelectionModels.cs" Link="Services\RadeonSlimmer\RadeonSelectionModels.cs" />
     <Compile Include="..\SynToolkit\Services\SystemInformationService.cs" Link="Services\SystemInformationService.cs" />

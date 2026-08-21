@@ -119,7 +119,7 @@
                             <TextBlock
                                 FontSize="12"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Add wallpaper" />
+                                Text="Add wallpaper" local:LocalizedText.TextKey="AdjustmentsPageTextB573A9CEB952" />
                         </StackPanel>
                     </Grid>
                 </Button>
@@ -132,11 +132,11 @@
             <TextBlock
                 Margin="0,24,36,8"
                 Style="{StaticResource TitleTextBlockStyle}"
-                Text="Customizations" />
+                Text="Customizations" local:LocalizedText.TextKey="AdjustmentsPageText5732BA5E3133" />
             <TextBlock
                 Margin="0,0,36,24"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Identity and local account settings that don't have a Windows Settings page on this system."
+                Text="Identity and local account settings that don't have a Windows Settings page on this system." local:LocalizedText.TextKey="AdjustmentsPageTextCC873B2F1463"
                 TextWrapping="Wrap" />
 
             <InfoBar
@@ -144,9 +144,9 @@
                 Margin="0,0,36,18"
                 IsClosable="False"
                 IsOpen="False"
-                Message="Administrator access is required to make identity and account changes. Restart SynToolkit as administrator."
+                Message="Administrator access is required to make identity and account changes. Restart SynToolkit as administrator." local:LocalizedText.MessageKey="AdjustmentsPageMessageA5F68D51EF4A"
                 Severity="Warning"
-                Title="Administrator access required" />
+                Title="Administrator access required" local:LocalizedText.TitleKey="AdjustmentsPageTitleA526402028D0" />
 
             <InfoBar
                 x:Name="OperationInfoBar"
@@ -154,70 +154,70 @@
                 IsClosable="True"
                 IsOpen="False" />
 
-            <TextBlock Style="{StaticResource CategoryTitle}" Text="Identity" />
+            <TextBlock Style="{StaticResource CategoryTitle}" Text="Identity" local:LocalizedText.TextKey="AdjustmentsPageTextF1BB19B6C2A0" />
 
             <controls:SettingsExpander
                 Margin="0,0,36,10"
-                Header="Account"
-                Description="Change the signed-in user's identity."
+                Header="Account" local:LocalizedText.HeaderKey="AdjustmentsPageHeader651B6ACCA8D3"
+                Description="Change the signed-in user's identity." local:LocalizedText.DescriptionKey="AdjustmentsPageDescriptionF257892DB183"
                 Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
                 <controls:SettingsExpander.HeaderIcon>
                     <ImageIcon Source="ms-appx:///assets/Icons/UserAccount.png" />
                 </controls:SettingsExpander.HeaderIcon>
                 <controls:SettingsExpander.Items>
-                    <controls:SettingsCard Header="Change password" Description="Set a new password for the signed-in account.">
-                        <Button x:Name="ChangePasswordButton" Click="ChangePasswordButton_Click" Content="Change" />
+                    <controls:SettingsCard Header="Change password" local:LocalizedText.HeaderKey="AdjustmentsPageHeader1A6DEC289EF8" Description="Set a new password for the signed-in account." local:LocalizedText.DescriptionKey="AdjustmentsPageDescription9B06771E9AB7">
+                        <Button x:Name="ChangePasswordButton" Click="ChangePasswordButton_Click" Content="Change" local:LocalizedText.ContentKey="AdjustmentsPageContentB2BFCC7E64D0" />
                     </controls:SettingsCard>
-                    <controls:SettingsCard Header="Change display name" Description="Set the name shown on the sign-in and Start screens.">
-                        <Button x:Name="ChangeDisplayNameButton" Click="ChangeDisplayNameButton_Click" Content="Change" />
+                    <controls:SettingsCard Header="Change display name" local:LocalizedText.HeaderKey="AdjustmentsPageHeaderAE3E77CD759D" Description="Set the name shown on the sign-in and Start screens." local:LocalizedText.DescriptionKey="AdjustmentsPageDescription5B9464092017">
+                        <Button x:Name="ChangeDisplayNameButton" Click="ChangeDisplayNameButton_Click" Content="Change" local:LocalizedText.ContentKey="AdjustmentsPageContentB2BFCC7E64D0" />
                     </controls:SettingsCard>
-                    <controls:SettingsCard Header="Change Administrator password" Description="Set a new password for the built-in Administrator account.">
-                        <Button x:Name="ChangeAdminPasswordButton" Click="ChangeAdminPasswordButton_Click" Content="Change" />
+                    <controls:SettingsCard Header="Change Administrator password" local:LocalizedText.HeaderKey="AdjustmentsPageHeaderBCA8DB57F968" Description="Set a new password for the built-in Administrator account." local:LocalizedText.DescriptionKey="AdjustmentsPageDescriptionB7AA558CB01D">
+                        <Button x:Name="ChangeAdminPasswordButton" Click="ChangeAdminPasswordButton_Click" Content="Change" local:LocalizedText.ContentKey="AdjustmentsPageContentB2BFCC7E64D0" />
                     </controls:SettingsCard>
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>
 
             <controls:SettingsExpander
                 Margin="0,0,36,10"
-                Header="Images"
-                Description="Change the profile picture and lock screen image."
+                Header="Images" local:LocalizedText.HeaderKey="AdjustmentsPageHeaderAEBBC2332363"
+                Description="Change the profile picture and lock screen image." local:LocalizedText.DescriptionKey="AdjustmentsPageDescriptionFE5403BC4846"
                 Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
                 <controls:SettingsExpander.HeaderIcon>
                     <ImageIcon Source="ms-appx:///assets/Icons/Display.png" />
                 </controls:SettingsExpander.HeaderIcon>
                 <controls:SettingsExpander.Items>
-                    <controls:SettingsCard Header="Change profile picture" Description="Choose an image file to use as the account picture.">
-                        <Button x:Name="ChangeProfilePictureButton" Click="ChangeProfilePictureButton_Click" Content="Choose image" />
+                    <controls:SettingsCard Header="Change profile picture" local:LocalizedText.HeaderKey="AdjustmentsPageHeader320AC1273397" Description="Choose an image file to use as the account picture." local:LocalizedText.DescriptionKey="AdjustmentsPageDescription95ED39E2179F">
+                        <Button x:Name="ChangeProfilePictureButton" Click="ChangeProfilePictureButton_Click" Content="Choose image" local:LocalizedText.ContentKey="AdjustmentsPageContent0B6EB1A2D01D" />
                     </controls:SettingsCard>
-                    <controls:SettingsCard Header="Change lock screen image" Description="Choose an image file to use as the lock screen background.">
-                        <Button x:Name="ChangeLockscreenImageButton" Click="ChangeLockscreenImageButton_Click" Content="Choose image" />
+                    <controls:SettingsCard Header="Change lock screen image" local:LocalizedText.HeaderKey="AdjustmentsPageHeader113118A7F2CB" Description="Choose an image file to use as the lock screen background." local:LocalizedText.DescriptionKey="AdjustmentsPageDescriptionAD442A79D6ED">
+                        <Button x:Name="ChangeLockscreenImageButton" Click="ChangeLockscreenImageButton_Click" Content="Choose image" local:LocalizedText.ContentKey="AdjustmentsPageContent0B6EB1A2D01D" />
                     </controls:SettingsCard>
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>
 
             <controls:SettingsExpander
                 Margin="0,0,36,10"
-                Header="Keyboard language"
-                Description="Add or remove a keyboard input language."
+                Header="Keyboard language" local:LocalizedText.HeaderKey="AdjustmentsPageHeader8879A3F543CF"
+                Description="Add or remove a keyboard input language." local:LocalizedText.DescriptionKey="AdjustmentsPageDescription72733D0FA827"
                 Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
                 <controls:SettingsExpander.HeaderIcon>
                     <ImageIcon Source="ms-appx:///assets/Icons/Language.png" />
                 </controls:SettingsExpander.HeaderIcon>
                 <controls:SettingsExpander.Items>
                     <controls:SettingsCard
-                        Header="Add keyboard language"
-                        Description="Requires a language tag and keyboard identifier, e.g. en-US:00000409. See Microsoft's published language-pack and keyboard-identifier tables.">
-                        <Button x:Name="AddKeyboardLanguageButton" Click="AddKeyboardLanguageButton_Click" Content="Add" />
+                        Header="Add keyboard language" local:LocalizedText.HeaderKey="AdjustmentsPageHeaderEA1AD808C3B8"
+                        Description="Requires a language tag and keyboard identifier, e.g. en-US:00000409. See Microsoft's published language-pack and keyboard-identifier tables." local:LocalizedText.DescriptionKey="AdjustmentsPageDescription228FED04EAD2">
+                        <Button x:Name="AddKeyboardLanguageButton" Click="AddKeyboardLanguageButton_Click" Content="Add" local:LocalizedText.ContentKey="AdjustmentsPageContent9257B902FE94" />
                     </controls:SettingsCard>
                     <controls:SettingsCard
-                        Header="Remove keyboard language"
-                        Description="Requires the same language tag and keyboard identifier used to add it.">
-                        <Button x:Name="RemoveKeyboardLanguageButton" Click="RemoveKeyboardLanguageButton_Click" Content="Remove" />
+                        Header="Remove keyboard language" local:LocalizedText.HeaderKey="AdjustmentsPageHeader391CA1C3872B"
+                        Description="Requires the same language tag and keyboard identifier used to add it." local:LocalizedText.DescriptionKey="AdjustmentsPageDescription93D58E4EB3A8">
+                        <Button x:Name="RemoveKeyboardLanguageButton" Click="RemoveKeyboardLanguageButton_Click" Content="Remove" local:LocalizedText.ContentKey="AdjustmentsPageContentC8AB4619AF84" />
                     </controls:SettingsCard>
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>
 
-            <TextBlock Style="{StaticResource CategoryTitle}" Text="Desktop" />
+            <TextBlock Style="{StaticResource CategoryTitle}" Text="Desktop" local:LocalizedText.TextKey="AdjustmentsPageTextB701B52EF449" />
 
             <Border
                 Margin="0,0,36,10"
@@ -235,21 +235,21 @@
                             <TextBlock
                                 FontSize="14"
                                 FontWeight="SemiBold"
-                                Text="Wallpaper" />
+                                Text="Wallpaper" local:LocalizedText.TextKey="AdjustmentsPageText0F1D8DCCC6BE" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Choose a wallpaper for your Windows desktop." />
+                                Text="Choose a wallpaper for your Windows desktop." local:LocalizedText.TextKey="AdjustmentsPageText41D00B8D2FA0" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                             <Button
                                 x:Name="RestorePreviousButton"
                                 Click="RestorePreviousButton_Click"
-                                Content="Restore Previous"
+                                Content="Restore Previous" local:LocalizedText.ContentKey="AdjustmentsPageContent206EA86EC9EA"
                                 ToolTipService.ToolTip="Undo the last wallpaper change" />
                             <Button
                                 x:Name="RefreshWallpapersButton"
                                 Click="RefreshWallpapersButton_Click"
-                                Content="Refresh" />
+                                Content="Refresh" local:LocalizedText.ContentKey="AdjustmentsPageContent02D08859B078" />
                         </StackPanel>
                     </Grid>
                     
@@ -306,13 +306,13 @@
                                         FontSize="11"
                                         FontWeight="SemiBold"
                                         Foreground="White"
-                                        Text="CURRENTLY APPLIED" />
+                                        Text="CURRENTLY APPLIED" local:LocalizedText.TextKey="AdjustmentsPageText69F38EE7DB36" />
                                 </Border>
                                 <TextBlock
                                     x:Name="CurrentWallpaperName"
                                     FontSize="16"
                                     FontWeight="SemiBold"
-                                    Text="Loading..."
+                                    Text="Loading..." local:LocalizedText.TextKey="AdjustmentsPageText61608262BCEB"
                                     TextTrimming="CharacterEllipsis" />
                                 <TextBlock
                                     x:Name="CurrentWallpaperPath"
@@ -329,13 +329,13 @@
                     <!-- Available Wallpapers Section -->
                     <TextBlock
                         Style="{StaticResource WallpaperSectionHeader}"
-                        Text="AVAILABLE WALLPAPERS" />
+                        Text="AVAILABLE WALLPAPERS" local:LocalizedText.TextKey="AdjustmentsPageText510B702E19E0" />
 
                     <TextBlock
                         x:Name="WallpaperEmptyMessage"
                         Margin="0,0,0,8"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="No wallpapers available. The Assets\Wallpapers folder may be missing."
+                        Text="No wallpapers available. The Assets\Wallpapers folder may be missing." local:LocalizedText.TextKey="AdjustmentsPageTextBD7DF5B5ACE7"
                         TextWrapping="Wrap"
                         Visibility="Collapsed" />
 
@@ -357,7 +357,7 @@
                     <TextBlock
                         Margin="8,8,0,12"
                         Style="{StaticResource WallpaperSectionHeader}"
-                        Text="YOUR WALLPAPERS" />
+                        Text="YOUR WALLPAPERS" local:LocalizedText.TextKey="AdjustmentsPageText9C51BA4B2C03" />
 
                     <GridView
                         x:Name="CustomWallpaperGridView"

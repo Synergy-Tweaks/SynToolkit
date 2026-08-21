@@ -195,7 +195,7 @@ namespace SynToolkit
             LearnMoreBtn.Content = App.GetValueFromItemList("LearnMore");
 
             // Navigation Items
-            Home.Content = App.GetValueFromItemList("Home_HeaderText");
+            Home.Content = App.GetValueFromItemList("Home");
             InstallerText.Text = App.GetValueFromItemList("Installer");
             PowerPlansText.Text = App.GetValueFromItemList("PowerPlans");
             AdjustmentsText.Text = App.GetValueFromItemList("Adjustments");

@@ -58,6 +58,12 @@ internal static class Program
         Run("Malformed legacy profiles are rejected", MalformedLegacyProfilesAreRejected);
         Run("Oversized legacy profiles are rejected", OversizedLegacyProfileIsRejected);
         Run("NVIDIA profile export preserves imported settings", NvidiaProfileExportRoundTrips);
+        Run("Fragmented onboard memory chips are labeled", FragmentedOnboardMemoryChipsAreLabeled);
+        Run("Identified desktop DIMMs stay separate", IdentifiedDesktopDimmsStaySeparate);
+        Run("CPU-Z memory timings are parsed", CpuZMemoryTimingsAreParsed);
+        Run("CPU-Z processor details are parsed", CpuZProcessorDetailsAreParsed);
+        Run("CPU-Z motherboard details are parsed", CpuZMainboardDetailsAreParsed);
+        Run("AMD 3D V-Cache is detected", Amd3dVCacheIsDetected);
 
         Console.WriteLine(_failures == 0
             ? "All SynToolkit service tests passed."
@@ -65,6 +71,131 @@ internal static class Program
         return _failures == 0 ? 0 : 1;
     }
 
+    private static void FragmentedOnboardMemoryChipsAreLabeled()
+    {
+        MemoryModuleSpec[] firmwareEntries = Enumerable.Range(0, 8)
+            .Select(_ => new MemoryModuleSpec(null, 2UL * 1024 * 1024 * 1024, 4800))
+            .ToArray();
+
+        IReadOnlyList<MemoryModuleSpec> normalized = MemoryModuleInventoryNormalizer.Normalize(
+            firmwareEntries,
+            16UL * 1024 * 1024 * 1024 - 320UL * 1024 * 1024);
+
+        Equal(8, normalized.Count, "Individual onboard chips should remain separate rows.");
+        True(
+            normalized.All(module => module.Manufacturer == "Onboard Memory Chip"),
+            "Each unidentified onboard chip should receive the onboard-memory label.");
+        True(
+            normalized.All(module => module.CapacityBytes == 2UL * 1024 * 1024 * 1024 && module.SpeedMHz == 4800),
+            "Each onboard chip must retain its own capacity and reported speed.");
+    }
+
+    private static void IdentifiedDesktopDimmsStaySeparate()
+    {
+        MemoryModuleSpec[] desktopDimms =
+        {
+            new("Gold Key Technology Co Ltd", 8UL * 1024 * 1024 * 1024, 3200, IsMemoryStick: true),
+            new("Gold Key Technology Co Ltd", 8UL * 1024 * 1024 * 1024, 3200, IsMemoryStick: true)
+        };
+
+        IReadOnlyList<MemoryModuleSpec> normalized = MemoryModuleInventoryNormalizer.Normalize(
+            desktopDimms,
+            16UL * 1024 * 1024 * 1024);
+
+        Equal(2, normalized.Count, "Normal identified DIMMs must remain separate rows.");
+        Equal("Slot 1", normalized[0].SlotLabel, "The first stick must receive Slot 1.");
+        Equal("Slot 2", normalized[1].SlotLabel, "The second stick must receive Slot 2.");
+    }
+
+    private static void CpuZMemoryTimingsAreParsed()
+    {
+        const string report = "Memory Type          DDR5\r\n" +
+                              "CAS# latency (CL)   40.0\r\n" +
+                              "RAS# to CAS# delay (tRCD) 40\r\n" +
+                              "RAS# Precharge (tRP) 40\r\n" +
+                              "Cycle Time (tRAS)   77\r\n";
+
+        CpuZMemoryTimings? timings = CpuZMemoryTimingParser.TryParse(report);
+
+        Equal("DDR5", timings?.MemoryType, "CPU-Z's memory type should be retained.");
+        Equal("CL40 40-40-40-77", timings?.TimingText, "CPU-Z's live primary timings should be formatted consistently.");
+    }
+
+    private static void CpuZProcessorDetailsAreParsed()
+    {
+        const string report = "Processors Information\r\n" +
+                              "-------------------------------------------------------------------------\r\n" +
+                              "Socket 1\t\tID = 0\r\n" +
+                              "\tNumber of cores\t\t14 (max 14)\r\n" +
+                              "\tNumber of threads\t20 (max 20)\r\n" +
+                              "\tHybrid\t\tyes, 2 coresets\r\n" +
+                              "\tCore Set 0\t\tP-Cores, 6 cores, 12 threads\r\n" +
+                              "\tCore Set 1\t\tE-Cores, 8 cores, 8 threads\r\n" +
+                              "\tManufacturer\t\tGenuineIntel\r\n" +
+                              "\tName\t\tIntel Core i5 13500\r\n" +
+                              "\tCodename\t\tRaptor Lake\r\n" +
+                              "\tPackage (platform ID)\tSocket 1700 LGA\r\n" +
+                              "\tTechnology\t\t10 nm\r\n" +
+                              "\tCPUID\t\t6.F.2\r\n" +
+                              "\tCore Stepping\t\tC0\r\n" +
+                              "\tInstructions sets\tMMX, SSE, AVX2\r\n" +
+                              "\tTDP Limit\t\t65.0 Watts\r\n" +
+                              "\tTjmax\t\t100.0 °C\r\n" +
+                              "\tBase frequency (cores)\t99.8 MHz\r\n" +
+                              "\tL1 Data cache\t\t6 x 48 KB (12-way) + 8 x 32 KB (8-way)\r\n" +
+                              "\tL1 Instruction cache\t6 x 32 KB (8-way) + 8 x 64 KB (8-way)\r\n" +
+                              "\tL2 cache\t\t6 x 1.25 MB (10-way) + 2 x 2 MB (16-way)\r\n" +
+                              "\tL3 cache\t\t24 MB (12-way)\r\n" +
+                              "\tMax turbo ratio\t\t48x\r\n" +
+                              "\tMin operating ratio\t4x\r\n" +
+                              "\tRatio 1 P-Core\t\t48x\r\n" +
+                              "\tRatio 1 E-Core\t\t35x\r\n" +
+                              "\r\nThread dumps\r\n";
+
+        CpuZProcessorDetails? details = CpuZProcessorDetailsParser.TryParse(report);
+
+        Equal("Raptor Lake", details?.Codename, "CPU-Z's codename should be retained.");
+        Equal(6, details?.PerformanceCores?.Cores, "P-core count should be parsed.");
+        Equal(8, details?.EfficientCores?.Cores, "E-core count should be parsed.");
+        Equal(4790.4m, details?.PerformanceCores?.MaximumFrequencyMHz, "P-core maximum should use the P-core ratio.");
+        Equal(3493m, details?.EfficientCores?.MaximumFrequencyMHz, "E-core maximum should use the E-core ratio.");
+        Equal(399.2m, details?.MinimumFrequencyMHz, "Minimum operating frequency should use its ratio.");
+        Equal("6 × 48 KB + 8 × 32 KB", details?.L1DataCache, "Cache associativity should be omitted while preserving the hybrid cache layout.");
+        Equal("100 \u00B0C", details?.TemperatureLimit, "Temperature output must use a valid degree symbol.");
+    }
+    private static void CpuZMainboardDetailsAreParsed()
+    {
+        const string report = "Chipset\r\n" +
+                              "Northbridge\t\tIntel Alder Lake rev. 02\r\n" +
+                              "Southbridge\t\tIntel B660 rev. 11\r\n" +
+                              "Bus Specification\t\tPCI-Express 4.0 (16.0 GT/s)\r\n" +
+                              "Graphic Interface\t\tPCI-Express 5.0\r\n" +
+                              "Mainboard Model\t\tB660M DS3H AX DDR4 (0x00000444 - 0x8461EA80)\r\n" +
+                              "LPCIO Vendor\t\tITE\r\n" +
+                              "LPCIO Model\t\tIT8689\r\n";
+
+        CpuZMainboardDetails? details = CpuZMainboardDetailsParser.TryParse(report);
+
+        Equal("B660M DS3H AX DDR4", details?.Model, "CPU-Z's board model should omit the internal hardware ID.");
+        Equal("Intel Alder Lake rev. 02", details?.Northbridge, "CPU-Z's northbridge should be retained.");
+        Equal("Intel B660 rev. 11", details?.Southbridge, "CPU-Z's southbridge should be retained.");
+        Equal("PCI-Express 4.0 (16.0 GT/s)", details?.BusSpecification, "CPU-Z's mainboard bus should be retained.");
+        Equal("ITE", details?.LpcioVendor, "CPU-Z's LPCIO vendor should be retained.");
+        Equal("IT8689", details?.LpcioModel, "CPU-Z's LPCIO model should be retained.");
+    }
+    private static void Amd3dVCacheIsDetected()
+    {
+        const string report = "Processors Information\r\n" +
+                              "\tManufacturer\t\tAuthenticAMD\r\n" +
+                              "\tName\t\tAMD Ryzen 7 7800X3D\r\n" +
+                              "\tL3 cache\t\t96 MB (16-way)\r\n" +
+                              "\r\nThread dumps\r\n";
+
+        CpuZProcessorDetails? details = CpuZProcessorDetailsParser.TryParse(report);
+
+        True(details?.HasAmd3dVCache == true, "An AMD X3D processor must expose its 3D V-Cache designation.");
+        Equal("96 MB", details?.L3Cache, "The AMD L3 cache capacity should remain visible.");
+    }
     private static void OfficialRegistryPath() =>
         Equal(
             @"SOFTWARE\AME\Playbooks\Applied",

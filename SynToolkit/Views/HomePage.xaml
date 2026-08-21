@@ -90,13 +90,13 @@
                     <TextBlock
                         x:Name="ReleaseNotesHeader"
                         FontSize="20"
-                        Text="What's New in SynergyOS" />
+                        Text="What's New in SynergyOS" local:LocalizedText.TextKey="HomePageText3E77C2003BD6" />
                     <HyperlinkButton
                         x:Name="ViewAllReleasesButton"
                         Grid.Column="1"
                         VerticalAlignment="Center"
                         Click="ViewAllReleasesButton_Click"
-                        Content="View all releases" />
+                        Content="View all releases" local:LocalizedText.ContentKey="HomePageContentB7F2E2F3517E" />
                 </Grid>
                 <Border
                     Margin="0,10,0,0"
@@ -141,13 +141,13 @@
                                 Margin="0,4,0,0"
                                 Padding="0"
                                 Click="ReadMoreButton_Click"
-                                Content="Read more" />
+                                Content="Read more" local:LocalizedText.ContentKey="HomePageContent8C338141C3FC" />
                         </StackPanel>
                         <TextBlock
                             x:Name="ReleaseNotesError"
                             HorizontalAlignment="Center"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Unable to load release notes."
+                            Text="Unable to load release notes." local:LocalizedText.TextKey="HomePageTextD15475C117F4"
                             Visibility="Collapsed" />
                     </StackPanel>
                 </Border>

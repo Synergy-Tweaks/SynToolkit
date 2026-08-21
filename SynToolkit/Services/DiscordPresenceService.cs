@@ -50,7 +50,7 @@ namespace SynToolkit.Services
 
                 _presence = new RichPresence
                 {
-                    Details = "Using SynToolkit",
+                    Details = "Using the best Toolkit",
                     State = "Configuring Windows",
                     Timestamps = Timestamps.Now,
                     Assets = assets,
