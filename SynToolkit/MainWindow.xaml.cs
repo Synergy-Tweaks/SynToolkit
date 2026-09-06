@@ -254,6 +254,7 @@ namespace SynToolkit
             // Navigation Items
             Home.Content = App.GetValueFromItemList("Home");
             NeedsAttentionText.Text = App.GetValueFromItemList("NeedsAttention");
+            AudioMixer.Content = App.GetValueFromItemList("AudioMixer");
             InstallerText.Text = App.GetValueFromItemList("Installer");
             PowerPlansText.Text = App.GetValueFromItemList("PowerPlans");
             AdjustmentsText.Text = App.GetValueFromItemList("Adjustments");
@@ -405,6 +406,7 @@ namespace SynToolkit
             {
                 "SettingsPage" => typeof(SettingsPage),
                 "SynToolkit.Views.NeedsAttentionPage" => typeof(NeedsAttentionPage),
+                "SynToolkit.Views.AudioMixerPage" => typeof(AudioMixerPage),
                 "SynToolkit.Views.AppFetchPage" => typeof(AppFetchPage),
                 "SynToolkit.Views.PowerPlansPage" => typeof(PowerPlansPage),
                 "SynToolkit.Views.AdjustmentsPage" => typeof(AdjustmentsPage),
@@ -570,6 +572,7 @@ namespace SynToolkit
             {
                 "SynToolkit.Views.HomePage" => "Home",
                 "SynToolkit.Views.NeedsAttentionPage" => "Needs Attention",
+                "SynToolkit.Views.AudioMixerPage" => "Audio Mixer",
                 "SynToolkit.Views.AppFetchPage" => "Installer",
                 "SynToolkit.Views.PowerPlansPage" => "Power Plans",
                 "SynToolkit.Views.AdjustmentsPage" => "Adjustments",

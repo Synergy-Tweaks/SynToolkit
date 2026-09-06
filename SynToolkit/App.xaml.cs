@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using SynToolkit.HostBuilder;
 using Microsoft.Extensions.Hosting;
+using SynToolkit.Services.AudioMixer;
 using SynToolkit.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
@@ -34,6 +35,7 @@ namespace SynToolkit
         public static XamlRoot XamlRoot { get; set; }
         public static string CurrentCategory { get; set; }
         public static string SearchHighlightItemKey { get; set; }
+        internal const string AudioMixerNavigationTag = "SynToolkit.Views.AudioMixerPage";
         public static event Action<string> ConfigurationActionSucceeded;
         internal const string DefaultLanguageKey = "en_us";
         private static Dictionary<string, string> StringList = new Dictionary<string, string>();
@@ -44,6 +46,7 @@ namespace SynToolkit
         private static readonly Mutex _mutex = new(false, InstanceMutexName);
         private DiscordPresenceService _discordPresenceService;
         private SystemTrayService _systemTrayService;
+        private AudioMixerHotkeyService _audioMixerHotkeyService;
         private static volatile bool _activateRequested;
         private bool _hostStarted;
         private int _shutdownStarted;
@@ -426,6 +429,19 @@ namespace SynToolkit
                 logger.Warn(exception, "Unable to stop Discord Rich Presence.");
             }
 
+            try
+            {
+                if (_audioMixerHotkeyService is not null)
+                {
+                    _audioMixerHotkeyService.HotkeyPressed -= ShowAudioMixer;
+                    _audioMixerHotkeyService.Dispose();
+                }
+            }
+            catch (Exception exception)
+            {
+                logger.Warn(exception, "Unable to dispose the audio mixer hotkey service.");
+            }
+
             if (_hostStarted)
             {
                 try
@@ -575,7 +591,7 @@ namespace SynToolkit
                 m_window = new MainWindow();
                 try
                 {
-                    _systemTrayService = new SystemTrayService(m_window, ShutdownApplication);
+                    _systemTrayService = new SystemTrayService(m_window, ShutdownApplication, ShowAudioMixer);
                     bool closeToTrayEnabled = RegistryHelper.IsMatch(
                         @"HKLM\SOFTWARE\SynToolkit",
                         "KeepInBackground",
@@ -590,6 +606,7 @@ namespace SynToolkit
                 }
 
                 m_window.Activate();
+                InitializeAudioMixerFeature();
 
                 if (_activateRequested)
                 {
@@ -629,6 +646,18 @@ namespace SynToolkit
         {
             var mainWindow = m_window as MainWindow;
             mainWindow.ContentDialogContoller(type);
+        }
+
+        public static void ShowAudioMixer()
+        {
+            if (m_window is not MainWindow mainWindow)
+            {
+                return;
+            }
+
+            mainWindow.Show();
+            mainWindow.Activate();
+            mainWindow.NavigateToPage(typeof(Views.AudioMixerPage), AudioMixerNavigationTag);
         }
 
         /// <summary>
@@ -733,6 +762,21 @@ namespace SynToolkit
             catch
             {
                 return friendlyFallback;
+            }
+        }
+
+        private void InitializeAudioMixerFeature()
+        {
+            try
+            {
+                _host.Services.GetRequiredService<IAudioMixerService>().Start();
+                _audioMixerHotkeyService = _host.Services.GetRequiredService<AudioMixerHotkeyService>();
+                _audioMixerHotkeyService.Initialize(m_window);
+                _audioMixerHotkeyService.HotkeyPressed += ShowAudioMixer;
+            }
+            catch (Exception exception)
+            {
+                logger.Warn(exception, "Audio Mixer startup integration could not be initialized.");
             }
         }
     }

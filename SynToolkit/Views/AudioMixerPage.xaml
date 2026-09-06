@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="SynToolkit.Views.AudioMixerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:SynToolkit.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodel="using:SynToolkit.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewmodel:AudioMixerPageViewModel}"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <local:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,8,0,10" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer>
+        <StackPanel Margin="55,0,0,48">
+            <TextBlock
+                Margin="0,24,36,8"
+                Style="{StaticResource TitleTextBlockStyle}"
+                Text="Audio Mixer" />
+            <TextBlock
+                Margin="0,0,36,18"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Adjust the master output level, choose a default level for new audio apps, and fine-tune individual app volumes while they are running."
+                TextWrapping="Wrap" />
+
+            <InfoBar
+                x:Name="TipsInfoBar"
+                Margin="0,0,36,18"
+                IsClosable="True"
+                IsOpen="{Binding IsTipsOpen, Mode=TwoWay}"
+                Closed="TipsInfoBar_Closed"
+                Message="{Binding TipsMessage, Mode=OneWay}"
+                Severity="Informational"
+                Title="Quick tip" />
+
+            <InfoBar
+                Margin="0,0,36,18"
+                IsClosable="True"
+                IsOpen="{Binding HasError, Mode=OneWay}"
+                Message="{Binding ErrorMessage, Mode=OneWay}"
+                Severity="Error"
+                Title="Audio Mixer" />
+
+            <TextBlock Style="{StaticResource SectionTitle}" Text="Controls" />
+
+            <controls:SettingsCard
+                Margin="0,0,36,10"
+                Description="Changes the current default playback device volume immediately."
+                Header="Master volume"
+                Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                <StackPanel Width="320" Spacing="6">
+                    <Slider Maximum="100" Minimum="0" Value="{Binding MasterVolume, Mode=TwoWay}" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding MasterVolumeText, Mode=OneWay}" />
+                </StackPanel>
+            </controls:SettingsCard>
+
+            <controls:SettingsCard
+                Margin="0,0,36,10"
+                Description="Applied automatically to apps the first time they create an audio session."
+                Header="Default volume for new apps"
+                Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                <StackPanel Width="320" Spacing="6">
+                    <Slider Maximum="100" Minimum="0" Value="{Binding DefaultVolume, Mode=TwoWay}" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding DefaultVolumeText, Mode=OneWay}" />
+                </StackPanel>
+            </controls:SettingsCard>
+
+            <controls:SettingsExpander
+                Margin="0,0,36,18"
+                Description="{Binding HotkeyDisplayText, Mode=OneWay}"
+                Header="Open Audio Mixer hotkey"
+                Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
+                <controls:SettingsExpander.HeaderIcon>
+                    <FontIcon Glyph="&#xE765;" />
+                </controls:SettingsExpander.HeaderIcon>
+                <controls:SettingsExpander.Items>
+                    <controls:SettingsCard
+                        Description="Choose at least one modifier plus a key. The default is Ctrl + Shift + V."
+                        Header="Shortcut"
+                        Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <CheckBox Content="Ctrl" IsChecked="{Binding HotkeyCtrl, Mode=TwoWay}" />
+                            <CheckBox Content="Shift" IsChecked="{Binding HotkeyShift, Mode=TwoWay}" />
+                            <CheckBox Content="Alt" IsChecked="{Binding HotkeyAlt, Mode=TwoWay}" />
+                            <CheckBox Content="Win" IsChecked="{Binding HotkeyWin, Mode=TwoWay}" />
+                            <ComboBox
+                                Width="100"
+                                ItemsSource="{Binding HotkeyKeys}"
+                                SelectedItem="{Binding SelectedHotkeyKey, Mode=TwoWay}" />
+                        </StackPanel>
+                    </controls:SettingsCard>
+                </controls:SettingsExpander.Items>
+            </controls:SettingsExpander>
+
+            <TextBlock Style="{StaticResource SectionTitle}" Text="Apps" />
+
+            <TextBlock
+                Margin="0,0,36,18"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Move a slider to update the app instantly. Adjusted apps are remembered automatically and restored the next time they play audio."
+                TextWrapping="Wrap" />
+
+            <TextBlock
+                Margin="0,0,36,18"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="No active or remembered audio sessions yet. Start playback in an app, then return here."
+                Visibility="{Binding HasSessions, Converter={StaticResource BoolToVisibilityInverseConverter}}" />
+
+            <ItemsControl ItemsSource="{Binding Sessions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="viewmodel:AudioMixerSessionViewModel">
+                        <controls:SettingsCard Margin="0,0,36,8" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <Grid Width="32" Height="32">
+                                        <Border
+                                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                            CornerRadius="16" />
+                                        <Image
+                                            Width="18"
+                                            Height="18"
+                                            HorizontalAlignment="Center"
+                                            Source="{Binding IconSource}"
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding HasCustomIcon, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        <FontIcon
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontSize="16"
+                                            Glyph="&#xE7F5;"
+                                            Visibility="{Binding HasCustomIcon, Converter={StaticResource BoolToVisibilityInverseConverter}}" />
+                                    </Grid>
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding DisplayName}" />
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding StatusText}"
+                                            TextWrapping="WrapWholeWords" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Width="320" Spacing="6">
+                                    <Slider Maximum="100" Minimum="0" Value="{Binding Volume, Mode=TwoWay}" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding VolumeText}" />
+                                        <Button
+                                            Grid.Column="1"
+                                            Command="{Binding ForgetCommand}"
+                                            Content="Forget"
+                                            Visibility="{Binding IsSaved, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
+                        </controls:SettingsCard>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
