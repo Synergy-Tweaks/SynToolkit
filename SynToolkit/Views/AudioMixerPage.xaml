@@ -51,6 +51,128 @@
                 Severity="Error"
                 Title="Audio Mixer" />
 
+            <TextBlock Style="{StaticResource SectionTitle}" Text="Now Playing" />
+
+            <Border
+                Margin="0,0,36,18"
+                Padding="18"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel Width="640" Spacing="14">
+                    <Grid
+                        ColumnSpacing="16"
+                        Visibility="{Binding HasMediaSession, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border
+                            Width="132"
+                            Height="132"
+                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                            CornerRadius="12">
+                            <Grid>
+                                <Image
+                                    Source="{Binding SelectedMediaSession.ThumbnailSource, Mode=OneWay}"
+                                    Stretch="UniformToFill"
+                                    Visibility="{Binding SelectedMediaSession.HasThumbnail, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                <FontIcon
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="32"
+                                    Glyph="&#xE189;"
+                                    Visibility="{Binding SelectedMediaSession.HasThumbnail, Mode=OneWay, Converter={StaticResource BoolToVisibilityInverseConverter}}" />
+                            </Grid>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="12">
+                            <StackPanel Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Grid Width="28" Height="28">
+                                        <Border
+                                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                            CornerRadius="14" />
+                                        <Image
+                                            Width="18"
+                                            Height="18"
+                                            HorizontalAlignment="Center"
+                                            Source="{Binding SelectedMediaSession.AppIconSource, Mode=OneWay}"
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding SelectedMediaSession.HasAppIcon, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Text="{Binding SelectedMediaSession.SourceBadgeText, Mode=OneWay}"
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding SelectedMediaSession.HasAppIcon, Mode=OneWay, Converter={StaticResource BoolToVisibilityInverseConverter}}" />
+                                    </Grid>
+                                    <StackPanel Spacing="1">
+                                        <TextBlock
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Text="{Binding SelectedMediaSession.SourceAppName, Mode=OneWay}" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding SelectedMediaSession.SessionSummary, Mode=OneWay}" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <TextBlock
+                                    FontSize="18"
+                                    FontWeight="SemiBold"
+                                    MaxLines="2"
+                                    Text="{Binding SelectedMediaSession.Title, Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="WrapWholeWords" />
+                                <TextBlock
+                                    FontSize="13"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    MaxLines="2"
+                                    Text="{Binding SelectedMediaSession.Subtitle, Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Button
+                                    Command="{Binding SkipPreviousCommand}"
+                                    IsEnabled="{Binding CanSkipPrevious, Mode=OneWay}"
+                                    ToolTipService.ToolTip="Previous track">
+                                    <FontIcon FontSize="16" Glyph="&#xE892;" />
+                                </Button>
+                                <Button
+                                    Command="{Binding TogglePlaybackCommand}"
+                                    IsEnabled="{Binding CanTogglePlayback, Mode=OneWay}"
+                                    ToolTipService.ToolTip="{Binding PlayPauseText, Mode=OneWay}">
+                                    <FontIcon FontSize="16" Glyph="{Binding PlayPauseGlyph, Mode=OneWay}" />
+                                </Button>
+                                <Button
+                                    Command="{Binding SkipNextCommand}"
+                                    IsEnabled="{Binding CanSkipNext, Mode=OneWay}"
+                                    ToolTipService.ToolTip="Next track">
+                                    <FontIcon FontSize="16" Glyph="&#xE893;" />
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel
+                        Margin="0,2,0,0"
+                        Spacing="4"
+                        VerticalAlignment="Top"
+                        Visibility="{Binding HasMediaSession, Converter={StaticResource BoolToVisibilityInverseConverter}}">
+                        <TextBlock FontSize="15" FontWeight="SemiBold" Text="Nothing playing right now" />
+                        <TextBlock
+                            FontSize="13"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Start playback in any media app and the controls will appear here automatically."
+                            TextWrapping="WrapWholeWords" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <TextBlock Style="{StaticResource SectionTitle}" Text="Controls" />
 
             <controls:SettingsCard

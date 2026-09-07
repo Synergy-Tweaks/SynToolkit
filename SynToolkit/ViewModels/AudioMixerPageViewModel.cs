@@ -1,28 +1,37 @@
 #nullable enable
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Dispatching;
 using SynToolkit.Services.AudioMixer;
+using Windows.Media.Control;
 
 namespace SynToolkit.ViewModels
 {
     public partial class AudioMixerPageViewModel : ObservableObject
     {
         private readonly IAudioMixerService _audioMixerService;
+        private readonly IMediaSessionService _mediaSessionService;
         private readonly AudioMixerHotkeyService _hotkeyService;
         private readonly DispatcherQueue _dispatcherQueue;
         private bool _isInitialized;
         private bool _suppressMasterApply;
         private bool _suppressHotkeyApply;
 
-        public AudioMixerPageViewModel(IAudioMixerService audioMixerService, AudioMixerHotkeyService hotkeyService)
+        public AudioMixerPageViewModel(
+            IAudioMixerService audioMixerService,
+            IMediaSessionService mediaSessionService,
+            AudioMixerHotkeyService hotkeyService)
         {
             _audioMixerService = audioMixerService;
+            _mediaSessionService = mediaSessionService;
             _hotkeyService = hotkeyService;
             _dispatcherQueue = App.m_window?.DispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
 
             Sessions = [];
+            MediaSessions = [];
             HotkeyKeys =
             [
                 "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
@@ -33,6 +42,8 @@ namespace SynToolkit.ViewModels
         }
 
         public ObservableCollection<AudioMixerSessionViewModel> Sessions { get; }
+
+        public ObservableCollection<AudioMediaSessionViewModel> MediaSessions { get; }
 
         public IReadOnlyList<string> HotkeyKeys { get; }
 
@@ -55,6 +66,15 @@ namespace SynToolkit.ViewModels
         public partial string HotkeyDisplayText { get; set; } = string.Empty;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasMediaSession))]
+        [NotifyPropertyChangedFor(nameof(CanTogglePlayback))]
+        [NotifyPropertyChangedFor(nameof(CanSkipNext))]
+        [NotifyPropertyChangedFor(nameof(CanSkipPrevious))]
+        [NotifyPropertyChangedFor(nameof(PlayPauseGlyph))]
+        [NotifyPropertyChangedFor(nameof(PlayPauseText))]
+        public partial AudioMediaSessionViewModel? SelectedMediaSession { get; set; }
+
+        [ObservableProperty]
         public partial string SelectedHotkeyKey { get; set; } = "V";
 
         [ObservableProperty]
@@ -75,6 +95,21 @@ namespace SynToolkit.ViewModels
 
         public bool HasSessions => Sessions.Count > 0;
 
+        public bool HasMediaSession => SelectedMediaSession is not null;
+
+        public bool CanTogglePlayback => SelectedMediaSession is not null &&
+            (SelectedMediaSession.CanPause || SelectedMediaSession.CanPlay);
+
+        public bool CanSkipNext => SelectedMediaSession?.CanSkipNext == true;
+
+        public bool CanSkipPrevious => SelectedMediaSession?.CanSkipPrevious == true;
+
+        public string PlayPauseGlyph => SelectedMediaSession?.PlaybackStatus ==
+            GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing ? "\uE769" : "\uE768";
+
+        public string PlayPauseText => SelectedMediaSession?.PlaybackStatus ==
+            GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing ? "Pause" : "Play";
+
         public string TipsMessage =>
             $"Manage live per-app audio levels here. Press {HotkeyDisplayText} from anywhere to jump straight to this mixer.";
 
@@ -83,15 +118,20 @@ namespace SynToolkit.ViewModels
             if (_isInitialized)
             {
                 RefreshFromService();
+                _mediaSessionService.RequestRefresh();
                 return;
             }
 
             _audioMixerService.SessionsChanged += AudioMixerService_SessionsChanged;
             _audioMixerService.MasterVolumeChanged += AudioMixerService_MasterVolumeChanged;
             _audioMixerService.ErrorOccurred += AudioMixerService_ErrorOccurred;
+            _mediaSessionService.SessionsChanged += MediaSessionService_SessionsChanged;
+            _mediaSessionService.ErrorOccurred += MediaSessionService_ErrorOccurred;
 
+            await _mediaSessionService.StartAsync();
             RefreshFromService();
             _audioMixerService.RequestRefresh();
+            _mediaSessionService.RequestRefresh();
             _isInitialized = true;
 
             foreach (AudioMixerSessionViewModel session in Sessions)
@@ -110,6 +150,12 @@ namespace SynToolkit.ViewModels
             _audioMixerService.SessionsChanged -= AudioMixerService_SessionsChanged;
             _audioMixerService.MasterVolumeChanged -= AudioMixerService_MasterVolumeChanged;
             _audioMixerService.ErrorOccurred -= AudioMixerService_ErrorOccurred;
+            _mediaSessionService.SessionsChanged -= MediaSessionService_SessionsChanged;
+            _mediaSessionService.ErrorOccurred -= MediaSessionService_ErrorOccurred;
+            foreach (AudioMediaSessionViewModel session in MediaSessions)
+            {
+                session.PropertyChanged -= MediaSessionViewModel_PropertyChanged;
+            }
             _isInitialized = false;
         }
 
@@ -137,6 +183,11 @@ namespace SynToolkit.ViewModels
         partial void OnHotkeyAltChanged(bool value) => ApplyHotkeyIfReady();
 
         partial void OnHotkeyWinChanged(bool value) => ApplyHotkeyIfReady();
+
+        partial void OnSelectedMediaSessionChanged(AudioMediaSessionViewModel? value)
+        {
+            UpdateSelectedMediaSessionState();
+        }
 
         public void DismissTips()
         {
@@ -168,6 +219,39 @@ namespace SynToolkit.ViewModels
             }
         }
 
+        [RelayCommand(CanExecute = nameof(CanSkipPrevious))]
+        private async Task SkipPreviousAsync()
+        {
+            if (SelectedMediaSession is null)
+            {
+                return;
+            }
+
+            await _mediaSessionService.TrySkipPreviousAsync(SelectedMediaSession.SessionId);
+        }
+
+        [RelayCommand(CanExecute = nameof(CanTogglePlayback))]
+        private async Task TogglePlaybackAsync()
+        {
+            if (SelectedMediaSession is null)
+            {
+                return;
+            }
+
+            await _mediaSessionService.TryTogglePlayPauseAsync(SelectedMediaSession.SessionId);
+        }
+
+        [RelayCommand(CanExecute = nameof(CanSkipNext))]
+        private async Task SkipNextAsync()
+        {
+            if (SelectedMediaSession is null)
+            {
+                return;
+            }
+
+            await _mediaSessionService.TrySkipNextAsync(SelectedMediaSession.SessionId);
+        }
+
         private void RefreshFromService()
         {
             _suppressMasterApply = true;
@@ -179,6 +263,7 @@ namespace SynToolkit.ViewModels
 
             ApplyHotkeySnapshot(_hotkeyService.CurrentHotkey);
             RebuildSessions(_audioMixerService.GetCurrentSessions());
+            _ = RebuildMediaSessionsAsync(_mediaSessionService.GetSessions());
         }
 
         private void AudioMixerService_SessionsChanged(IReadOnlyList<AudioSessionInfo> sessions) =>
@@ -204,6 +289,27 @@ namespace SynToolkit.ViewModels
             {
                 ErrorMessage = message;
                 HasError = !string.IsNullOrWhiteSpace(message);
+            });
+
+        private void MediaSessionService_SessionsChanged(IReadOnlyList<MediaSessionInfo> sessions) =>
+            _dispatcherQueue.TryEnqueue(async () => await RebuildMediaSessionsAsync(sessions));
+
+        private void MediaSessionService_ErrorOccurred(string message) =>
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    if (string.Equals(ErrorMessage, "Unable to read active media sessions.", StringComparison.Ordinal))
+                    {
+                        ErrorMessage = string.Empty;
+                        HasError = false;
+                    }
+
+                    return;
+                }
+
+                ErrorMessage = message;
+                HasError = true;
             });
 
         private void RebuildSessions(IReadOnlyList<AudioSessionInfo> snapshot)
@@ -290,6 +396,98 @@ namespace SynToolkit.ViewModels
             }
 
             OnPropertyChanged(nameof(HasSessions));
+        }
+
+        private async Task RebuildMediaSessionsAsync(IReadOnlyList<MediaSessionInfo> snapshot)
+        {
+            Dictionary<string, AudioMediaSessionViewModel> existing = new(StringComparer.Ordinal);
+            foreach (AudioMediaSessionViewModel session in MediaSessions)
+            {
+                if (!existing.TryAdd(session.SessionId, session))
+                {
+                    App.logger.Warn(
+                        "Duplicate media session view-model id {SessionId} encountered during rebuild. Keeping the latest instance.",
+                        session.SessionId);
+                    existing[session.SessionId] = session;
+                }
+            }
+
+            Dictionary<string, MediaSessionInfo> uniqueSnapshot = new(StringComparer.Ordinal);
+            foreach (MediaSessionInfo info in snapshot)
+            {
+                if (!uniqueSnapshot.TryAdd(info.SessionId, info))
+                {
+                    App.logger.Warn(
+                        "Duplicate media session snapshot id {SessionId} encountered during rebuild. Keeping the latest item.",
+                        info.SessionId);
+                    uniqueSnapshot[info.SessionId] = info;
+                }
+            }
+
+            MediaSessionInfo[] visibleSessions = uniqueSnapshot.Values
+                .Where(session => session.IsCurrent)
+                .Take(1)
+                .DefaultIfEmpty(uniqueSnapshot.Values.FirstOrDefault())
+                .Where(session => session is not null)
+                .Cast<MediaSessionInfo>()
+                .ToArray();
+
+            foreach (AudioMediaSessionViewModel existingSession in MediaSessions)
+            {
+                existingSession.PropertyChanged -= MediaSessionViewModel_PropertyChanged;
+            }
+
+            MediaSessions.Clear();
+            foreach (MediaSessionInfo info in visibleSessions)
+            {
+                if (existing.TryGetValue(info.SessionId, out AudioMediaSessionViewModel? viewModel))
+                {
+                    await viewModel.UpdateFromInfoAsync(info);
+                    MediaSessions.Add(viewModel);
+                    viewModel.PropertyChanged += MediaSessionViewModel_PropertyChanged;
+                }
+                else
+                {
+                    AudioMediaSessionViewModel newViewModel = new(info);
+                    await newViewModel.UpdateFromInfoAsync(info);
+                    MediaSessions.Add(newViewModel);
+                    newViewModel.PropertyChanged += MediaSessionViewModel_PropertyChanged;
+                }
+            }
+
+            SelectedMediaSession = MediaSessions.FirstOrDefault();
+
+            UpdateSelectedMediaSessionState();
+        }
+
+        private void MediaSessionViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
+        {
+            if (!ReferenceEquals(sender, SelectedMediaSession))
+            {
+                return;
+            }
+
+            if (eventArgs.PropertyName is nameof(AudioMediaSessionViewModel.PlaybackStatus) or
+                nameof(AudioMediaSessionViewModel.CanPlay) or
+                nameof(AudioMediaSessionViewModel.CanPause) or
+                nameof(AudioMediaSessionViewModel.CanSkipNext) or
+                nameof(AudioMediaSessionViewModel.CanSkipPrevious))
+            {
+                UpdateSelectedMediaSessionState();
+            }
+        }
+
+        private void UpdateSelectedMediaSessionState()
+        {
+            TogglePlaybackCommand.NotifyCanExecuteChanged();
+            SkipNextCommand.NotifyCanExecuteChanged();
+            SkipPreviousCommand.NotifyCanExecuteChanged();
+            OnPropertyChanged(nameof(HasMediaSession));
+            OnPropertyChanged(nameof(CanTogglePlayback));
+            OnPropertyChanged(nameof(CanSkipNext));
+            OnPropertyChanged(nameof(CanSkipPrevious));
+            OnPropertyChanged(nameof(PlayPauseGlyph));
+            OnPropertyChanged(nameof(PlayPauseText));
         }
 
         private void ApplyHotkeyIfReady()

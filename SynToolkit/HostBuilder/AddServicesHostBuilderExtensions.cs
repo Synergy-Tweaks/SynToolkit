@@ -26,6 +26,7 @@ namespace SynToolkit.HostBuilder
                 services.AddSingleton<NeedsAttentionService>();
                 services.AddSingleton<AudioMixerSettingsStore>();
                 services.AddSingleton<IAudioMixerService, WindowsAudioMixerService>();
+                services.AddSingleton<IMediaSessionService, WindowsMediaSessionService>();
                 services.AddSingleton<AudioMixerHotkeyService>();
             });
 
