@@ -25,13 +25,16 @@ namespace SynToolkit.ViewModels
             _owner = owner;
             Name = name;
             DisplayName = SessionNaming.GetDisplayName(name);
+            ForgetCommand = new RelayCommand(() => _owner.ForgetSession(this), () => IsSaved);
+
+            _suppressApply = true;
             Volume = Math.Clamp(volume, 0, 100);
             IsActive = isActive;
             IsSaved = isSaved;
             IsSystemSounds = isSystemSounds;
             StatusText = statusText;
             ExecutablePath = executablePath;
-            ForgetCommand = new RelayCommand(() => _owner.ForgetSession(this), () => IsSaved);
+            _suppressApply = false;
         }
 
         public string Name { get; }
@@ -75,7 +78,7 @@ namespace SynToolkit.ViewModels
 
         partial void OnIsSavedChanged(bool value)
         {
-            ForgetCommand.NotifyCanExecuteChanged();
+            ForgetCommand?.NotifyCanExecuteChanged();
         }
 
         partial void OnIconSourceChanged(ImageSource? value)

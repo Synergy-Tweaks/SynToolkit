@@ -23,7 +23,14 @@ namespace SynToolkit.Views
 
         private async void AudioMixerPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await _viewModel.ActivateAsync();
+            try
+            {
+                await _viewModel.ActivateAsync();
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "Audio Mixer failed to load.");
+            }
         }
 
         private void AudioMixerPage_Unloaded(object sender, RoutedEventArgs e)

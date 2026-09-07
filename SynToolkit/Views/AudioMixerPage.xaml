@@ -119,13 +119,10 @@
             <ItemsControl ItemsSource="{Binding Sessions}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="viewmodel:AudioMixerSessionViewModel">
-                        <controls:SettingsCard Margin="0,0,36,8" Style="{StaticResource ConfigurationSettingsCardTemplate}">
-                            <Grid ColumnSpacing="16">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-
+                        <controls:SettingsCard
+                            Margin="0,0,36,8"
+                            Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                            <controls:SettingsCard.Header>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
                                     <Grid Width="32" Height="32">
                                         <Border
@@ -145,7 +142,7 @@
                                             Glyph="&#xE7F5;"
                                             Visibility="{Binding HasCustomIcon, Converter={StaticResource BoolToVisibilityInverseConverter}}" />
                                     </Grid>
-                                    <StackPanel>
+                                    <StackPanel Spacing="2">
                                         <TextBlock FontWeight="SemiBold" Text="{Binding DisplayName}" />
                                         <TextBlock
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -153,23 +150,23 @@
                                             TextWrapping="WrapWholeWords" />
                                     </StackPanel>
                                 </StackPanel>
-
-                                <StackPanel Grid.Column="1" Width="320" Spacing="6">
-                                    <Slider Maximum="100" Minimum="0" Value="{Binding Volume, Mode=TwoWay}" />
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding VolumeText}" />
-                                        <Button
-                                            Grid.Column="1"
-                                            Command="{Binding ForgetCommand}"
-                                            Content="Forget"
-                                            Visibility="{Binding IsSaved, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                    </Grid>
-                                </StackPanel>
-                            </Grid>
+                            </controls:SettingsCard.Header>
+                            <StackPanel Width="320" Spacing="6" VerticalAlignment="Center">
+                                <Slider Maximum="100" Minimum="0" Value="{Binding Volume, Mode=TwoWay}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding VolumeText}" />
+                                    <Button
+                                        Grid.Column="1"
+                                        Command="{Binding ForgetCommand}"
+                                        Content="Forget"
+                                        HorizontalAlignment="Right"
+                                        Visibility="{Binding IsSaved, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                </Grid>
+                            </StackPanel>
                         </controls:SettingsCard>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
