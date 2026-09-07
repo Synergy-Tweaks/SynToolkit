@@ -441,7 +441,7 @@ namespace SynToolkit.ViewModels
             ArgumentNullException.ThrowIfNull(installer);
             if (IsInstallingQueue || !installer.CanUninstall || installer.IsUninstalling)
             {
-                return new WingetInstallResult(false, -1, "This app cannot be uninstalled while another package operation is running.");
+                return new WingetInstallResult(false, -1, "This app cannot be uninstalled while another package operation is running.", WingetInstallDisposition.Failed);
             }
 
             installer.IsUninstalling = true;
@@ -467,7 +467,7 @@ namespace SynToolkit.ViewModels
                 App.logger.Error(exception, "[Installers] Unable to uninstall {AppName}.", installer.Name);
                 ErrorMessage = $"{installer.Name} could not be uninstalled: {exception.Message}";
                 HasError = true;
-                return new WingetInstallResult(false, -1, exception.Message);
+                return new WingetInstallResult(false, -1, exception.Message, WingetInstallDisposition.Failed);
             }
             finally
             {
@@ -501,6 +501,7 @@ namespace SynToolkit.ViewModels
             {
                 int installedCount = 0;
                 int updatedCount = 0;
+                int alreadySatisfiedCount = 0;
                 int failedCount = 0;
 
                 for (int index = 0; index < InstallQueue.Count; index++)
@@ -510,6 +511,7 @@ namespace SynToolkit.ViewModels
                     InstallerQueueItemViewModel queueItem = InstallQueue[index];
                     queueItem.State = InstallerQueueState.Installing;
                     queueItem.Detail = "Installing";
+                    queueItem.DetailToolTip = string.Empty;
                     QueueSummary = $"Installing {index + 1} of {InstallQueue.Count}: {queueItem.Name}";
 
                     WingetInstallResult result = await _wingetInstallerService.InstallAsync(
@@ -531,13 +533,20 @@ namespace SynToolkit.ViewModels
                         bool wasUpdate = queueItem.Installer.AvailabilityState ==
                             InstallerAvailabilityState.UpdateAvailable;
                         queueItem.State = InstallerQueueState.Completed;
-                        queueItem.Detail = wasUpdate ? "Updated" : "Installed";
+                        queueItem.Detail = result.Disposition == WingetInstallDisposition.AlreadySatisfied
+                            ? "Already installed"
+                            : wasUpdate ? "Updated" : "Installed";
+                        queueItem.DetailToolTip = FormatInstallResultToolTip(result, queueItem.Name);
                         queueItem.Installer.ApplyAvailabilityState(
                             InstallerAvailabilityState.Installed,
                             queueItem.Installer.AvailableVersion ?? queueItem.Installer.InstalledVersion,
                             queueItem.Installer.AvailableVersion);
                         queueItem.Installer.IsSelected = false;
-                        if (wasUpdate)
+                        if (result.Disposition == WingetInstallDisposition.AlreadySatisfied)
+                        {
+                            alreadySatisfiedCount++;
+                        }
+                        else if (wasUpdate)
                         {
                             updatedCount++;
                         }
@@ -549,15 +558,14 @@ namespace SynToolkit.ViewModels
                     else
                     {
                         queueItem.State = InstallerQueueState.Failed;
-                        queueItem.Detail = FormatInstallFailureDetail(
-                            result.ExitCode,
-                            queueItem.Name);
+                        queueItem.Detail = FormatInstallFailureDetail(result.ExitCode, queueItem.Name);
+                        queueItem.DetailToolTip = FormatInstallResultToolTip(result, queueItem.Name);
                         failedCount++;
                         OnPropertyChanged(nameof(CanRetryFailed));
                     }
                 }
 
-                string successSummary = FormatQueueSuccessSummary(installedCount, updatedCount);
+                string successSummary = FormatQueueSuccessSummary(installedCount, updatedCount, alreadySatisfiedCount);
                 QueueSummary = failedCount == 0
                     ? successSummary + " successfully."
                     : $"{successSummary}, {failedCount} failed. Resolve the message below, then retry.";
@@ -569,6 +577,7 @@ namespace SynToolkit.ViewModels
                 {
                     queueItem.State = InstallerQueueState.Canceled;
                     queueItem.Detail = "Canceled";
+                    queueItem.DetailToolTip = "Installation canceled.";
                 }
 
                 QueueSummary = "Installation queue canceled.";
@@ -582,6 +591,7 @@ namespace SynToolkit.ViewModels
                 {
                     activeItem.State = InstallerQueueState.Failed;
                     activeItem.Detail = "Unexpected error";
+                    activeItem.DetailToolTip = exception.Message;
                 }
 
                 QueueSummary = "The installation queue stopped because of an unexpected error.";
@@ -597,6 +607,9 @@ namespace SynToolkit.ViewModels
         private static string FormatInstallFailureDetail(int exitCode, string appName) =>
             unchecked((uint)exitCode) switch
             {
+                0x8A150056 => "This installer must run without administrator privileges",
+                0x8A15005F => "This package requires an explicit install location",
+                0x8A150061 or 0x8A15002B => "Already installed",
                 0x8A150101 or 0x8A150103 or 0x8A150111 =>
                     $"Close {appName} and related apps, then retry",
                 0x8A150102 => "Another installation is running; wait, then retry",
@@ -612,7 +625,58 @@ namespace SynToolkit.ViewModels
                 _ => $"Failed (0x{unchecked((uint)exitCode):X8})"
             };
 
-        private static string FormatQueueSuccessSummary(int installedCount, int updatedCount)
+        private static string FormatInstallResultToolTip(WingetInstallResult result, string appName)
+        {
+            string symbol = GetWingetErrorSymbol(result.ExitCode);
+            string explanation = result.Disposition switch
+            {
+                WingetInstallDisposition.AlreadySatisfied => "This package was already installed or did not need an update.",
+                _ when result.Succeeded => "The package operation completed successfully.",
+                _ => FormatInstallFailureDetail(result.ExitCode, appName)
+            };
+
+            List<string> parts = new();
+            if (result.ExitCode != 0)
+            {
+                parts.Add($"0x{unchecked((uint)result.ExitCode):X8} • {symbol}");
+            }
+
+            parts.Add(explanation);
+
+            if (!string.IsNullOrWhiteSpace(result.Output))
+            {
+                parts.Add(result.Output.Trim());
+            }
+
+            return string.Join(Environment.NewLine + Environment.NewLine, parts);
+        }
+
+        private static string GetWingetErrorSymbol(int exitCode) =>
+            unchecked((uint)exitCode) switch
+            {
+                0x8A15002B => "APPINSTALLER_CLI_ERROR_UPDATE_NOT_APPLICABLE",
+                0x8A150056 => "APPINSTALLER_CLI_ERROR_INSTALLER_PROHIBITS_ELEVATION",
+                0x8A15005F => "APPINSTALLER_CLI_ERROR_INSTALL_LOCATION_REQUIRED",
+                0x8A150061 => "APPINSTALLER_CLI_ERROR_PACKAGE_ALREADY_INSTALLED",
+                0x8A150101 => "APPINSTALLER_CLI_ERROR_INSTALL_PACKAGE_IN_USE",
+                0x8A150102 => "APPINSTALLER_CLI_ERROR_INSTALL_INSTALL_IN_PROGRESS",
+                0x8A150103 => "APPINSTALLER_CLI_ERROR_INSTALL_FILE_IN_USE",
+                0x8A150104 => "APPINSTALLER_CLI_ERROR_INSTALL_MISSING_DEPENDENCY",
+                0x8A150105 => "APPINSTALLER_CLI_ERROR_INSTALL_DISK_FULL",
+                0x8A150106 => "APPINSTALLER_CLI_ERROR_INSTALL_INSUFFICIENT_MEMORY",
+                0x8A150107 => "APPINSTALLER_CLI_ERROR_INSTALL_NETWORK_FAILURE",
+                0x8A150109 => "APPINSTALLER_CLI_ERROR_INSTALL_REBOOT_REQUIRED_TO_FINISH",
+                0x8A15010A => "APPINSTALLER_CLI_ERROR_INSTALL_REBOOT_REQUIRED_FOR_INSTALL",
+                0x8A15010C => "APPINSTALLER_CLI_ERROR_INSTALL_CANCELLED",
+                0x8A15010F => "APPINSTALLER_CLI_ERROR_INSTALL_SYSTEM_NOT_SUPPORTED",
+                0x8A150110 => "APPINSTALLER_CLI_ERROR_INSTALL_UPGRADE_NOT_SUPPORTED",
+                0x8A150111 => "APPINSTALLER_CLI_ERROR_INSTALL_BLOCKED_BY_POLICY",
+                0x8A150113 => "APPINSTALLER_CLI_ERROR_INSTALL_PLATFORM_UNSUPPORTED",
+                0x8A150114 => "APPINSTALLER_CLI_ERROR_INSTALLER_HASH_MISMATCH_OR_MANUAL_UPGRADE_REQUIRED",
+                _ => "UNKNOWN_WINGET_ERROR"
+            };
+
+        private static string FormatQueueSuccessSummary(int installedCount, int updatedCount, int alreadySatisfiedCount)
         {
             List<string> parts = new();
             if (installedCount > 0)
@@ -623,6 +687,11 @@ namespace SynToolkit.ViewModels
             if (updatedCount > 0)
             {
                 parts.Add($"{updatedCount} updated");
+            }
+
+            if (alreadySatisfiedCount > 0)
+            {
+                parts.Add($"{alreadySatisfiedCount} already installed");
             }
 
             return parts.Count == 0 ? "No apps completed" : string.Join(", ", parts);

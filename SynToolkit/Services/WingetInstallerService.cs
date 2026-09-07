@@ -11,15 +11,24 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Security.Principal;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
+using SynToolkit.Utils;
 using YamlDotNet.Serialization;
 
 namespace SynToolkit.Services
 {
-    public sealed record WingetInstallResult(bool Succeeded, int ExitCode, string Output);
+    public enum WingetInstallDisposition
+    {
+        Completed,
+        AlreadySatisfied,
+        Failed
+    }
+
+    public sealed record WingetInstallResult(bool Succeeded, int ExitCode, string Output, WingetInstallDisposition Disposition);
 
     public sealed record CuratedPackageProbe(
         string PackageIdentifier,
@@ -48,6 +57,8 @@ namespace SynToolkit.Services
         private readonly AppFetchService _appFetchService;
         private readonly ConcurrentDictionary<string, string> _latestVersionCache =
             new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, WingetPackageInstallMetadata> _installMetadataCache =
+            new(StringComparer.OrdinalIgnoreCase);
         private bool? _isWingetAvailable;
 
         public WingetInstallerService(AppFetchService appFetchService)
@@ -64,7 +75,7 @@ namespace SynToolkit.Services
 
             try
             {
-                WingetInstallResult result = await RunWingetAsync(["--version"], TimeSpan.FromSeconds(15), cancellationToken);
+                WingetInstallResult result = await RunWingetAsync(["--version"], TimeSpan.FromSeconds(15), false, cancellationToken);
                 _isWingetAvailable = result.Succeeded;
             }
             catch (Win32Exception exception)
@@ -88,26 +99,17 @@ namespace SynToolkit.Services
 
             if (await IsAvailableAsync(cancellationToken))
             {
+                WingetPackageInstallMetadata installMetadata = await GetInstallMetadataAsync(packageIdentifier, cancellationToken);
                 return await RunWingetAsync(
-                    [
-                        isUpdate ? "upgrade" : "install",
-                        "--exact",
-                        "--id",
-                        packageIdentifier,
-                        "--source",
-                        packageSource,
-                        "--silent",
-                        "--accept-source-agreements",
-                        "--accept-package-agreements",
-                        "--disable-interactivity"
-                    ],
+                    BuildInstallArguments(packageIdentifier, packageSource, isUpdate, installMetadata),
                     InstallTimeout,
+                    installMetadata.MustRunUnelevated,
                     cancellationToken);
             }
 
             return string.Equals(packageSource, "winget", StringComparison.OrdinalIgnoreCase)
                 ? await InstallFromPackageManifestAsync(packageIdentifier, silentArgumentsOverride, progress, cancellationToken)
-                : new WingetInstallResult(false, -1, "Microsoft Store installs require Windows Package Manager.");
+                : new WingetInstallResult(false, -1, "Microsoft Store installs require Windows Package Manager.", WingetInstallDisposition.Failed);
         }
 
         public async Task<WingetInstallResult> UninstallAsync(
@@ -135,6 +137,7 @@ namespace SynToolkit.Services
                         "--disable-interactivity"
                     ],
                     UninstallTimeout,
+                    false,
                     cancellationToken);
 
                 if (wingetResult.Succeeded)
@@ -155,7 +158,7 @@ namespace SynToolkit.Services
                 cancellationToken);
             if (installedApplication == null)
             {
-                return new WingetInstallResult(true, 0, "The app is no longer detected on this PC.");
+                return new WingetInstallResult(true, 0, "The app is no longer detected on this PC.", WingetInstallDisposition.Completed);
             }
 
             string? uninstallCommand = !string.IsNullOrWhiteSpace(installedApplication.QuietUninstallString)
@@ -166,7 +169,8 @@ namespace SynToolkit.Services
                 return wingetResult ?? new WingetInstallResult(
                     false,
                     -1,
-                    "Windows did not provide an uninstall command for this app.");
+                    "Windows did not provide an uninstall command for this app.",
+                    WingetInstallDisposition.Failed);
             }
 
             return await RunRegisteredUninstallerAsync(uninstallCommand, cancellationToken);
@@ -262,7 +266,7 @@ namespace SynToolkit.Services
 
                 if (compatiblePackage == null)
                 {
-                    return new WingetInstallResult(false, -1, "No compatible installer was found for this system architecture.");
+                    return new WingetInstallResult(false, -1, "No compatible installer was found for this system architecture.", WingetInstallDisposition.Failed);
                 }
 
                 await _appFetchService.DownloadAndInstallPackagesAsync(
@@ -270,7 +274,7 @@ namespace SynToolkit.Services
                     progress ?? new Progress<double>(_ => { }),
                     cancellationToken);
 
-                return new WingetInstallResult(true, 0, "Installed directly from the Microsoft package manifest.");
+                return new WingetInstallResult(true, 0, "Installed directly from the Microsoft package manifest.", WingetInstallDisposition.Completed);
             }
             catch (OperationCanceledException)
             {
@@ -282,7 +286,47 @@ namespace SynToolkit.Services
                     exception,
                     "[Installers] Direct package-manifest installation failed for {PackageIdentifier}.",
                     packageIdentifier);
-                return new WingetInstallResult(false, -1, exception.Message);
+                return new WingetInstallResult(false, -1, exception.Message, WingetInstallDisposition.Failed);
+            }
+        }
+
+        private async Task<WingetPackageInstallMetadata> GetInstallMetadataAsync(
+            string packageIdentifier,
+            CancellationToken cancellationToken)
+        {
+            if (_installMetadataCache.TryGetValue(packageIdentifier, out WingetPackageInstallMetadata? cachedMetadata))
+            {
+                return cachedMetadata;
+            }
+
+            try
+            {
+                ResolvedWingetManifest resolvedManifest = await ResolveInstallerManifestAsync(packageIdentifier, cancellationToken);
+                WingetInstallerManifest manifest = resolvedManifest.Manifest;
+                WingetInstallerEntry? installer = resolvedManifest.CompatibleInstaller;
+
+                string? scope = installer?.Scope ?? manifest.Scope;
+                bool installLocationRequired = installer?.InstallLocationRequired ?? manifest.InstallLocationRequired ?? false;
+                string? defaultInstallLocation = installer?.InstallationMetadata?.DefaultInstallLocation
+                    ?? manifest.InstallationMetadata?.DefaultInstallLocation;
+                string? elevationRequirement = installer?.ElevationRequirement ?? manifest.ElevationRequirement;
+
+                WingetPackageInstallMetadata metadata = new(
+                    scope,
+                    installLocationRequired,
+                    ResolveInstallLocation(packageIdentifier, scope, defaultInstallLocation),
+                    elevationRequirement,
+                    MustRunUnelevated(scope, elevationRequirement));
+                _installMetadataCache.TryAdd(packageIdentifier, metadata);
+                return metadata;
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                App.logger.Debug(
+                    exception,
+                    "[Installers] Unable to resolve WinGet manifest install metadata for {PackageIdentifier}; using default invocation.",
+                    packageIdentifier);
+                return new WingetPackageInstallMetadata(null, false, null, null, false);
             }
         }
 
@@ -291,19 +335,9 @@ namespace SynToolkit.Services
             string? silentArgumentsOverride,
             CancellationToken cancellationToken)
         {
-            string packagePath = GetPackageManifestPath(packageIdentifier);
-            string latestVersion = await GetLatestPackageVersionAsync(packageIdentifier, cancellationToken);
-            string escapedVersion = Uri.EscapeDataString(latestVersion);
-            string manifestFileName = Uri.EscapeDataString(packageIdentifier + ".installer.yaml");
-            string manifestUrl =
-                $"https://raw.githubusercontent.com/microsoft/winget-pkgs/master/{packagePath}/{escapedVersion}/{manifestFileName}";
-            string manifestYaml = await ManifestClient.GetStringAsync(manifestUrl, cancellationToken);
-
-            IDeserializer deserializer = new DeserializerBuilder()
-                .IgnoreUnmatchedProperties()
-                .Build();
-            WingetInstallerManifest manifest = deserializer.Deserialize<WingetInstallerManifest>(manifestYaml);
-            WingetInstallerEntry? compatibleInstaller = SelectCompatibleInstaller(manifest.Installers);
+            ResolvedWingetManifest resolvedManifest = await ResolveInstallerManifestAsync(packageIdentifier, cancellationToken);
+            WingetInstallerManifest manifest = resolvedManifest.Manifest;
+            WingetInstallerEntry? compatibleInstaller = resolvedManifest.CompatibleInstaller;
             if (compatibleInstaller == null || string.IsNullOrWhiteSpace(compatibleInstaller.InstallerUrl))
             {
                 return null;
@@ -334,6 +368,25 @@ namespace SynToolkit.Services
                 Checksum = compatibleInstaller.InstallerSha256,
                 CommandLines = silentArguments
             };
+        }
+
+        private async Task<ResolvedWingetManifest> ResolveInstallerManifestAsync(
+            string packageIdentifier,
+            CancellationToken cancellationToken)
+        {
+            string packagePath = GetPackageManifestPath(packageIdentifier);
+            string latestVersion = await GetLatestPackageVersionAsync(packageIdentifier, cancellationToken);
+            string escapedVersion = Uri.EscapeDataString(latestVersion);
+            string manifestFileName = Uri.EscapeDataString(packageIdentifier + ".installer.yaml");
+            string manifestUrl =
+                $"https://raw.githubusercontent.com/microsoft/winget-pkgs/master/{packagePath}/{escapedVersion}/{manifestFileName}";
+            string manifestYaml = await ManifestClient.GetStringAsync(manifestUrl, cancellationToken);
+
+            IDeserializer deserializer = new DeserializerBuilder()
+                .IgnoreUnmatchedProperties()
+                .Build();
+            WingetInstallerManifest manifest = deserializer.Deserialize<WingetInstallerManifest>(manifestYaml);
+            return new ResolvedWingetManifest(manifest, SelectCompatibleInstaller(manifest.Installers));
         }
 
         private async Task<string> GetLatestPackageVersionAsync(
@@ -478,7 +531,7 @@ namespace SynToolkit.Services
         {
             if (!TryCreateUninstallStartInfo(commandLine, out ProcessStartInfo startInfo))
             {
-                return new WingetInstallResult(false, -1, "Windows provided an invalid uninstall command.");
+                return new WingetInstallResult(false, -1, "Windows provided an invalid uninstall command.", WingetInstallDisposition.Failed);
             }
 
             using Process process = new() { StartInfo = startInfo };
@@ -486,7 +539,7 @@ namespace SynToolkit.Services
             {
                 if (!process.Start())
                 {
-                    return new WingetInstallResult(false, -1, "Unable to start the app's uninstaller.");
+                    return new WingetInstallResult(false, -1, "Unable to start the app's uninstaller.", WingetInstallDisposition.Failed);
                 }
 
                 using CancellationTokenSource timeoutSource =
@@ -507,7 +560,8 @@ namespace SynToolkit.Services
                     return new WingetInstallResult(
                         false,
                         -1,
-                        $"Uninstallation timed out after {UninstallTimeout.TotalMinutes:0} minutes.");
+                        $"Uninstallation timed out after {UninstallTimeout.TotalMinutes:0} minutes.",
+                        WingetInstallDisposition.Failed);
                 }
 
                 bool succeeded = process.ExitCode is 0 or 1641 or 3010;
@@ -516,12 +570,13 @@ namespace SynToolkit.Services
                     process.ExitCode,
                     succeeded
                         ? "The app's registered uninstaller completed."
-                        : $"The app's registered uninstaller exited with code {process.ExitCode}.");
+                        : $"The app's registered uninstaller exited with code {process.ExitCode}.",
+                    succeeded ? WingetInstallDisposition.Completed : WingetInstallDisposition.Failed);
             }
             catch (Win32Exception exception)
             {
                 App.logger.Warn(exception, "[Installers] Unable to start a registered app uninstaller.");
-                return new WingetInstallResult(false, exception.NativeErrorCode, exception.Message);
+                return new WingetInstallResult(false, exception.NativeErrorCode, exception.Message, WingetInstallDisposition.Failed);
             }
         }
 
@@ -683,7 +738,7 @@ namespace SynToolkit.Services
         private static HttpClient CreateManifestClient()
         {
             HttpClient client = new();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("SynToolkit/1.5");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("SynToolkit/1.7");
             client.DefaultRequestHeaders.Accept.ParseAdd("application/octet-stream");
             return client;
         }
@@ -691,16 +746,57 @@ namespace SynToolkit.Services
         private static HttpClient CreateManifestCatalogClient()
         {
             HttpClient client = new();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("SynToolkit/1.5");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("SynToolkit/1.7");
             client.DefaultRequestHeaders.Accept.ParseAdd("text/html");
             return client;
+        }
+
+        private static IEnumerable<string> BuildInstallArguments(
+            string packageIdentifier,
+            string packageSource,
+            bool isUpdate,
+            WingetPackageInstallMetadata installMetadata)
+        {
+            List<string> arguments =
+            [
+                isUpdate ? "upgrade" : "install",
+                "--exact",
+                "--id",
+                packageIdentifier,
+                "--source",
+                packageSource,
+                "--silent",
+                "--accept-source-agreements",
+                "--accept-package-agreements",
+                "--disable-interactivity"
+            ];
+
+            if (!string.IsNullOrWhiteSpace(installMetadata.Scope))
+            {
+                arguments.Add("--scope");
+                arguments.Add(installMetadata.Scope);
+            }
+
+            if (installMetadata.InstallLocationRequired && !string.IsNullOrWhiteSpace(installMetadata.InstallLocation))
+            {
+                arguments.Add("--location");
+                arguments.Add(installMetadata.InstallLocation);
+            }
+
+            return arguments;
         }
 
         private static async Task<WingetInstallResult> RunWingetAsync(
             IEnumerable<string> arguments,
             TimeSpan timeout,
+            bool runAsInteractiveUser,
             CancellationToken cancellationToken)
         {
+            if (runAsInteractiveUser)
+            {
+                return await RunWingetAsInteractiveUserAsync(arguments, timeout, cancellationToken);
+            }
+
             ProcessStartInfo startInfo = new("winget.exe")
             {
                 CreateNoWindow = true,
@@ -740,7 +836,11 @@ namespace SynToolkit.Services
                     throw;
                 }
 
-                return new WingetInstallResult(false, -1, $"The package operation timed out after {timeout.TotalMinutes:0} minutes.");
+                return new WingetInstallResult(
+                    false,
+                    -1,
+                    $"The package operation timed out after {timeout.TotalMinutes:0} minutes.",
+                    WingetInstallDisposition.Failed);
             }
 
             string standardOutput = await standardOutputTask;
@@ -754,7 +854,95 @@ namespace SynToolkit.Services
                 process.ExitCode,
                 output);
 
-            return new WingetInstallResult(process.ExitCode == 0, process.ExitCode, output);
+            return CreateWingetResult(process.ExitCode, output);
+        }
+
+        private static async Task<WingetInstallResult> RunWingetAsInteractiveUserAsync(
+            IEnumerable<string> arguments,
+            TimeSpan timeout,
+            CancellationToken cancellationToken)
+        {
+            int timeoutMilliseconds = timeout.TotalMilliseconds >= int.MaxValue
+                ? int.MaxValue
+                : (int)timeout.TotalMilliseconds;
+
+            CommandResult result = await Task.Run(
+                () => InteractiveUserProcessHelper.RunAsInteractiveUserResult(
+                    "winget.exe",
+                    arguments,
+                    timeoutMilliseconds),
+                cancellationToken);
+
+            if (result.TimedOut)
+            {
+                return new WingetInstallResult(false, -1, result.CombinedOutput, WingetInstallDisposition.Failed);
+            }
+
+            App.logger.Info(
+                "[Installers] winget (interactive user) finished with exit code {ExitCode}.\n{Output}",
+                result.ExitCode,
+                result.CombinedOutput);
+
+            return CreateWingetResult(result.ExitCode, result.CombinedOutput);
+        }
+
+        private static WingetInstallResult CreateWingetResult(int exitCode, string output)
+        {
+            WingetInstallDisposition disposition = unchecked((uint)exitCode) switch
+            {
+                0x8A15002B or 0x8A150061 => WingetInstallDisposition.AlreadySatisfied,
+                _ when exitCode == 0 => WingetInstallDisposition.Completed,
+                _ => WingetInstallDisposition.Failed
+            };
+
+            return new WingetInstallResult(
+                disposition != WingetInstallDisposition.Failed,
+                exitCode,
+                output,
+                disposition);
+        }
+
+        private static string? ResolveInstallLocation(string packageIdentifier, string? scope, string? manifestDefaultInstallLocation)
+        {
+            if (!string.IsNullOrWhiteSpace(manifestDefaultInstallLocation))
+            {
+                return Environment.ExpandEnvironmentVariables(manifestDefaultInstallLocation);
+            }
+
+            string leafName = packageIdentifier.Split('.').LastOrDefault() ?? packageIdentifier;
+            return string.Equals(scope, "user", StringComparison.OrdinalIgnoreCase)
+                ? Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Programs",
+                    leafName)
+                : Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                    leafName);
+        }
+
+        private static bool MustRunUnelevated(string? scope, string? elevationRequirement)
+        {
+            if (!IsRunningElevated())
+            {
+                return false;
+            }
+
+            return string.Equals(scope, "user", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(elevationRequirement, "elevationProhibited", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsRunningElevated()
+        {
+            try
+            {
+                using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+                WindowsPrincipal principal = new(identity);
+                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static void TryKillProcessTree(Process process)
@@ -777,7 +965,15 @@ namespace SynToolkit.Services
         {
             public string? InstallerType { get; set; }
 
+            public string? Scope { get; set; }
+
+            public bool? InstallLocationRequired { get; set; }
+
+            public string? ElevationRequirement { get; set; }
+
             public WingetInstallerSwitches? InstallerSwitches { get; set; }
+
+            public WingetInstallationMetadata? InstallationMetadata { get; set; }
 
             public List<WingetInstallerEntry>? Installers { get; set; }
         }
@@ -790,11 +986,19 @@ namespace SynToolkit.Services
 
             public string? InstallerType { get; set; }
 
+            public string? Scope { get; set; }
+
+            public bool? InstallLocationRequired { get; set; }
+
+            public string? ElevationRequirement { get; set; }
+
             public string? InstallerUrl { get; set; }
 
             public string? InstallerSha256 { get; set; }
 
             public WingetInstallerSwitches? InstallerSwitches { get; set; }
+
+            public WingetInstallationMetadata? InstallationMetadata { get; set; }
         }
 
         public sealed class WingetInstallerSwitches
@@ -804,10 +1008,26 @@ namespace SynToolkit.Services
             public string? SilentWithProgress { get; set; }
         }
 
+        public sealed class WingetInstallationMetadata
+        {
+            public string? DefaultInstallLocation { get; set; }
+        }
+
         private sealed record InstalledDesktopApplication(
             string DisplayName,
             string? DisplayVersion,
             string? UninstallString,
             string? QuietUninstallString);
+
+        private sealed record ResolvedWingetManifest(
+            WingetInstallerManifest Manifest,
+            WingetInstallerEntry? CompatibleInstaller);
+
+        private sealed record WingetPackageInstallMetadata(
+            string? Scope,
+            bool InstallLocationRequired,
+            string? InstallLocation,
+            string? ElevationRequirement,
+            bool MustRunUnelevated);
     }
 }

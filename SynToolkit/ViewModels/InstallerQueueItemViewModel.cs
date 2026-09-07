@@ -41,6 +41,9 @@ namespace SynToolkit.ViewModels
         public partial string Detail { get; set; } = "Waiting";
 
         [ObservableProperty]
+        public partial string DetailToolTip { get; set; } = string.Empty;
+
+        [ObservableProperty]
         public partial double Progress { get; set; }
 
         public bool IsInstalling => State == InstallerQueueState.Installing;

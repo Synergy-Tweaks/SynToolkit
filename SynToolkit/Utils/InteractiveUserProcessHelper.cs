@@ -1,8 +1,12 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace SynToolkit.Utils
 {
@@ -115,6 +119,85 @@ namespace SynToolkit.Utils
                     CloseHandle(primaryToken);
                 }
                 CloseHandle(userToken);
+            }
+        }
+
+        public static CommandResult RunAsInteractiveUserResult(
+            string fileName,
+            IEnumerable<string> arguments,
+            int timeoutMilliseconds = 30_000)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
+            ArgumentNullException.ThrowIfNull(arguments);
+
+            string tempDirectory = Path.Combine(Path.GetTempPath(), "SynToolkit", "InteractiveUserProcess");
+            Directory.CreateDirectory(tempDirectory);
+
+            string outputPath = Path.Combine(tempDirectory, Guid.NewGuid().ToString("N") + ".log");
+            string batchPath = Path.Combine(tempDirectory, Guid.NewGuid().ToString("N") + ".cmd");
+
+            try
+            {
+                string executableCommand = BuildBatchCommandLine(fileName, arguments);
+                string batchContents = string.Join(
+                    Environment.NewLine,
+                    [
+                        "@echo off",
+                        $"{executableCommand} 1>\"{outputPath}\" 2>&1",
+                        "exit /b %errorlevel%"
+                    ]);
+                File.WriteAllText(batchPath, batchContents, Encoding.ASCII);
+
+                int exitCode = RunAsInteractiveUser("cmd.exe", $"/d /s /c call \"{batchPath}\"", timeoutMilliseconds);
+                string output = File.Exists(outputPath)
+                    ? File.ReadAllText(outputPath)
+                    : string.Empty;
+
+                return new CommandResult(exitCode, output.TrimEnd(), string.Empty, TimedOut: false);
+            }
+            catch (TimeoutException exception)
+            {
+                return new CommandResult(-1, string.Empty, exception.Message, TimedOut: true);
+            }
+            finally
+            {
+                TryDeleteFile(batchPath);
+                TryDeleteFile(outputPath);
+            }
+        }
+
+        private static string BuildBatchCommandLine(string fileName, IEnumerable<string> arguments) =>
+            string.Join(
+                " ",
+                new[] { QuoteBatchArgument(fileName) }
+                    .Concat(arguments.Select(QuoteBatchArgument)));
+
+        private static string QuoteBatchArgument(string argument)
+        {
+            if (string.IsNullOrEmpty(argument))
+            {
+                return "\"\"";
+            }
+
+            if (!argument.Any(character => char.IsWhiteSpace(character) || character is '"' or '^' or '&' or '|' or '<' or '>'))
+            {
+                return argument;
+            }
+
+            return "\"" + argument.Replace("\"", "\"\"") + "\"";
+        }
+
+        private static void TryDeleteFile(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+            catch
+            {
             }
         }
 
