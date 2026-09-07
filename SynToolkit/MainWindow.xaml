@@ -125,6 +125,11 @@
                         <ImageIcon Source="ms-appx:///assets/Icons/Home.png" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem x:Name="AudioMixer" Tag="SynToolkit.Views.AudioMixerPage">
+                    <NavigationViewItem.Icon>
+                        <ImageIcon Source="ms-appx:///assets/Icons/Sound.png" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem x:Name="NeedsAttention" Tag="SynToolkit.Views.NeedsAttentionPage">
                     <NavigationViewItem.Icon>
                         <FontIcon Foreground="#FFF4B400" Glyph="&#xE7BA;" />

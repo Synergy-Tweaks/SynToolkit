@@ -38,6 +38,7 @@ namespace SynToolkit.HostBuilder
                 services.AddTransient(CreateHomePageViewModel);
                 services.AddTransient(CreateAppFetchPageViewModel);
                 services.AddTransient<GpuPageViewModel>();
+                services.AddTransient<AudioMixerPageViewModel>();
                 services.AddTransient<SpecsPageViewModel>();
                 services.AddTransient<CleanerPageViewModel>();
             });

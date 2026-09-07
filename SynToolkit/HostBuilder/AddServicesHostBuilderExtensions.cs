@@ -1,5 +1,6 @@
 using SynToolkit.Services.ConfigurationServices;
 using SynToolkit.Services;
+using SynToolkit.Services.AudioMixer;
 using SynToolkit.Services.ConfigurationSubMenu;
 using SynToolkit.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,9 @@ namespace SynToolkit.HostBuilder
                 services.AddSingleton<AppFetchService>();
                 services.AddSingleton<WingetInstallerService>();
                 services.AddSingleton<NeedsAttentionService>();
+                services.AddSingleton<AudioMixerSettingsStore>();
+                services.AddSingleton<IAudioMixerService, WindowsAudioMixerService>();
+                services.AddSingleton<AudioMixerHotkeyService>();
             });
 
             host.AddConfigurationServices();

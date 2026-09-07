@@ -18,16 +18,18 @@ namespace SynToolkit.Services
         private readonly Window _window;
         private readonly DispatcherQueue _dispatcherQueue;
         private readonly Action _exitApplication;
+        private readonly Action _openAudioMixer;
         private readonly NotifyIcon _notifyIcon;
         private readonly ContextMenuStrip _contextMenu;
         private readonly DrawingIcon _icon;
         private bool _disposed;
 
-        public SystemTrayService(Window window, Action exitApplication)
+        public SystemTrayService(Window window, Action exitApplication, Action openAudioMixer)
         {
             _window = window ?? throw new ArgumentNullException(nameof(window));
             _dispatcherQueue = window.DispatcherQueue;
             _exitApplication = exitApplication ?? throw new ArgumentNullException(nameof(exitApplication));
+            _openAudioMixer = openAudioMixer ?? throw new ArgumentNullException(nameof(openAudioMixer));
             _icon = LoadIcon();
 
             _contextMenu = new ContextMenuStrip
@@ -36,6 +38,7 @@ namespace SynToolkit.Services
             };
 
             _contextMenu.Items.Add("Open SynToolkit", null, (_, _) => RestoreWindow());
+            _contextMenu.Items.Add("Open Audio Mixer", null, (_, _) => OpenAudioMixer());
             _contextMenu.Items.Add(new ToolStripSeparator());
             _contextMenu.Items.Add("Exit SynToolkit", null, (_, _) => RequestExit());
 
@@ -52,6 +55,13 @@ namespace SynToolkit.Services
                 if (eventArgs.Button == MouseButtons.Left)
                 {
                     RestoreWindow();
+                }
+            };
+            _notifyIcon.MouseDoubleClick += (_, eventArgs) =>
+            {
+                if (eventArgs.Button == MouseButtons.Left)
+                {
+                    OpenAudioMixer();
                 }
             };
         }
@@ -80,6 +90,16 @@ namespace SynToolkit.Services
                 _window.Show();
                 _window.Activate();
             });
+        }
+
+        public void OpenAudioMixer()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _dispatcherQueue.TryEnqueue(() => _openAudioMixer());
         }
 
         private void RequestExit()
