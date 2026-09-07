@@ -119,7 +119,7 @@ if (-not $SkipInstaller) {
             Write-Host "============================================" -ForegroundColor Green
             Write-Host ""
             Write-Host "Installer created at:" -ForegroundColor Cyan
-            Write-Host "  $OutputDir\SynToolkit-Setup-1.6.0.exe" -ForegroundColor White
+            Write-Host "  $OutputDir\SynToolkit-Setup-1.7.0.exe" -ForegroundColor White
             Write-Host ""
             Write-Host "Published files at:" -ForegroundColor Cyan
             Write-Host "  $PublishDir" -ForegroundColor White

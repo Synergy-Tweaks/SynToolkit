@@ -93,7 +93,7 @@ if defined INNO_PATH (
         echo ============================================
         echo.
         echo Installer created at:
-        echo   %OUTPUT_DIR%\SynToolkit-Setup-1.6.0.exe
+        echo   %OUTPUT_DIR%\SynToolkit-Setup-1.7.0.exe
         echo.
         echo Published files at:
         echo   %PUBLISH_DIR%

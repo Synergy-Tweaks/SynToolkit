@@ -124,9 +124,9 @@
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <local:HeaderTile
                         x:Name="UpdateNotesTile"
-                        AutomationProperties.HelpText="Open local release notes for SynToolkit 1.6.0"
+                        AutomationProperties.HelpText="Open local release notes for SynToolkit 1.7.0"
                         Click="UpdateNotesTile_Click"
-                        ToolTipService.ToolTip="Open SynToolkit 1.6.0 update notes">
+                        ToolTipService.ToolTip="Open SynToolkit 1.7.0 update notes">
                         <local:HeaderTile.Source>
                             <Image
                                 Width="56"
@@ -194,14 +194,14 @@
             x:Name="UpdateNotesDialog"
             CloseButtonText="Close"
             DefaultButton="Close"
-            Title="SynToolkit 1.6.0 update notes">
+            Title="SynToolkit 1.7.0 update notes">
             <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Auto">
                 <StackPanel MaxWidth="500" Spacing="18">
                     <StackPanel Spacing="4">
                         <TextBlock
                             FontSize="16"
                             FontWeight="SemiBold"
-                            Text="SynToolkit 1.6.0" />
+                            Text="SynToolkit 1.7.0" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Text="A combined release with installer improvements, system attention checks, recovery tools, and update reliability fixes."
@@ -257,7 +257,7 @@
                             <TextBlock FontWeight="SemiBold" Text="Version synchronization" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="All version strings across manifests, CI workflows, and UI are now unified at 1.6.0 for consistency."
+                                Text="All version strings across manifests, CI workflows, and UI are now unified at 1.7.0 for consistency."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>

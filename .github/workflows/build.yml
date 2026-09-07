@@ -47,6 +47,6 @@ jobs:
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: SynToolkit-Setup-1.6.0
-          path: Installer/Output/SynToolkit-Setup-1.6.0-*.exe
+          name: SynToolkit-Setup-1.7.0
+          path: Installer/Output/SynToolkit-Setup-1.7.0-*.exe
           if-no-files-found: error

@@ -19,7 +19,7 @@ namespace SynToolkit.Controls
         private void SetText()
         {
             UpdateNotesTile.Title = "Update notes";
-            UpdateNotesTile.Description = "What's new in SynToolkit 1.6.0";
+            UpdateNotesTile.Description = "What's new in SynToolkit 1.7.0";
             DocumentationTile.Title = App.GetValueFromItemList("Tile_DocumentationTitle");
             DocumentationTile.Description = App.GetValueFromItemList("Tile_DocumentationDescription");
             GithubTile.Title = App.GetValueFromItemList("Tile_GithubTitle");

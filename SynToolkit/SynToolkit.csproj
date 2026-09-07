@@ -25,9 +25,9 @@
     <Product>SynToolkit</Product>
     <Company>Kwanteks</Company>
     <Description>SynToolkit for SynergyOS and supported Windows installations</Description>
-    <AssemblyVersion>1.6.0.0</AssemblyVersion>
-    <FileVersion>1.6.0.0</FileVersion>
-    <Version>1.6.0</Version>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
+    <FileVersion>1.7.0.0</FileVersion>
+    <Version>1.7.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Converter\**" />

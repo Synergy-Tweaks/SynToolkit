@@ -7,7 +7,7 @@
 			</requestedPrivileges>
 		</security>
 	</trustInfo>
-	<assemblyIdentity version="1.6.0.0" name="SynToolkit.app"/>
+	<assemblyIdentity version="1.7.0.0" name="SynToolkit.app"/>
 	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
 		<application>
 			<!-- The ID below informs the system that this application is compatible with OS features first introduced in Windows 10. 
