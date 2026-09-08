@@ -1,56 +1,42 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using SynToolkit.Services;
+using SynToolkit.Models.GpuDrivers;
+using SynToolkit.Services.GpuDrivers;
 using SynToolkit.Services.NvidiaProfileInspector;
-using SynToolkit.Services.RadeonSlimmer;
 
 namespace SynToolkit.ViewModels
 {
     public enum GpuVendorSelection
     {
-        None,   // Landing page - no vendor selected
+        None,
         AMD,
         NVIDIA,
     }
 
-    public enum GpuWizardStep
-    {
-        SelectInstaller,
-        Extracting,
-        Customize,
-        Done,
-    }
-
-    /// <summary>
-    /// Drives the GPU tab: an AMD Radeon driver slimmer wizard (select an AMD Radeon Software
-    /// installer, extract it, exclude packages/scheduled tasks/display-driver components, then
-    /// launch the modified Setup.exe — ported from GSDragoon/RadeonSoftwareSlimmer's
-    /// PreInstallViewModel, https://github.com/GSDragoon/RadeonSoftwareSlimmer, GPL-3.0, same
-    /// license as SynToolkit) and an NVIDIA .nip profile importer (reads a profile, then applies
-    /// it to the live NVIDIA driver through NvAPIWrapper.Net, https://github.com/falahati/NvAPIWrapper,
-    /// LGPL-3.0; .nip model shape from https://github.com/Orbmu2k/nvidiaProfileInspector, MIT
-    /// License). Both sections are disabled when the corresponding vendor's GPU isn't detected.
-    /// Only the Radeon Slimmer's PreInstall phase is ported (no PostInstall cleanup).
-    /// </summary>
     public partial class GpuPageViewModel : ObservableObject
     {
-        [ObservableProperty]
-        public partial string InstallerFilePath { get; set; } = string.Empty;
-
-        [ObservableProperty]
-        public partial string ExtractionFolderPath { get; set; } = string.Empty;
-
-        [ObservableProperty]
-        public partial GpuWizardStep CurrentStep { get; set; } = GpuWizardStep.SelectInstaller;
+        private readonly IGpuDriverCatalogService _gpuDriverCatalogService;
+        private readonly IGpuDriverPackageService _gpuDriverPackageService;
+        private CancellationTokenSource? _removalCancellationTokenSource;
 
         [ObservableProperty]
         public partial GpuVendorSelection SelectedVendor { get; set; } = GpuVendorSelection.None;
+
+        [ObservableProperty]
+        public partial bool HasAmdGpu { get; set; }
+
+        [ObservableProperty]
+        public partial bool HasNvidiaGpu { get; set; }
+
+        public bool NoAmdGpuDetected => !HasAmdGpu;
+        public bool NoNvidiaGpuDetected => !HasNvidiaGpu;
 
         [ObservableProperty]
         public partial bool IsBusy { get; set; }
@@ -62,40 +48,49 @@ namespace SynToolkit.ViewModels
         public partial string StatusMessage { get; set; } = string.Empty;
 
         [ObservableProperty]
-        public partial string OptimizationResultMessage { get; set; } = string.Empty;
-
-        [ObservableProperty]
-        public partial bool OptimizationResultIsWarning { get; set; }
-
-        public bool HasOptimizationResult => !string.IsNullOrEmpty(OptimizationResultMessage);
-
-        partial void OnOptimizationResultMessageChanged(string value) => OnPropertyChanged(nameof(HasOptimizationResult));
-
-        [ObservableProperty]
-        public partial string ResetSuccessMessage { get; set; } = string.Empty;
-
-        public bool HasResetSuccessMessage => !string.IsNullOrEmpty(ResetSuccessMessage);
-
-        partial void OnResetSuccessMessageChanged(string value) => OnPropertyChanged(nameof(HasResetSuccessMessage));
-
-        public void ClearResetSuccessMessage() => ResetSuccessMessage = string.Empty;
-
-        [ObservableProperty]
-        public partial bool HasAmdGpu { get; set; }
-
-        [ObservableProperty]
-        public partial bool HasNvidiaGpu { get; set; }
-
-        public bool NoAmdGpuDetected => !HasAmdGpu;
-        public bool NoNvidiaGpuDetected => !HasNvidiaGpu;
-        public bool CanOptimize => CurrentStep == GpuWizardStep.Customize;
-
-        partial void OnHasAmdGpuChanged(bool value) => OnPropertyChanged(nameof(NoAmdGpuDetected));
-        partial void OnHasNvidiaGpuChanged(bool value) => OnPropertyChanged(nameof(NoNvidiaGpuDetected));
-        partial void OnCurrentStepChanged(GpuWizardStep value) => OnPropertyChanged(nameof(CanOptimize));
-
-        [ObservableProperty]
         public partial string DetectedGpuSummary { get; set; } = "Detecting installed GPUs...";
+
+        [ObservableProperty]
+        public partial GpuDeviceInfo? SelectedGpuDevice { get; set; }
+
+        [ObservableProperty]
+        public partial GpuDriverOption? SelectedDriver { get; set; }
+
+        [ObservableProperty]
+        public partial GpuPreparedPackage? PreparedPackage { get; set; }
+
+        [ObservableProperty]
+        public partial string SelectedDebloatModeText { get; set; } = "Stripped";
+
+        [ObservableProperty]
+        public partial bool RunVendorUninstaller { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool RemoveDriverStorePackages { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool RemoveServices { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool RemoveLeftoverFiles { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool RemoveRegistryEntries { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool BlockAutomaticReinstall { get; set; }
+
+        [ObservableProperty]
+        public partial bool IsRemovingDriver { get; set; }
+
+        [ObservableProperty]
+        public partial bool HasCompletedRemoval { get; set; }
+
+        [ObservableProperty]
+        public partial string NvidiaApplyResultSummary { get; set; } = string.Empty;
+
+        public bool HasNvidiaApplyResult => !string.IsNullOrEmpty(NvidiaApplyResultSummary);
+        partial void OnNvidiaApplyResultSummaryChanged(string value) => OnPropertyChanged(nameof(HasNvidiaApplyResult));
 
         [ObservableProperty]
         public partial string NipFilePath { get; set; } = string.Empty;
@@ -104,32 +99,357 @@ namespace SynToolkit.ViewModels
         public partial bool IsApplyingNvidiaProfiles { get; set; }
 
         [ObservableProperty]
-        public partial string NvidiaApplyResultSummary { get; set; } = string.Empty;
-
-        public bool HasNvidiaApplyResult => !string.IsNullOrEmpty(NvidiaApplyResultSummary);
-
-        partial void OnNvidiaApplyResultSummaryChanged(string value) => OnPropertyChanged(nameof(HasNvidiaApplyResult));
-
-        [ObservableProperty]
         public partial string NewProfileName { get; set; } = string.Empty;
 
         [ObservableProperty]
         public partial string NewProfileExecutablesText { get; set; } = string.Empty;
 
-        public ObservableCollection<RadeonPackage> Packages { get; } = new();
-        public ObservableCollection<RadeonScheduledTask> ScheduledTasks { get; } = new();
-        public ObservableCollection<RadeonDisplayComponent> DisplayComponents { get; } = new();
+        public ObservableCollection<GpuDeviceInfo> GpuDevices { get; } = new();
+        public ObservableCollection<GpuDriverOption> AvailableDrivers { get; } = new();
+        public ObservableCollection<GpuPackageComponent> DebloatComponents { get; } = new();
+        public ObservableCollection<GpuRemovalLogEntry> RemovalLogs { get; } = new();
+        public ObservableCollection<string> DebloatModeOptions { get; } = new() { "Stripped", "Stock", "Custom" };
         public ObservableCollection<NvidiaProfile> NvidiaProfiles { get; } = new();
         public ObservableCollection<BundledNvidiaProfileFile> BundledProfiles { get; } = new();
         public ObservableCollection<NvidiaProfileSetting> NewProfileSettings { get; } = new();
 
-        public GpuPageViewModel()
+        public string CurrentVendorTitle => SelectedVendor switch
         {
+            GpuVendorSelection.AMD => "AMD GPU Drivers",
+            GpuVendorSelection.NVIDIA => "NVIDIA GPU Drivers",
+            _ => "GPU Drivers"
+        };
+
+        public string CurrentVendorSubtitle => SelectedVendor switch
+        {
+            GpuVendorSelection.AMD => "Download, debloat, and remove AMD graphics drivers.",
+            GpuVendorSelection.NVIDIA => "Download, debloat, tune, and remove NVIDIA graphics drivers.",
+            _ => string.Empty
+        };
+
+        public bool IsAmdVendorSelected => SelectedVendor == GpuVendorSelection.AMD;
+        public bool IsNvidiaVendorSelected => SelectedVendor == GpuVendorSelection.NVIDIA;
+        public bool HasPreparedPackage => PreparedPackage is not null;
+        public string SelectedGpuDisplayName => SelectedGpuDevice?.DisplayName ?? "No GPU selected";
+        public string SelectedGpuVendorName => SelectedGpuDevice is null
+            ? "Unsupported vendor"
+            : SelectedGpuDevice.IsNvidia
+                ? "NVIDIA"
+                : SelectedGpuDevice.IsAmd
+                    ? "AMD"
+                    : "Unsupported vendor";
+        public string SelectedGpuDriverVersionText => SelectedGpuDevice?.DriverVersion ?? "Unknown";
+        public string SelectedGpuDriverSummaryText => $"Installed driver: {SelectedGpuDriverVersionText}";
+        public string PreparedPackageSummary => PreparedPackage is null
+            ? string.Empty
+            : $"Prepared {PreparedPackage.Vendor} package at {PreparedPackage.ExtractedPath}";
+        public string RemovalActionSummary => string.Join(
+            ", ",
+            GetEnabledRemovalActions());
+        public string RemovalActionSummaryText => $"Will run: {RemovalActionSummary}";
+
+        public GpuDebloatMode SelectedDebloatMode => SelectedDebloatModeText switch
+        {
+            "Stock" => GpuDebloatMode.Stock,
+            "Custom" => GpuDebloatMode.Custom,
+            _ => GpuDebloatMode.Stripped
+        };
+
+        public GpuPageViewModel(IGpuDriverCatalogService gpuDriverCatalogService, IGpuDriverPackageService gpuDriverPackageService)
+        {
+            _gpuDriverCatalogService = gpuDriverCatalogService;
+            _gpuDriverPackageService = gpuDriverPackageService;
+
             foreach (BundledNvidiaProfileFile bundledProfile in NvidiaProfileGalleryService.GetBundledProfiles())
             {
                 BundledProfiles.Add(bundledProfile);
             }
         }
+
+        partial void OnHasAmdGpuChanged(bool value) => OnPropertyChanged(nameof(NoAmdGpuDetected));
+        partial void OnHasNvidiaGpuChanged(bool value) => OnPropertyChanged(nameof(NoNvidiaGpuDetected));
+        partial void OnSelectedVendorChanged(GpuVendorSelection value)
+        {
+            OnPropertyChanged(nameof(CurrentVendorTitle));
+            OnPropertyChanged(nameof(CurrentVendorSubtitle));
+            OnPropertyChanged(nameof(IsAmdVendorSelected));
+            OnPropertyChanged(nameof(IsNvidiaVendorSelected));
+            SelectFirstDeviceForCurrentVendor();
+        }
+
+        partial void OnSelectedGpuDeviceChanged(GpuDeviceInfo? value)
+        {
+            OnPropertyChanged(nameof(SelectedGpuDisplayName));
+            OnPropertyChanged(nameof(SelectedGpuVendorName));
+            OnPropertyChanged(nameof(SelectedGpuDriverVersionText));
+            OnPropertyChanged(nameof(SelectedGpuDriverSummaryText));
+        }
+
+        partial void OnRunVendorUninstallerChanged(bool value) => OnRemovalOptionsChanged();
+        partial void OnRemoveDriverStorePackagesChanged(bool value) => OnRemovalOptionsChanged();
+        partial void OnRemoveServicesChanged(bool value) => OnRemovalOptionsChanged();
+        partial void OnRemoveLeftoverFilesChanged(bool value) => OnRemovalOptionsChanged();
+        partial void OnRemoveRegistryEntriesChanged(bool value) => OnRemovalOptionsChanged();
+        partial void OnBlockAutomaticReinstallChanged(bool value) => OnRemovalOptionsChanged();
+
+        partial void OnPreparedPackageChanged(GpuPreparedPackage? value)
+        {
+            OnPropertyChanged(nameof(HasPreparedPackage));
+            OnPropertyChanged(nameof(PreparedPackageSummary));
+        }
+
+        partial void OnSelectedDebloatModeTextChanged(string value)
+        {
+            RefreshDebloatComponentsForSelectedMode();
+        }
+
+        public async Task LoadGpuDevicesAsync()
+        {
+            HasError = false;
+            try
+            {
+                IReadOnlyList<GpuDeviceInfo> devices = await _gpuDriverCatalogService.GetGpuDevicesAsync();
+                GpuDevices.Clear();
+                foreach (GpuDeviceInfo device in devices)
+                {
+                    GpuDevices.Add(device);
+                }
+
+                HasAmdGpu = GpuDevices.Any(device => device.IsAmd);
+                HasNvidiaGpu = GpuDevices.Any(device => device.IsNvidia);
+                DetectedGpuSummary = GpuDevices.Count == 0
+                    ? "No GPU could be detected."
+                    : $"Detected: {string.Join(", ", GpuDevices.Select(device => device.DisplayName))}";
+
+                SelectFirstDeviceForCurrentVendor();
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[GPU] GPU device discovery failed.");
+                StatusMessage = exception.Message;
+                HasError = true;
+            }
+        }
+
+        public void SelectVendor(GpuVendorSelection vendor)
+        {
+            SelectedVendor = vendor;
+        }
+
+        public void ReturnToLandingPage()
+        {
+            SelectedVendor = GpuVendorSelection.None;
+        }
+
+        public async Task LoadDriversAsync()
+        {
+            HasError = false;
+            AvailableDrivers.Clear();
+            SelectedDriver = null;
+
+            if (SelectedGpuDevice is null)
+            {
+                StatusMessage = "No compatible GPU is selected.";
+                return;
+            }
+
+            IsBusy = true;
+            try
+            {
+                GpuDriverLookupResult result = await _gpuDriverCatalogService.GetDriversAsync(SelectedGpuDevice);
+                foreach (GpuDriverOption driver in result.Drivers)
+                {
+                    AvailableDrivers.Add(driver);
+                }
+
+                SelectedDriver = AvailableDrivers.FirstOrDefault();
+                StatusMessage = result.Message;
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[GPU] Driver lookup failed.");
+                StatusMessage = exception.Message;
+                HasError = true;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        public async Task PrepareSelectedDriverAsync()
+        {
+            if (SelectedDriver is null)
+            {
+                StatusMessage = "Choose a driver version first.";
+                return;
+            }
+
+            HasError = false;
+            IsBusy = true;
+            try
+            {
+                Progress<double> progress = new(value =>
+                {
+                    int percent = Math.Clamp((int)Math.Round(value * 100), 0, 100);
+                    StatusMessage = percent >= 100
+                        ? "Extracting driver package..."
+                        : $"Downloading driver package: {percent}%";
+                });
+
+                PreparedPackage = await _gpuDriverPackageService.PreparePackageAsync(SelectedDriver, progress);
+                SelectedDebloatModeText = "Stripped";
+                RefreshDebloatComponentsForSelectedMode();
+                StatusMessage = PreparedPackageSummary;
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[GPU] Driver preparation failed.");
+                StatusMessage = exception.Message;
+                HasError = true;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        public async Task LaunchPreparedInstallAsync()
+        {
+            if (PreparedPackage is null)
+            {
+                StatusMessage = "Prepare a driver package before installing.";
+                return;
+            }
+
+            HasError = false;
+            IsBusy = true;
+            try
+            {
+                await _gpuDriverPackageService.RefreshPreparedPackageAsync(PreparedPackage);
+                RefreshDebloatComponentsForSelectedMode();
+
+                if (SelectedDebloatMode != GpuDebloatMode.Stock)
+                {
+                    _gpuDriverPackageService.ApplyDebloat(
+                        PreparedPackage.Vendor,
+                        PreparedPackage.ExtractedPath,
+                        DebloatComponents.ToList());
+                }
+
+                _gpuDriverPackageService.LaunchExtractedSetup(PreparedPackage.Vendor, PreparedPackage.ExtractedPath);
+                StatusMessage = "Installer launched successfully.";
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[GPU] Launching the prepared driver installer failed.");
+                StatusMessage = exception.Message;
+                HasError = true;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        public async Task ReloadPreparedPackageAsync()
+        {
+            if (PreparedPackage is null)
+            {
+                return;
+            }
+
+            IsBusy = true;
+            try
+            {
+                await _gpuDriverPackageService.RefreshPreparedPackageAsync(PreparedPackage);
+                RefreshDebloatComponentsForSelectedMode();
+                StatusMessage = "Prepared package refreshed.";
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[GPU] Refreshing the prepared package failed.");
+                StatusMessage = exception.Message;
+                HasError = true;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        public void RefreshDebloatComponentsForSelectedMode()
+        {
+            DebloatComponents.Clear();
+            if (PreparedPackage is null)
+            {
+                return;
+            }
+
+            IReadOnlyList<GpuPackageComponent> components = SelectedDebloatMode switch
+            {
+                GpuDebloatMode.Stock => _gpuDriverPackageService.GetPackageComponents(PreparedPackage.Vendor, PreparedPackage.ExtractedPath, selectPreset: false),
+                GpuDebloatMode.Custom => _gpuDriverPackageService.GetPackageComponents(PreparedPackage.Vendor, PreparedPackage.ExtractedPath, selectPreset: false),
+                _ => _gpuDriverPackageService.GetPackageComponents(PreparedPackage.Vendor, PreparedPackage.ExtractedPath, selectPreset: true)
+            };
+
+            foreach (GpuPackageComponent component in components)
+            {
+                component.IsSelectionLocked = SelectedDebloatMode != GpuDebloatMode.Custom;
+                DebloatComponents.Add(component);
+            }
+        }
+
+        public async Task RunRemovalAsync()
+        {
+            if (SelectedGpuDevice is null)
+            {
+                StatusMessage = "No GPU is selected for removal.";
+                return;
+            }
+
+            HasCompletedRemoval = false;
+            RemovalLogs.Clear();
+            IsRemovingDriver = true;
+            HasError = false;
+            _removalCancellationTokenSource?.Cancel();
+            _removalCancellationTokenSource = new CancellationTokenSource();
+
+            try
+            {
+                GpuRemovalOptions options = new()
+                {
+                    Vendor = GpuDriverRemovalService.DetectVendor(SelectedGpuDevice),
+                    RunVendorUninstaller = RunVendorUninstaller,
+                    RemoveDriverStorePackages = RemoveDriverStorePackages,
+                    RemoveServices = RemoveServices,
+                    RemoveLeftoverFiles = RemoveLeftoverFiles,
+                    RemoveRegistryEntries = RemoveRegistryEntries,
+                    BlockAutomaticReinstall = BlockAutomaticReinstall,
+                };
+
+                Progress<GpuRemovalLogEntry> progress = new(entry => RemovalLogs.Add(entry));
+                GpuRemovalResult result = await GpuDriverRemovalService.RemoveAsync(options, progress, _removalCancellationTokenSource.Token);
+                StatusMessage = result.Summary;
+                HasCompletedRemoval = result.Completed;
+            }
+            catch (OperationCanceledException)
+            {
+                StatusMessage = "Driver removal was cancelled.";
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[GPU] Driver removal failed.");
+                StatusMessage = exception.Message;
+                HasError = true;
+            }
+            finally
+            {
+                IsRemovingDriver = false;
+            }
+        }
+
+        public Task<(bool Success, string Output)> RebootAfterRemovalAsync() => GpuDriverRemovalService.RebootNowAsync();
 
         public async Task LoadBundledProfileAsync(BundledNvidiaProfileFile bundledProfile) =>
             await LoadNipFileAsync(bundledProfile.FullPath);
@@ -143,7 +463,7 @@ namespace SynToolkit.ViewModels
             HasError = false;
             try
             {
-                System.Collections.Generic.List<NvidiaProfile> profiles = NvidiaProfiles.ToList();
+                List<NvidiaProfile> profiles = NvidiaProfiles.ToList();
                 if (profiles.Count == 0)
                 {
                     throw new InvalidOperationException("Load a .nip profile before exporting loaded profiles.");
@@ -186,7 +506,7 @@ namespace SynToolkit.ViewModels
                     Settings = NewProfileSettings.ToList(),
                 };
 
-                await Task.Run(() => NvidiaProfilePreviewService.SaveProfiles(new System.Collections.Generic.List<NvidiaProfile> { profile }, exportFilePath));
+                await Task.Run(() => NvidiaProfilePreviewService.SaveProfiles(new List<NvidiaProfile> { profile }, exportFilePath));
                 StatusMessage = $"Exported '{profile.ProfileName}' to {exportFilePath}.";
             }
             catch (Exception exception)
@@ -197,24 +517,13 @@ namespace SynToolkit.ViewModels
             }
         }
 
-        public async Task DetectGpusAsync()
-        {
-            System.Collections.Generic.IReadOnlyList<DetectedGpu> gpus = await Task.Run(GpuDetectionService.GetDetectedGpus);
-
-            HasAmdGpu = GpuDetectionService.HasAmdGpu(gpus);
-            HasNvidiaGpu = GpuDetectionService.HasNvidiaGpu(gpus);
-            DetectedGpuSummary = gpus.Count == 0
-                ? "No GPU could be detected."
-                : $"Detected: {string.Join(", ", gpus.Select(gpu => gpu.Name))}";
-        }
-
         public async Task LoadNipFileAsync(string nipFilePath)
         {
             HasError = false;
             NipFilePath = nipFilePath;
             try
             {
-                System.Collections.Generic.List<NvidiaProfile> profiles = await Task.Run(() => NvidiaProfilePreviewService.LoadProfiles(nipFilePath));
+                List<NvidiaProfile> profiles = await Task.Run(() => NvidiaProfilePreviewService.LoadProfiles(nipFilePath));
                 NvidiaProfiles.Clear();
                 foreach (NvidiaProfile profile in profiles)
                 {
@@ -236,8 +545,8 @@ namespace SynToolkit.ViewModels
             IsApplyingNvidiaProfiles = true;
             try
             {
-                System.Collections.Generic.List<NvidiaProfile> profiles = NvidiaProfiles.ToList();
-                System.Collections.Generic.List<NvidiaProfileApplyResult> results = await Task.Run(() => NvidiaProfileApplyService.Apply(profiles));
+                List<NvidiaProfile> profiles = NvidiaProfiles.ToList();
+                List<NvidiaProfileApplyResult> results = await Task.Run(() => NvidiaProfileApplyService.Apply(profiles));
 
                 int settingsApplied = results.Sum(profile => profile.Settings.Count(setting => setting.Applied));
                 int settingsSkipped = results.Sum(profile => profile.Settings.Count(setting => !setting.Applied));
@@ -245,7 +554,7 @@ namespace SynToolkit.ViewModels
 
                 NvidiaApplyResultSummary = settingsSkipped == 0
                     ? $"Applied {settingsApplied} setting(s) across {results.Count} profile(s) ({profilesCreated} newly created)."
-                    : $"Applied {settingsApplied} setting(s) across {results.Count} profile(s) ({profilesCreated} newly created). {settingsSkipped} setting(s) were skipped — see the log for details.";
+                    : $"Applied {settingsApplied} setting(s) across {results.Count} profile(s) ({profilesCreated} newly created). {settingsSkipped} setting(s) were skipped - see the log for details.";
 
                 if (settingsSkipped > 0)
                 {
@@ -270,220 +579,42 @@ namespace SynToolkit.ViewModels
             }
         }
 
-        public void SelectInstaller(string installerFilePath)
+        private void SelectFirstDeviceForCurrentVendor()
         {
-            InstallerFilePath = installerFilePath;
-            ExtractionFolderPath = RadeonInstallerExtractionService.DefaultExtractionFolderFor(installerFilePath);
+            if (SelectedVendor == GpuVendorSelection.None)
+            {
+                SelectedGpuDevice = null;
+                return;
+            }
+
+            SelectedGpuDevice = SelectedVendor switch
+            {
+                GpuVendorSelection.AMD => GpuDevices.FirstOrDefault(device => device.IsAmd),
+                GpuVendorSelection.NVIDIA => GpuDevices.FirstOrDefault(device => device.IsNvidia),
+                _ => null,
+            };
         }
 
-        public async Task ExtractAndLoadAsync()
+        private IEnumerable<string> GetEnabledRemovalActions()
         {
-            HasError = false;
-            IsBusy = true;
-            CurrentStep = GpuWizardStep.Extracting;
-            try
-            {
-                await Task.Run(() =>
-                {
-                    RadeonInstallerExtractionService.ValidateInstallerFile(InstallerFilePath);
-                    RadeonInstallerExtractionService.ValidatePreExtractLocation(ExtractionFolderPath);
-                    RadeonInstallerExtractionService.ExtractInstallerFiles(InstallerFilePath, ExtractionFolderPath);
-                    RadeonInstallerExtractionService.ValidateExtractedLocation(ExtractionFolderPath);
-                });
-
-                LoadCustomizationLists();
-                CurrentStep = GpuWizardStep.Customize;
-            }
-            catch (Exception exception)
-            {
-                App.logger.Error(exception, "[GPU] Extracting the Radeon Software installer failed.");
-                StatusMessage = exception.Message;
-                HasError = true;
-                CurrentStep = GpuWizardStep.SelectInstaller;
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            if (RunVendorUninstaller)
+                yield return "vendor uninstall";
+            if (RemoveDriverStorePackages)
+                yield return "driver-store purge";
+            if (RemoveServices)
+                yield return "service removal";
+            if (RemoveLeftoverFiles)
+                yield return "file cleanup";
+            if (RemoveRegistryEntries)
+                yield return "registry cleanup";
+            if (BlockAutomaticReinstall)
+                yield return "auto-reinstall block";
         }
 
-        public void LoadFromAlreadyExtracted()
+        private void OnRemovalOptionsChanged()
         {
-            HasError = false;
-            try
-            {
-                RadeonInstallerExtractionService.ValidateExtractedLocation(ExtractionFolderPath);
-                LoadCustomizationLists();
-                CurrentStep = GpuWizardStep.Customize;
-            }
-            catch (Exception exception)
-            {
-                App.logger.Error(exception, "[GPU] Reading an already-extracted Radeon Software installer failed.");
-                StatusMessage = exception.Message;
-                HasError = true;
-            }
-        }
-
-        private void LoadCustomizationLists()
-        {
-            Packages.Clear();
-            foreach (RadeonPackage package in RadeonPackageService.LoadPackages(ExtractionFolderPath))
-            {
-                Packages.Add(package);
-            }
-
-            ScheduledTasks.Clear();
-            foreach (RadeonScheduledTask task in RadeonScheduledTaskService.LoadScheduledTasks(ExtractionFolderPath))
-            {
-                ScheduledTasks.Add(task);
-            }
-
-            DisplayComponents.Clear();
-            foreach (RadeonDisplayComponent component in RadeonDisplayComponentService.LoadDisplayComponents(ExtractionFolderPath))
-            {
-                DisplayComponents.Add(component);
-            }
-        }
-
-        public void SetAllPackages(bool keep)
-        {
-            foreach (RadeonPackage package in Packages)
-            {
-                package.Keep = keep;
-            }
-        }
-
-        public void SetAllScheduledTasks(bool enabled)
-        {
-            foreach (RadeonScheduledTask task in ScheduledTasks)
-            {
-                task.Enabled = enabled;
-            }
-        }
-
-        public void SetAllDisplayComponents(bool keep)
-        {
-            foreach (RadeonDisplayComponent component in DisplayComponents)
-            {
-                component.Keep = keep;
-            }
-        }
-
-        /// <summary>
-        /// Applies the recommended optimization preset across all three tabs (Packages,
-        /// Scheduled Tasks, Display Driver Components) in a single action. Matches items
-        /// by their stable identifiers (ProductName, URI/Description, folder name) rather
-        /// than position, and handles partial matches gracefully.
-        /// </summary>
-        public void ApplyRecommendedOptimization()
-        {
-            OptimizationResultMessage = string.Empty;
-            OptimizationResultIsWarning = false;
-
-            OptimizationResult result = RadeonOptimizationService.ApplyRecommendedOptimization(
-                Packages,
-                ScheduledTasks,
-                DisplayComponents);
-
-            OptimizationResultMessage = RadeonOptimizationService.GetResultMessage(result);
-            OptimizationResultIsWarning = result.NoTabsMatched || result.AnyTabSkipped || result.AnyTabPartiallyMatched;
-        }
-
-        public void ClearOptimizationResult()
-        {
-            OptimizationResultMessage = string.Empty;
-        }
-
-        public async Task ApplyAndInstallAsync()
-        {
-            HasError = false;
-            IsBusy = true;
-            try
-            {
-                await Task.Run(() =>
-                {
-                    foreach (RadeonPackage package in Packages.Where(package => !package.Keep).ToList())
-                    {
-                        RadeonPackageService.RemovePackage(package);
-                    }
-
-                    foreach (RadeonScheduledTask task in ScheduledTasks)
-                    {
-                        RadeonScheduledTaskService.SetScheduledTaskStatus(task);
-                    }
-
-                    RadeonDisplayComponentService.RemoveComponentsNotKeeping(ExtractionFolderPath, DisplayComponents);
-                });
-
-                LoadCustomizationLists();
-                RadeonInstallerExtractionService.RunSetup(ExtractionFolderPath);
-                CurrentStep = GpuWizardStep.Done;
-            }
-            catch (Exception exception)
-            {
-                App.logger.Error(exception, "[GPU] Applying changes to the Radeon Software installer failed.");
-                StatusMessage = exception.Message;
-                HasError = true;
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
-
-        public async Task ResetToDefaultsAsync()
-        {
-            HasError = false;
-            ResetSuccessMessage = string.Empty;
-            IsBusy = true;
-            try
-            {
-                await Task.Run(() =>
-                {
-                    RadeonPackageService.RestoreToDefault(ExtractionFolderPath);
-                    RadeonScheduledTaskService.RestoreToDefault(ScheduledTasks);
-                    RadeonDisplayComponentService.RestoreToDefault(ExtractionFolderPath);
-                });
-
-                LoadCustomizationLists();
-                ResetSuccessMessage = "Reset to default complete.";
-            }
-            catch (Exception exception)
-            {
-                App.logger.Error(exception, "[GPU] Resetting the Radeon Software installer to defaults failed.");
-                StatusMessage = exception.Message;
-                HasError = true;
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
-
-        public void StartOver()
-        {
-            InstallerFilePath = string.Empty;
-            ExtractionFolderPath = string.Empty;
-            HasError = false;
-            Packages.Clear();
-            ScheduledTasks.Clear();
-            DisplayComponents.Clear();
-            CurrentStep = GpuWizardStep.SelectInstaller;
-        }
-
-        public void SelectVendor(GpuVendorSelection vendor)
-        {
-            SelectedVendor = vendor;
-        }
-
-        public void ReturnToLandingPage()
-        {
-            SelectedVendor = GpuVendorSelection.None;
-            // Reset AMD wizard state when returning to landing
-            if (CurrentStep != GpuWizardStep.SelectInstaller)
-            {
-                StartOver();
-            }
+            OnPropertyChanged(nameof(RemovalActionSummary));
+            OnPropertyChanged(nameof(RemovalActionSummaryText));
         }
     }
 }

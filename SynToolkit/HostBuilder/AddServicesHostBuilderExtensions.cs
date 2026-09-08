@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using SynToolkit.Services.Bcd;
+using SynToolkit.Services.GpuDrivers;
 
 namespace SynToolkit.HostBuilder
 {
@@ -28,6 +29,8 @@ namespace SynToolkit.HostBuilder
                 services.AddSingleton<IAudioMixerService, WindowsAudioMixerService>();
                 services.AddSingleton<IMediaSessionService, WindowsMediaSessionService>();
                 services.AddSingleton<AudioMixerHotkeyService>();
+                services.AddSingleton<IGpuDriverCatalogService, GpuDriverCatalogService>();
+                services.AddSingleton<IGpuDriverPackageService, GpuDriverPackageService>();
             });
 
             host.AddConfigurationServices();
