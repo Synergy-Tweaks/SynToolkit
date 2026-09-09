@@ -8,8 +8,6 @@
   "SystemInfo_NotDetected": "Ingen känd playbook upptäckt",
   "SystemInfo_Conflicting": "Flera playbook-markörer upptäckta",
   "SystemInfo_ReadOnly": "Upptäckt lokalt utan att ändra inställningar",
-
-
   "ToBeTranslated": "Konfigurerar för 0 fördröjning..",
   "ConfigurationStatus_Applying": "Tillämpar ändring...",
   "ConfigurationStatus_Unavailable": "Inte tillgänglig",
@@ -121,17 +119,12 @@
   "ShortcutIcon": "Ändra ikonen på genvägar",
   "Mitigations": "Ändra status för skyddsåtgärder",
   "SafeMode": "Starta i felsäkert läge vid uppstart",
-
-
   "Animations": "Animationer",
   "AnimationsDescription": "Aktivera eller inaktivera Windows-animationer",
-
   "ExtractContextMenu": "Alternativet \"Extrahera\" i snabbmenyn",
   "ExtractContextMenuDescription": "Lägger till alternativet \"Extrahera\" i snabbmenyn för komprimerade filer",
-
   "RunWithPriority": "Alternativet \"Kör med prioritet\" i snabbmenyn",
   "RunWithPriorityDescription": "Lägger till alternativet \"Kör med prioritet\" i snabbmenyn för program",
-
   "LanmanWorkstation": "Lanman Workstation (SMB)",
   "LanmanWorkstationDescription": "Aktivera eller inaktivera tjänsten Lanman Workstation för SMB-fildelning",
   "SyncWindowsClock": "Synkronisera Windows-klockan",
@@ -140,182 +133,122 @@
   "RestartAudioServices": "Starta om ljudtjänster",
   "RestartAudioServicesDescription": "Startar om Windows Audio och Audio Endpoint Builder. Ljudet avbryts kort medan enheter ansluts igen.",
   "RestartAudioServicesSuccess": "Ljudtjänsterna har startats om.",
-
   "NetworkDiscovery": "Nätverksidentifiering",
   "NetworkDiscoveryDescription": "Aktivera eller inaktivera nätverksidentifiering för enklare fildelning",
-
   "Printing": "Utskrift",
   "PrintingDescription": "Aktiverar utskriftstjänster som SynergyOS inaktiverar som standard. Avaktivering återställer det inaktiverade tillståndet för utskriftskö-/utskriftstjänsten som SynergyOS ställer in. Omstart kan krävas.",
-
   "WiFi": "Wi-Fi",
   "WiFiDescription": "Aktiverar Wi-Fi-tjänster som SynergyOS inaktiverar som standard. Avaktivering inaktiverar WLAN/WWAN-relaterade tjänster igen.",
-
   "NvidiaDispayContainer": "NVIDIA Display Container",
   "NvidiaDispayContainerDescription": "Aktivera eller inaktivera tjänsten NVIDIA Display Container",
-
   "AddNvidiaDisplayContainerContextMenu": "NVIDIA Display Container i snabbmenyn",
   "AddNvidiaDisplayContainerContextMenuDescription": "Lägger till en växlingsknapp för NVIDIA Display Container i snabbmenyn",
-
   "CpuIdleContextMenu": "Växlingsknapp för CPU Idle i snabbmenyn",
   "CpuIdleContextMenuDescription": "Lägger till en växlingsknapp för CPU Idle i snabbmenyn",
-
   "LockScreen": "Aktivera låsskärmen",
   "LockScreenDescription": "Aktivera eller inaktivera Windows låsskärm",
-
   "ShortcutText": "Genvägstext",
   "ShortcutTextDescription": "Visa eller dölj texten \"Genväg\" på genvägar",
-
   "BootLogo": "Startlogotyp",
   "BootLogoDescription": "Aktivera eller inaktivera Windows startlogotyp",
-
   "BootMessages": "Startmeddelanden",
   "BootMessagesDescription": "Aktivera eller inaktivera Windows startmeddelanden",
-
   "NewBootMenu": "Ny startmeny",
   "NewBootMenuDescription": "Aktivera eller inaktivera den nya Windows-startmenyn",
-
   "SpinningAnimation": "Snurrande animation",
   "SpinningAnimationDescription": "Aktivera eller inaktivera den snurrande animationen vid start",
-
   "AdvancedBootOptions": "Avancerade startalternativ vid uppstart",
   "AdvancedBootOptionsDescription": "Aktivera eller inaktivera avancerade startalternativ vid uppstart",
-
   "AutomaticRepair": "Automatisk reparation",
   "AutomaticRepairDescription": "Aktivera eller inaktivera automatisk reparation vid startfel",
-
   "KernelParameters": "Kärnparametrar vid uppstart",
   "KernelParametersDescription": "Aktivera eller inaktivera kärnparametrar vid uppstart",
-
   "HighestMode": "Högsta läge",
   "HighestModeDescription": "Aktivera eller inaktivera högsta läge för bildskärmar",
-
   "CompactView": "Kompakt vy",
   "CompactViewDescription": "Aktivera eller inaktivera kompakt vy i Utforskaren",
-
   "RemovableDrivesInSidebar": "Flyttbara enheter i sidopanelen",
   "RemovableDrivesInSidebarDescription": "Visa eller dölj flyttbara enheter i Utforskarens sidopanel",
-
   "BackgroundApps": "Bakgrundsappar",
   "BackgroundAppsDescription": "Aktivera eller inaktivera bakgrundsappar",
-
   "SearchIndexing": "Sökindexering",
   "SearchIndexingDescription": "Aktivera eller inaktivera sökindexering",
-
   "FsoAndGameBar": "Helskärmsoptimeringar och Xbox Game Bar",
   "FsoAndGameBarDescription": "Aktivera eller inaktivera helskärmsoptimeringar och Xbox Game Bar med återställning till sparat tillstånd",
-
   "AutomaticUpdates": "Automatiska uppdateringar",
   "AutomaticUpdatesDescription": "Aktivera eller inaktivera automatiska uppdateringar",
-
   "DeliveryOptimisation": "Leveransoptimering",
   "DeliveryOptimisationDescription": "Aktivera eller inaktivera leveransoptimering",
-
   "Hibernation": "Viloläge",
   "HibernationDescription": "Aktivera eller inaktivera viloläge",
-
   "Location": "Plats",
   "LocationDescription": "Aktivera eller inaktivera platstjänster",
-
   "PhoneLink": "Telefonanslutning och mobila enheter",
   "PhoneLinkDescription": "Aktivera eller inaktivera telefonanslutning och mobila enheter",
-
   "PowerSaving": "Strömsparläge",
   "PowerSavingDescription": "Aktivera eller inaktivera strömsparfunktioner",
-
   "Sleep": "Vänteläge",
   "SleepDescription": "Aktivera eller inaktivera vänteläge",
-
   "SystemRestore": "Systemåterställning",
   "SystemRestoreDescription": "Öppna Systemskydd för att hantera systemåterställningspunkter och skyddsinställningar.",
-
   "UpdateNotifications": "Uppdateringsaviseringar",
   "UpdateNotificationsDescription": "Aktivera eller inaktivera uppdateringsaviseringar",
-
   "WebSearch": "Webbsökning i startmenyn",
   "WebSearchDescription": "Aktivera eller inaktivera webbsökning i startmenyn",
-
   "Widgets": "Skrivbordswidgetar",
   "WidgetsDescription": "Aktivera eller inaktivera skrivbordswidgetar",
-
   "WindowsSpotlight": "Windows Spotlight",
   "WindowsSpotlightDescription": "Aktivera eller inaktivera Windows Spotlight på låsskärmen",
-
   "AppStoreArchiving": "Arkivering i Microsoft Store",
   "AppStoreArchivingDescription": "Aktivera eller inaktivera arkivering i Microsoft Store",
-
   "TakeOwnership": "Lägg till \"Ta ägarskap\" i snabbmenyn",
   "TakeOwnershipDescription": "Lägger till alternativet \"Ta ägarskap\" i snabbmenyn för filer och mappar",
-
   "OldContextMenu": "Äldre snabbmeny (från före Windows 11)",
   "OldContextMenuDescription": "Aktivera eller inaktivera den äldre snabbmenyn från före Windows 11",
-
   "EdgeSwipe": "Kantsvep",
   "EdgeSwipeDescription": "Aktivera eller inaktivera kantsvepsgester",
-
   "AppIconsThumbnail": "Appikoner på miniatyrer",
   "AppIconsThumbnailDescription": "Visa eller dölj appikoner på filminiatyrer",
-
   "AutomaticFolderDiscovery": "Automatisk mappidentifiering",
   "AutomaticFolderDiscoveryDescription": "Aktivera eller inaktivera automatisk mappidentifiering i Utforskaren",
-
   "Gallery": "Aktivera galleriet",
   "GalleryDescription": "Aktivera eller inaktivera galleriet i Utforskaren",
-
   "SnapLayout": "Aktiverar layoutfäste för fönster",
   "SnapLayoutDescription": "Aktivera eller inaktivera layoutfäste för fönster",
-
   "RecentItems": "Låser upp senaste objekt i Utforskaren",
   "RecentItemsDescription": "Aktivera eller inaktivera senaste objekt i Utforskaren",
-
   "VerboseStatusMessage": "Detaljerade statusmeddelanden",
   "VerboseStatusMessageDescription": "Aktivera eller inaktivera detaljerade statusmeddelanden vid start och avstängning",
-
   "SuperFetch": "SuperFetch",
   "SuperFetchDescription": "Aktivera eller inaktivera tjänsten SuperFetch (SysMain)",
-
   "StaticIp": "Ställ in statisk IP automatiskt",
   "StaticIpDescription": "Konfigurerar automatiskt en statisk IP-adress för din nätverksadapter",
-
   "HideAppBrowserControl": "Appens webbläsarkontroll",
   "HideAppBrowserControlDescription": "Visar/döljer den inbyggda webbläsarkontrollen i Windows-säkerhet",
-
   "SecurityHealthTray": "Knappen Säkerhet i aktivitetsfältets meddelandefält",
   "SecurityHealthTrayDescription": "Visa eller dölj knappen Säkerhet i aktivitetsfältets meddelandefält",
-
   "UAC": "Kontroll av användarkonto",
   "UACDescription": "Frågar om upphöjda rättigheter när appar behöver administratörsrättigheter. Att inaktivera tar bort UAC-frågor (SynergyOS standard) men minskar skyddet mot oönskade systemändringar. Omstart krävs.",
-
   "FaultTolerantHeap": "Feltolerant heap",
   "FaultTolerantHeapDescription": "Aktivera eller inaktivera skyddsåtgärden Feltolerant heap",
-
   "Copilot": "Aktivera Microsoft Copilot",
   "CopilotDescription": "Aktivera eller inaktivera integrationen av Microsoft Copilot i Windows 11",
-
   "Recall": "Aktivera Windows Recall",
   "RecallDescription": "Aktivera eller inaktivera funktionen Windows Recall",
-
   "CpuIdle": "Aktivera CPU-viloläge",
   "CpuIdleDescription": "Aktivera eller inaktivera funktionen för CPU-viloläge",
-
   "ProcessExplorer": "Installera Process Explorer",
   "ProcessExplorerDescription": "Installera Process Explorer från Microsoft Sysinternals",
-
   "VbsState": "Virtualiseringsbaserad säkerhet",
   "VbsStateDescription": "Aktiverar VBS, HVCI, Credential Guard och relaterade skydd som SynergyOS inaktiverar som standard. Omstart krävs.",
-
   "GiveAccessToMenu": "Menyn \"Ge åtkomst till\"",
   "GiveAccessToMenuDescription": "Lägger till alternativet \"Ge åtkomst till\" i snabbmenyn för filer och mappar",
-
   "NetworkNavigationPane": "Navigeringsfönster för nätverk",
   "NetworkNavigationPaneDescription": "Visa eller dölj navigeringsfönstret för nätverk i Utforskaren",
-
   "FileSharing": "Fildelning",
   "FileSharingDescription": "Aktivera eller inaktivera funktioner för fildelning",
-
   "WindowsHello": "Windows Hello",
   "WindowsHelloDescription": "Aktivera eller inaktivera biometrisk autentisering med Windows Hello",
-
-
   "Home_WinVer": "Windows-version",
   "Home_PlaybookVer": "Playbook-version",
   "Home_HeaderText": "Hem",
@@ -340,7 +273,6 @@
   "NewProfilesButton": "Skapa en ny profil",
   "IncompatibleVer": "Den aktuella Windows-installationen är inkompatibel med denna version av Toolbox. Installera SynergyOS.",
   "StatingServices": "Startar tjänster...",
-
   "CurrentConfigIsSavedMessage": "Din aktuella konfiguration kommer att sparas i denna profil",
   "DeleteProfileConfirmation": "Vill du verkligen radera den här profilen?",
   "TryDeleteDefaultProfile": "Du kan inte ta bort standardprofilen",
@@ -396,17 +328,13 @@
   "ResetWindowsUpdateDeferral": "Återställ uppskjutning av Windows Update",
   "MicrosoftStoreToggle": "Växla Microsoft Store",
   "MicrosoftStoreDescription": "Registrera eller avregistrera Microsoft Store-paketet för den aktuella användaren.",
-
-
   "Tile_DocumentationTitle": "Stötta Kwanteks",
   "Tile_DocumentationDescription": "Kolla in Kwanteks innehåll!",
   "Tile_DiscordTitle": "Discord",
   "Tile_DiscordDescription": "Be om support och skaffa vänner!",
   "Tile_GithubTitle": "GitHub",
   "Tile_GithubDescription": "Utforska koden och bidra",
-
   "SearchPlaceholder": "Sök inställningar...",
-
   "Home": "Hem",
   "Installer": "Installationsprogram",
   "Adjustments": "Anpassningar",
@@ -420,7 +348,6 @@
   "Advanced": "Avancerad konfiguration",
   "Security": "Säkerhet",
   "Troubleshooting": "Återställning",
-
   "SpecsPageTitle": "Specifikationer",
   "SpecsPageDescription": "En skrivskyddad översikt över systemets maskinvara och Windows-version. Ingenting kan ändras här.",
   "SpecsPageErrorTitle": "Specifikationer",
@@ -450,7 +377,6 @@
   "CleanerPageSelectNone": "Välj ingen",
   "CleanerPageWizTreeDescription": "Starta WizTree portable (detaljerad information om diskanvändning)",
   "CleanerPageLaunchWizTree": "Starta WizTree",
-
   "HomePageText3E77C2003BD6": "Vad är nytt i SynergyOS",
   "HomePageContentB7F2E2F3517E": "Se alla utgåvor",
   "HomePageContent8C338141C3FC": "Läs mer",
@@ -567,7 +493,6 @@
   "GpuPagePlaceholderTextFD59CDAB4C9D": "Värde",
   "GpuPageContent6BA9EA1B7E66": "Ta bort",
   "GpuPageContent3CFAEF9F3C36": "Exportera ny profil till .nip",
-
   "PowerPlansPageHeader9EF26DE51104": "Aktuell kraftplan",
   "PowerPlansPageDescription320073B0E4BC": "Planen som Windows använder just nu.",
   "PowerPlansPageHeaderEC2BEE95E81C": "SynToolkit SOS-prestanda",
@@ -622,15 +547,11 @@
   "GpuPageHeaderAC283BA30A9F": "Profilnamn",
   "GpuPageDescriptionF27AFB4CDFAD": "Kommaseparerade körbara namn, t.ex. game.exe, launcher.exe. Lämna tomt för en basprofil som gäller för alla applikationer.",
   "GpuPageHeader3EE89599DB6C": "Körbara filer",
-
   "Language": "Språk",
-
   "NoFavorites": "Du har inte lagt till något i dina favoriter än.",
   "SystemInfo": "Om detta system:",
   "LearnMore": "Läs mer",
-
   "TroubleshootingDocumenation": "Felsökningsdokumentation",
-
   "ExperimentsHeader": "Experiment",
   "ExperimentsCardHeader": "Experimentella funktioner",
   "ExperimentsCardDescription": "Dessa funktioner är experimentella och fungerar kanske inte helt som avsett. Kräver en omstart för att tillämpa ändringarna",
@@ -638,14 +559,12 @@
   "SearchExperimentDescription": "Aktiverar ett sökfält för att snabbt hitta inställningar i SynToolkit",
   "IconsExperiment": "Ikoner",
   "IconsExperimentDescription": "Aktiverar ikoner bredvid varje inställning för enklare identifiering och ett mer tilltalande utseende",
-
   "RadeonSlimmer_OptimizeDriver": "Optimera drivrutin",
   "RadeonSlimmer_OptimizeDriverTooltip": "Tillämpar en rekommenderad konfiguration: inaktiverar alla schemalagda uppgifter, behåller endast bildskärmsdrivrutinen och AMD Settings-paketen, och behåller endast kärnkomponenterna för bildskärm. Om ditt importerade paket skiljer sig från AMD:s standardstruktur justeras endast matchande objekt.",
   "RadeonSlimmer_OptimizationSuccess": "Rekommenderad optimering tillämpad.",
   "RadeonSlimmer_OptimizationPartial": "Rekommenderad optimering tillämpad. Vissa objekt i din import matchade inte AMD:s standardstruktur och lämnades oförändrade — granska flikarna vid behov.",
   "RadeonSlimmer_OptimizationSkipped": "Optimering tillämpad där det var möjligt. {0} matchade inte detta paket och hoppades över.",
-  "RadeonSlimmer_OptimizationNoMatch": "Denna import matchar inte en igenkänd AMD-paketstruktur, så ingen optimering tillämpades. Du kan fortfarande konfigurera inställningarna manuellt."
-  ,
+  "RadeonSlimmer_OptimizationNoMatch": "Denna import matchar inte en igenkänd AMD-paketstruktur, så ingen optimering tillämpades. Du kan fortfarande konfigurera inställningarna manuellt.",
   "NeedsAttention": "Behöver åtgärdas",
   "Installer_NvidiaAppDescription": "Officiell NVIDIA-app för grafikdrivrutiner, spelinställningar och NVIDIA-funktioner.",
   "Installer_AmdAdrenalinDescription": "Officiell AMD-app för Radeon-grafikdrivrutiner, spelinställningar och prestandafunktioner.",
@@ -654,8 +573,7 @@
   "Installer_FilterAll": "Alla",
   "Installer_FilterInstalled": "Installerade",
   "Installer_FilterNotInstalled": "Inte installerade",
-  "Installer_FilterNeedsUpdate": "Uppdatering tillgänglig"
-  ,
+  "Installer_FilterNeedsUpdate": "Uppdatering tillgänglig",
   "NeedsAttention_Subtitle": "Kontrollerar föråldrade eller saknade drivrutiner och appar, en gammal SynToolkit-version, ingen återställningspunkt och en osynkroniserad Windows-klocka.",
   "NeedsAttention_Refresh": "Uppdatera",
   "NeedsAttention_AllClear": "Allt är klart",
@@ -701,8 +619,107 @@
   "NeedsAttention_InstallerUpdateTitle": "Uppdatera {0}",
   "NeedsAttention_InstallerUpdateVersionDescription": "Uppdatera från {0} till {1}.",
   "NeedsAttention_InstallerUpdateDescription": "En nyare version är tillgänglig.",
-  "NeedsAttention_OpenInstaller": "Öppna installeraren"
-  ,
+  "NeedsAttention_OpenInstaller": "Öppna installeraren",
   "NeedsAttention_IgnoreForThreeMonths": "Ignorera i 3 månader",
-  "NeedsAttention_IgnoredForThreeMonths": "Varningen ignoreras i 3 månader."
+  "NeedsAttention_IgnoredForThreeMonths": "Varningen ignoreras i 3 månader.",
+  "GpuPage_Title": "Graphics Processing Unit",
+  "GpuPage_Description": "Download vendor drivers, slim installation packages, apply NVIDIA profile settings, and remove leftover GPU driver components when needed.",
+  "GpuPage_TabOverview": "Overview",
+  "GpuPage_TabDebloat": "Debloat",
+  "GpuPage_TabPerformance": "Performance",
+  "GpuPage_TabRemoval": "Removal",
+  "GpuPage_DetectedGpu": "Detected GPU",
+  "GpuPage_DetectedGpuDescription": "Choose which installed GPU to manage.",
+  "GpuPage_DriverVersion": "Driver version",
+  "GpuPage_DriverVersionDescription": "Fetch vendor releases for the selected GPU.",
+  "GpuPage_Refresh": "Refresh",
+  "GpuPage_PackageActions": "Package actions",
+  "GpuPage_PackageActionsDescription": "Prepare the installer package for stock or customized installation.",
+  "GpuPage_PreparePackage": "Prepare package",
+  "GpuPage_InstallPrepared": "Install prepared package",
+  "GpuPage_ReloadPackage": "Reload package",
+  "GpuPage_PreconfiguredProfilesDescriptionShort": "Pre-configured profiles bundled with SynToolkit.",
+  "GpuPage_NoBundledProfiles": "No bundled profiles found",
+  "GpuPage_ExecutablesDescriptionShort": "Comma-separated executable names, e.g. game.exe, launcher.exe.",
+  "GpuPage_DebloatHint": "Prepare a package in Overview, then customize its contents here before launching the installer.",
+  "GpuPage_DebloatPreset": "Debloat preset",
+  "GpuPage_DebloatPresetDescription": "Choose whether to keep the stock package, use the stripped preset, or customize manually.",
+  "GpuPage_InstallerFolders": "Installer Folders",
+  "GpuPage_PerformanceInfo": "Registry-backed tweaks apply only to NVIDIA systems with an installed NVIDIA display driver.",
+  "GpuPage_PerformanceTweaks": "NVIDIA performance tweaks",
+  "GpuPage_RefreshValues": "Refresh values",
+  "GpuPage_SettingsGroupDescription": "General NVIDIA registry settings.",
+  "GpuPage_ApplyAll": "Apply all",
+  "GpuPage_RemoveAll": "Remove all",
+  "GpuPage_RmPowerFeature": "RM Power Feature",
+  "GpuPage_RmPowerFeatureDescription": "Driver power-management flags.",
+  "GpuPage_Telemetry": "Telemetry",
+  "GpuPage_TelemetryDescription": "Telemetry-related registry values.",
+  "GpuPage_Ecc": "ECC",
+  "GpuPage_EccDescription": "ECC-related registry values.",
+  "GpuPage_Hdcp": "HDCP",
+  "GpuPage_HdcpDescription": "HDCP-related registry values.",
+  "GpuPage_RemovalOptions": "Removal options",
+  "GpuPage_RemovalOptionsDescription": "Run the built-in driver cleanup workflow for the selected vendor.",
+  "GpuPage_RunVendorUninstaller": "Run vendor uninstaller",
+  "GpuPage_RemoveDriverStorePackages": "Remove driver store packages",
+  "GpuPage_StopRemoveServices": "Stop and remove services",
+  "GpuPage_DeleteLeftoverFiles": "Delete leftover files",
+  "GpuPage_DeleteLeftoverRegistry": "Delete leftover registry entries",
+  "GpuPage_BlockAutomaticReinstall": "Block automatic driver reinstall",
+  "GpuPage_RunRemoval": "Run removal",
+  "GpuPage_RebootNow": "Reboot now",
+  "GpuPage_RemovalLog": "Removal log",
+  "GpuPage_DetectingGpus": "Detecting installed GPUs...",
+  "GpuPage_AmdDriversTitle": "AMD GPU Drivers",
+  "GpuPage_NvidiaDriversTitle": "NVIDIA GPU Drivers",
+  "GpuPage_GpuDriversTitle": "GPU Drivers",
+  "GpuPage_AmdDriversSubtitle": "Download, debloat, and remove AMD graphics drivers.",
+  "GpuPage_NvidiaDriversSubtitle": "Download, debloat, tune, and remove NVIDIA graphics drivers.",
+  "GpuPage_NoGpuSelected": "No GPU selected",
+  "GpuPage_UnsupportedVendor": "Unsupported vendor",
+  "GpuPage_InstalledDriverFormat": "Installed driver: {0}",
+  "GpuPage_PreparedPackageFormat": "Prepared {0} package at {1}",
+  "GpuPage_NoCleanupSteps": "No cleanup steps selected.",
+  "GpuPage_WillRunFormat": "Will run: {0}",
+  "GpuPage_NoGpuDetected": "No GPU could be detected.",
+  "GpuPage_DetectedFormat": "Detected: {0}",
+  "GpuPage_DebloatStripped": "Stripped",
+  "GpuPage_DebloatStock": "Stock",
+  "GpuPage_DebloatCustom": "Custom",
+  "GpuPage_ActionVendorUninstall": "vendor uninstall",
+  "GpuPage_ActionDriverStorePurge": "driver-store purge",
+  "GpuPage_ActionServiceRemoval": "service removal",
+  "GpuPage_ActionFileCleanup": "file cleanup",
+  "GpuPage_ActionRegistryCleanup": "registry cleanup",
+  "GpuPage_ActionAutoReinstallBlock": "auto-reinstall block",
+  "GpuPage_NoCompatibleGpu": "No compatible GPU is selected.",
+  "GpuPage_ChooseDriverFirst": "Choose a driver version first.",
+  "GpuPage_ExtractingPackage": "Extracting driver package...",
+  "GpuPage_DownloadingPackageFormat": "Downloading driver package: {0}%",
+  "GpuPage_PrepareBeforeInstall": "Prepare a driver package before installing.",
+  "GpuPage_InstallerLaunched": "Installer launched successfully.",
+  "GpuPage_PackageRefreshed": "Prepared package refreshed.",
+  "GpuPage_NoGpuForRemoval": "No GPU is selected for removal.",
+  "GpuPage_RemovalCancelled": "Driver removal was cancelled.",
+  "GpuPage_Unknown": "Unknown",
+  "GpuPage_RebootDialogTitle": "Reboot to finish GPU cleanup?",
+  "GpuPage_RebootDialogContent": "The removal workflow finished. Reboot Windows now to complete GPU driver cleanup.",
+  "GpuPage_RebootDialogLater": "Later",
+  "GpuPage_ApplyProfilesDialogTitle": "Apply profiles to the NVIDIA driver?",
+  "GpuPage_ApplyProfilesDialogContent": "This writes the profiles above directly to your NVIDIA driver settings, creating any profiles that do not already exist.",
+  "GpuPage_ApplyProfilesDialogPrimary": "Apply",
+  "GpuPage_ApplyProfilesDialogClose": "Cancel",
+  "GpuPage_NotSet": "Not set",
+  "GpuPage_Checking": "Checking...",
+  "GpuPage_Unavailable": "Unavailable",
+  "GpuPage_AppliedTweakFormat": "Applied {0}. Restart Windows to finish applying changes.",
+  "GpuPage_RemovedTweakFormat": "Removed {0}. Restart Windows to finish applying changes.",
+  "GpuPage_LoadNipBeforeExport": "Load a .nip profile before exporting loaded profiles.",
+  "GpuPage_ExportedLoadedFormat": "Exported {0} setting(s) across {1} loaded profile(s) to {2}.",
+  "GpuPage_EnterProfileName": "Enter a profile name before exporting a new profile.",
+  "GpuPage_AddSettingBeforeExport": "Add at least one setting before exporting a new profile. To export an imported file, use 'Export loaded to .nip'.",
+  "GpuPage_ExportedNewFormat": "Exported '{0}' to {1}.",
+  "GpuPage_AppliedProfilesFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created).",
+  "GpuPage_AppliedProfilesSkippedFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created). {3} setting(s) were skipped - see the log for details."
 }

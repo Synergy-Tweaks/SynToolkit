@@ -57,6 +57,37 @@
     </Page.Resources>
 
     <Grid Margin="55,0,0,0">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutSizeStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="900" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="NarrowLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="OverviewDriverRefreshPanel.Orientation" Value="Vertical" />
+                        <Setter Target="OverviewPackageActionsPanel.Orientation" Value="Vertical" />
+                        <Setter Target="OverviewBundledProfilesPanel.Orientation" Value="Vertical" />
+                        <Setter Target="GpuDeviceComboBox.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="DriverVersionComboBox.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="BundledProfilesComboBox.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="DebloatModeComboBox.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="PerformanceTweaksHeaderPanel.Orientation" Value="Vertical" />
+                        <Setter Target="PerformanceSettingsHeaderPanel.Orientation" Value="Vertical" />
+                        <Setter Target="PerformanceRmPowerHeaderPanel.Orientation" Value="Vertical" />
+                        <Setter Target="PerformanceTelemetryHeaderPanel.Orientation" Value="Vertical" />
+                        <Setter Target="PerformanceEccHeaderPanel.Orientation" Value="Vertical" />
+                        <Setter Target="PerformanceHdcpHeaderPanel.Orientation" Value="Vertical" />
+                        <Setter Target="RemovalActionsPanel.Orientation" Value="Vertical" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -68,12 +99,14 @@
             Grid.Row="0"
             Margin="0,24,36,8"
             Style="{StaticResource TitleTextBlockStyle}"
-            Text="Graphics Processing Unit" />
+            Text="Graphics Processing Unit"
+            local:LocalizedText.TextKey="GpuPage_Title" />
         <StackPanel Grid.Row="1" Margin="0,0,36,18">
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="Download vendor drivers, slim installation packages, apply NVIDIA profile settings, and remove leftover GPU driver components when needed."
-                TextWrapping="Wrap" />
+                TextWrapping="Wrap"
+                local:LocalizedText.TextKey="GpuPage_Description" />
             <TextBlock
                 Margin="0,6,0,0"
                 FontSize="12"
@@ -89,7 +122,8 @@
             IsOpen="{Binding HasError}"
             Message="{Binding StatusMessage}"
             Severity="Error"
-            Title="Graphics Processing Unit" />
+            Title="Graphics Processing Unit"
+            local:LocalizedText.TitleKey="GpuPage_Title" />
 
         <ScrollViewer Grid.Row="3">
             <StackPanel Margin="0,0,36,48">
@@ -99,7 +133,9 @@
                         IsClickEnabled="True"
                         Header="AMD"
                         Description="Manage AMD GPU drivers and settings"
-                        Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                        local:LocalizedText.HeaderKey="GpuPageHeaderC8897530DA3F"
+                        local:LocalizedText.DescriptionKey="GpuPageDescriptionF7CEC7DF21A1">
                         <controls:SettingsCard.HeaderIcon>
                             <ImageIcon Source="ms-appx:///assets/Icons/Amd.png" />
                         </controls:SettingsCard.HeaderIcon>
@@ -113,7 +149,8 @@
                                 <TextBlock
                                     FontSize="11"
                                     Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                    Text="Detected" />
+                                    Text="Detected"
+                                    local:LocalizedText.TextKey="GpuPageTextC1D480853A8A" />
                             </Border>
                             <FontIcon
                                 FontSize="14"
@@ -127,7 +164,9 @@
                         IsClickEnabled="True"
                         Header="NVIDIA"
                         Description="Manage NVIDIA GPU drivers and settings"
-                        Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                        local:LocalizedText.HeaderKey="GpuPageHeaderDB7AC6B4ACE6"
+                        local:LocalizedText.DescriptionKey="GpuPageDescriptionC5EBCCAA44E2">
                         <controls:SettingsCard.HeaderIcon>
                             <ImageIcon Source="ms-appx:///assets/Icons/Nvidia.png" />
                         </controls:SettingsCard.HeaderIcon>
@@ -141,7 +180,8 @@
                                 <TextBlock
                                     FontSize="11"
                                     Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                    Text="Detected" />
+                                    Text="Detected"
+                                    local:LocalizedText.TextKey="GpuPageTextC1D480853A8A" />
                             </Border>
                             <FontIcon
                                 FontSize="14"
@@ -159,49 +199,85 @@
                         BorderThickness="0">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon FontSize="12" Glyph="&#xE72B;" />
-                            <TextBlock Text="Back to GPU selection" />
+                            <TextBlock Text="Back to GPU selection" local:LocalizedText.TextKey="GpuPageTextAD7C77BDBC99" />
                         </StackPanel>
                     </Button>
 
                     <TextBlock Style="{StaticResource GroupHeader}" Text="{Binding CurrentVendorTitle}" Margin="0,0,0,4" />
                     <TextBlock Text="{Binding CurrentVendorSubtitle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
 
-                    <StackPanel Orientation="Horizontal" Margin="0,14,0,12">
-                        <Button x:Name="OverviewTabButton" Click="OverviewTab_Click" Style="{StaticResource BreadcrumbTabActive}" Content="Overview" />
-                        <TextBlock Style="{StaticResource BreadcrumbChevron}" Text="/" />
-                        <Button x:Name="DebloatTabButton" Click="DebloatTab_Click" Style="{StaticResource BreadcrumbTabInactive}" Content="Debloat" />
-                        <TextBlock x:Name="PerformanceTabChevron" Style="{StaticResource BreadcrumbChevron}" Text="/" />
-                        <Button x:Name="PerformanceTabButton" Click="PerformanceTab_Click" Style="{StaticResource BreadcrumbTabInactive}" Content="Performance" />
-                        <TextBlock Style="{StaticResource BreadcrumbChevron}" Text="/" />
-                        <Button x:Name="RemovalTabButton" Click="RemovalTab_Click" Style="{StaticResource BreadcrumbTabInactive}" Content="Removal" />
-                    </StackPanel>
+                    <ScrollViewer
+                        Margin="0,14,0,12"
+                        HorizontalScrollBarVisibility="Auto"
+                        VerticalScrollBarVisibility="Disabled">
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="OverviewTabButton" Click="OverviewTab_Click" Style="{StaticResource BreadcrumbTabActive}" Content="Overview" local:LocalizedText.ContentKey="GpuPage_TabOverview" />
+                            <TextBlock Style="{StaticResource BreadcrumbChevron}" Text="/" />
+                            <Button x:Name="DebloatTabButton" Click="DebloatTab_Click" Style="{StaticResource BreadcrumbTabInactive}" Content="Debloat" local:LocalizedText.ContentKey="GpuPage_TabDebloat" />
+                            <TextBlock x:Name="PerformanceTabChevron" Style="{StaticResource BreadcrumbChevron}" Text="/" />
+                            <Button x:Name="PerformanceTabButton" Click="PerformanceTab_Click" Style="{StaticResource BreadcrumbTabInactive}" Content="Performance" local:LocalizedText.ContentKey="GpuPage_TabPerformance" />
+                            <TextBlock Style="{StaticResource BreadcrumbChevron}" Text="/" />
+                            <Button x:Name="RemovalTabButton" Click="RemovalTab_Click" Style="{StaticResource BreadcrumbTabInactive}" Content="Removal" local:LocalizedText.ContentKey="GpuPage_TabRemoval" />
+                        </StackPanel>
+                    </ScrollViewer>
 
                     <StackPanel x:Name="OverviewPanel">
-                        <controls:SettingsCard Margin="0,0,0,10" Header="Detected GPU" Description="Choose which installed GPU to manage." Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        <controls:SettingsCard
+                            Margin="0,0,0,10"
+                            Header="Detected GPU"
+                            Description="Choose which installed GPU to manage."
+                            Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                            local:LocalizedText.HeaderKey="GpuPage_DetectedGpu"
+                            local:LocalizedText.DescriptionKey="GpuPage_DetectedGpuDescription">
                             <controls:SettingsCard.HeaderIcon>
                                 <ImageIcon Source="ms-appx:///assets/Icons/Gpu.png" />
                             </controls:SettingsCard.HeaderIcon>
-                            <ComboBox x:Name="GpuDeviceComboBox" Width="360" ItemsSource="{Binding GpuDevices}" SelectedItem="{Binding SelectedGpuDevice, Mode=TwoWay}" SelectionChanged="GpuDeviceComboBox_SelectionChanged" DisplayMemberPath="DisplayName" />
+                            <ComboBox
+                                x:Name="GpuDeviceComboBox"
+                                MinWidth="180"
+                                MaxWidth="360"
+                                ItemsSource="{Binding GpuDevices}"
+                                SelectedItem="{Binding SelectedGpuDevice, Mode=TwoWay}"
+                                SelectionChanged="GpuDeviceComboBox_SelectionChanged"
+                                DisplayMemberPath="DisplayName" />
                         </controls:SettingsCard>
 
-                        <controls:SettingsCard Margin="0,0,0,10" Header="Driver version" Description="Fetch vendor releases for the selected GPU." Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        <controls:SettingsCard
+                            Margin="0,0,0,10"
+                            Header="Driver version"
+                            Description="Fetch vendor releases for the selected GPU."
+                            Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                            local:LocalizedText.HeaderKey="GpuPage_DriverVersion"
+                            local:LocalizedText.DescriptionKey="GpuPage_DriverVersionDescription">
                             <controls:SettingsCard.HeaderIcon>
                                 <ImageIcon Source="ms-appx:///assets/Icons/Update.png" />
                             </controls:SettingsCard.HeaderIcon>
-                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                <ComboBox Width="360" ItemsSource="{Binding AvailableDrivers}" SelectedItem="{Binding SelectedDriver, Mode=TwoWay}" DisplayMemberPath="DisplayText" />
-                                <Button x:Name="RefreshDriversButton" Click="RefreshDriversButton_Click" Content="Refresh" />
+                            <StackPanel x:Name="OverviewDriverRefreshPanel" Orientation="Horizontal" Spacing="10">
+                                <ComboBox
+                                    x:Name="DriverVersionComboBox"
+                                    MinWidth="180"
+                                    MaxWidth="360"
+                                    ItemsSource="{Binding AvailableDrivers}"
+                                    SelectedItem="{Binding SelectedDriver, Mode=TwoWay}"
+                                    DisplayMemberPath="DisplayText" />
+                                <Button x:Name="RefreshDriversButton" Click="RefreshDriversButton_Click" Content="Refresh" local:LocalizedText.ContentKey="GpuPage_Refresh" />
                             </StackPanel>
                         </controls:SettingsCard>
 
-                        <controls:SettingsCard Margin="0,0,0,10" Header="Package actions" Description="Prepare the installer package for stock or customized installation." Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        <controls:SettingsCard
+                            Margin="0,0,0,10"
+                            Header="Package actions"
+                            Description="Prepare the installer package for stock or customized installation."
+                            Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                            local:LocalizedText.HeaderKey="GpuPage_PackageActions"
+                            local:LocalizedText.DescriptionKey="GpuPage_PackageActionsDescription">
                             <controls:SettingsCard.HeaderIcon>
                                 <ImageIcon Source="ms-appx:///assets/Icons/External.png" />
                             </controls:SettingsCard.HeaderIcon>
-                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                <Button x:Name="PrepareDriverButton" Click="PrepareDriverButton_Click" Content="Prepare package" Style="{StaticResource AccentButtonStyle}" />
-                                <Button x:Name="InstallPreparedDriverButton" Click="InstallPreparedDriverButton_Click" Content="Install prepared package" />
-                                <Button x:Name="ReloadPreparedPackageButton" Click="ReloadPreparedPackageButton_Click" Content="Reload package" />
+                            <StackPanel x:Name="OverviewPackageActionsPanel" Orientation="Horizontal" Spacing="10">
+                                <Button x:Name="PrepareDriverButton" Click="PrepareDriverButton_Click" Content="Prepare package" Style="{StaticResource AccentButtonStyle}" local:LocalizedText.ContentKey="GpuPage_PreparePackage" />
+                                <Button x:Name="InstallPreparedDriverButton" Click="InstallPreparedDriverButton_Click" Content="Install prepared package" local:LocalizedText.ContentKey="GpuPage_InstallPrepared" />
+                                <Button x:Name="ReloadPreparedPackageButton" Click="ReloadPreparedPackageButton_Click" Content="Reload package" local:LocalizedText.ContentKey="GpuPage_ReloadPackage" />
                             </StackPanel>
                         </controls:SettingsCard>
 
@@ -210,22 +286,39 @@
                         <StackPanel x:Name="NvidiaOverviewExtrasPanel" Visibility="Collapsed">
                             <InfoBar Margin="0,0,0,10" IsClosable="True" IsOpen="{Binding HasNvidiaApplyResult}" Message="{Binding NvidiaApplyResultSummary}" Severity="Informational" />
 
-                            <TextBlock Style="{StaticResource GroupHeader}" Text="NVIDIA Profile Inspector" Margin="0,6,0,10" />
+                            <TextBlock Style="{StaticResource GroupHeader}" Text="NVIDIA Profile Inspector" Margin="0,6,0,10" local:LocalizedText.TextKey="GpuPageText623166EBEAA8" />
 
-                            <controls:SettingsCard Margin="0,0,0,10" Description="{Binding NipFilePath}" Header=".nip profile file" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                            <controls:SettingsCard
+                                Margin="0,0,0,10"
+                                Description="{Binding NipFilePath}"
+                                Header=".nip profile file"
+                                Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                                local:LocalizedText.HeaderKey="GpuPageHeader30451174446E">
                                 <controls:SettingsCard.HeaderIcon>
                                     <ImageIcon Source="ms-appx:///assets/Icons/Nvidia.png" />
                                 </controls:SettingsCard.HeaderIcon>
-                                <Button x:Name="BrowseNipFileButton" Click="BrowseNipFileButton_Click" Content="Browse" />
+                                <Button x:Name="BrowseNipFileButton" Click="BrowseNipFileButton_Click" Content="Browse" local:LocalizedText.ContentKey="GpuPageContent1010A22C3055" />
                             </controls:SettingsCard>
 
-                            <controls:SettingsCard Margin="0,0,0,10" Description="Pre-configured profiles bundled with SynToolkit." Header="Pre-configured profiles" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                            <controls:SettingsCard
+                                Margin="0,0,0,10"
+                                Description="Pre-configured profiles bundled with SynToolkit."
+                                Header="Pre-configured profiles"
+                                Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                                local:LocalizedText.HeaderKey="GpuPageHeader9A8D43273E5B"
+                                local:LocalizedText.DescriptionKey="GpuPage_PreconfiguredProfilesDescriptionShort">
                                 <controls:SettingsCard.HeaderIcon>
                                     <ImageIcon Source="ms-appx:///assets/Icons/Nvidia.png" />
                                 </controls:SettingsCard.HeaderIcon>
-                                <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <ComboBox x:Name="BundledProfilesComboBox" Width="220" DisplayMemberPath="DisplayName" ItemsSource="{Binding BundledProfiles}" PlaceholderText="No bundled profiles found" />
-                                    <Button x:Name="LoadBundledProfileButton" Click="LoadBundledProfileButton_Click" Content="Load" />
+                                <StackPanel x:Name="OverviewBundledProfilesPanel" Orientation="Horizontal" Spacing="10">
+                                    <ComboBox
+                                        x:Name="BundledProfilesComboBox"
+                                        MinWidth="180"
+                                        MaxWidth="360"
+                                        DisplayMemberPath="DisplayName"
+                                        ItemsSource="{Binding BundledProfiles}"
+                                        PlaceholderText="No bundled profiles found" />
+                                    <Button x:Name="LoadBundledProfileButton" Click="LoadBundledProfileButton_Click" Content="Load" local:LocalizedText.ContentKey="GpuPageContent43A188D59CEC" />
                                 </StackPanel>
                             </controls:SettingsCard>
 
@@ -261,21 +354,31 @@
                             </ItemsControl>
 
                             <StackPanel Margin="0,10,0,0" Orientation="Horizontal" Spacing="10">
-                                <Button x:Name="ApplyNvidiaProfilesButton" Click="ApplyNvidiaProfilesButton_Click" Content="Apply to NVIDIA driver" Style="{StaticResource AccentButtonStyle}" />
-                                <Button x:Name="ExportLoadedProfilesButton" Click="ExportLoadedProfilesButton_Click" Content="Export loaded to .nip" />
+                                <Button x:Name="ApplyNvidiaProfilesButton" Click="ApplyNvidiaProfilesButton_Click" Content="Apply to NVIDIA driver" Style="{StaticResource AccentButtonStyle}" local:LocalizedText.ContentKey="GpuPageContentFDAEF53F2C20" />
+                                <Button x:Name="ExportLoadedProfilesButton" Click="ExportLoadedProfilesButton_Click" Content="Export loaded to .nip" local:LocalizedText.ContentKey="GpuPageContentE63BC4F3F882" />
                             </StackPanel>
 
                             <StackPanel Margin="0,10,0,0" Orientation="Horizontal" Spacing="8">
                                 <Image Width="20" Height="20" VerticalAlignment="Center" Source="ms-appx:///assets/Icons/UserAccount.png" />
-                                <TextBlock Style="{StaticResource SubGroupHeader}" Text="Create your own profile" VerticalAlignment="Center" />
+                                <TextBlock Style="{StaticResource SubGroupHeader}" Text="Create your own profile" VerticalAlignment="Center" local:LocalizedText.TextKey="GpuPageText5E62F195C004" />
                             </StackPanel>
-                            <controls:SettingsCard Margin="0,0,0,10" Header="Profile name" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                            <controls:SettingsCard
+                                Margin="0,0,0,10"
+                                Header="Profile name"
+                                Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                                local:LocalizedText.HeaderKey="GpuPageHeaderAC283BA30A9F">
                                 <controls:SettingsCard.HeaderIcon>
                                     <ImageIcon Source="ms-appx:///assets/Icons/UserAccount.png" />
                                 </controls:SettingsCard.HeaderIcon>
                                 <TextBox Width="220" Text="{Binding NewProfileName, Mode=TwoWay}" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard Margin="0,0,0,10" Description="Comma-separated executable names, e.g. game.exe, launcher.exe." Header="Executables" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                            <controls:SettingsCard
+                                Margin="0,0,0,10"
+                                Description="Comma-separated executable names, e.g. game.exe, launcher.exe."
+                                Header="Executables"
+                                Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                                local:LocalizedText.HeaderKey="GpuPageHeader3EE89599DB6C"
+                                local:LocalizedText.DescriptionKey="GpuPage_ExecutablesDescriptionShort">
                                 <controls:SettingsCard.HeaderIcon>
                                     <ImageIcon Source="ms-appx:///assets/Icons/Applications.png" />
                                 </controls:SettingsCard.HeaderIcon>
@@ -289,9 +392,9 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                     <Image Width="20" Height="20" VerticalAlignment="Center" Source="ms-appx:///assets/Icons/Settings.png" />
-                                    <TextBlock VerticalAlignment="Center" Text="Settings" />
+                                    <TextBlock VerticalAlignment="Center" Text="Settings" local:LocalizedText.TextKey="GpuPageText91F2E57EF962" />
                                 </StackPanel>
-                                <Button x:Name="AddNewSettingButton" Grid.Column="1" Click="AddNewSettingButton_Click" Content="Add setting" />
+                                <Button x:Name="AddNewSettingButton" Grid.Column="1" Click="AddNewSettingButton_Click" Content="Add setting" local:LocalizedText.ContentKey="GpuPageContent75C8D994E411" />
                             </Grid>
 
                             <ItemsControl Margin="0,6,0,0" ItemsSource="{Binding NewProfileSettings}">
@@ -303,8 +406,8 @@
                                             </controls:SettingsCard.HeaderIcon>
                                             <controls:SettingsCard.Header>
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                                    <TextBox Width="150" PlaceholderText="Setting name" Text="{Binding SettingNameInfo, Mode=TwoWay}" />
-                                                    <TextBox Width="90" PlaceholderText="Setting ID" Text="{Binding SettingIdText, Mode=TwoWay}" />
+                                                    <TextBox Width="150" PlaceholderText="Setting name" Text="{Binding SettingNameInfo, Mode=TwoWay}" local:LocalizedText.PlaceholderTextKey="GpuPagePlaceholderTextA7AC0A21A7C9" />
+                                                    <TextBox Width="90" PlaceholderText="Setting ID" Text="{Binding SettingIdText, Mode=TwoWay}" local:LocalizedText.PlaceholderTextKey="GpuPagePlaceholderText51D2F207784F" />
                                                 </StackPanel>
                                             </controls:SettingsCard.Header>
                                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -315,8 +418,8 @@
                                                     <x:String>Binary</x:String>
                                                     <x:String>Qword</x:String>
                                                 </ComboBox>
-                                                <TextBox Width="120" PlaceholderText="Value" Text="{Binding SettingValue, Mode=TwoWay}" />
-                                                <Button Click="RemoveNewSettingButton_Click" Content="Remove" Tag="{Binding}" />
+                                                <TextBox Width="120" PlaceholderText="Value" Text="{Binding SettingValue, Mode=TwoWay}" local:LocalizedText.PlaceholderTextKey="GpuPagePlaceholderTextFD59CDAB4C9D" />
+                                                <Button Click="RemoveNewSettingButton_Click" Content="Remove" Tag="{Binding}" local:LocalizedText.ContentKey="GpuPageContent6BA9EA1B7E66" />
                                             </StackPanel>
                                         </controls:SettingsCard>
                                     </DataTemplate>
@@ -324,21 +427,39 @@
                             </ItemsControl>
 
                             <StackPanel Margin="0,10,0,0" Orientation="Horizontal" Spacing="10">
-                                <Button x:Name="ExportNewProfileButton" Click="ExportNewProfileButton_Click" Content="Export new profile to .nip" Style="{StaticResource AccentButtonStyle}" />
+                                <Button x:Name="ExportNewProfileButton" Click="ExportNewProfileButton_Click" Content="Export new profile to .nip" Style="{StaticResource AccentButtonStyle}" local:LocalizedText.ContentKey="GpuPageContent3CFAEF9F3C36" />
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
 
                     <StackPanel x:Name="DebloatPanel" Visibility="Collapsed">
-                        <InfoBar Margin="0,0,0,10" IsClosable="False" IsOpen="{Binding HasPreparedPackage}" Message="Prepare a package in Overview, then customize its contents here before launching the installer." Severity="Informational" />
-                        <controls:SettingsCard Margin="0,0,0,10" Header="Debloat preset" Description="Choose whether to keep the stock package, use the stripped preset, or customize manually." Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        <InfoBar
+                            Margin="0,0,0,10"
+                            IsClosable="False"
+                            IsOpen="{Binding HasPreparedPackage}"
+                            Message="Prepare a package in Overview, then customize its contents here before launching the installer."
+                            Severity="Informational"
+                            local:LocalizedText.MessageKey="GpuPage_DebloatHint" />
+                        <controls:SettingsCard
+                            Margin="0,0,0,10"
+                            Header="Debloat preset"
+                            Description="Choose whether to keep the stock package, use the stripped preset, or customize manually."
+                            Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                            local:LocalizedText.HeaderKey="GpuPage_DebloatPreset"
+                            local:LocalizedText.DescriptionKey="GpuPage_DebloatPresetDescription">
                             <controls:SettingsCard.HeaderIcon>
                                 <ImageIcon Source="ms-appx:///assets/Icons/Settings.png" />
                             </controls:SettingsCard.HeaderIcon>
-                            <ComboBox x:Name="DebloatModeComboBox" Width="220" ItemsSource="{Binding DebloatModeOptions}" SelectedItem="{Binding SelectedDebloatModeText, Mode=TwoWay}" SelectionChanged="DebloatModeComboBox_SelectionChanged" />
+                            <ComboBox
+                                x:Name="DebloatModeComboBox"
+                                MinWidth="180"
+                                MaxWidth="360"
+                                ItemsSource="{Binding DebloatModeOptions}"
+                                SelectedItem="{Binding SelectedDebloatModeText, Mode=TwoWay}"
+                                SelectionChanged="DebloatModeComboBox_SelectionChanged" />
                         </controls:SettingsCard>
 
-                        <TextBlock Style="{StaticResource SubGroupHeader}" Text="Packages" />
+                        <TextBlock Style="{StaticResource SubGroupHeader}" Text="Packages" local:LocalizedText.TextKey="GpuPageContent3DA50DE7BEEE" />
                         <ItemsControl x:Name="PackageComponentsItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="gpu:GpuPackageComponent">
@@ -349,7 +470,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <TextBlock Style="{StaticResource SubGroupHeader}" Text="Scheduled Tasks" />
+                        <TextBlock Style="{StaticResource SubGroupHeader}" Text="Scheduled Tasks" local:LocalizedText.TextKey="GpuPageContentE63A0405DE67" />
                         <ItemsControl x:Name="ScheduledTaskComponentsItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="gpu:GpuPackageComponent">
@@ -360,7 +481,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <TextBlock Style="{StaticResource SubGroupHeader}" Text="Display Driver Components" />
+                        <TextBlock Style="{StaticResource SubGroupHeader}" Text="Display Driver Components" local:LocalizedText.TextKey="GpuPageContentDFB2D4C80949" />
                         <ItemsControl x:Name="DisplayComponentsItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="gpu:GpuPackageComponent">
@@ -371,7 +492,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <TextBlock Style="{StaticResource SubGroupHeader}" Text="Installer Folders" />
+                        <TextBlock Style="{StaticResource SubGroupHeader}" Text="Installer Folders" local:LocalizedText.TextKey="GpuPage_InstallerFolders" />
                         <ItemsControl x:Name="FolderComponentsItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="gpu:GpuPackageComponent">
@@ -384,7 +505,13 @@
                     </StackPanel>
 
                     <StackPanel x:Name="PerformancePanel" Visibility="Collapsed">
-                        <InfoBar Margin="0,0,0,10" IsClosable="False" IsOpen="True" Message="Registry-backed tweaks apply only to NVIDIA systems with an installed NVIDIA display driver." Severity="Informational" />
+                        <InfoBar
+                            Margin="0,0,0,10"
+                            IsClosable="False"
+                            IsOpen="True"
+                            Message="Registry-backed tweaks apply only to NVIDIA systems with an installed NVIDIA display driver."
+                            Severity="Informational"
+                            local:LocalizedText.MessageKey="GpuPage_PerformanceInfo" />
 
                         <Border Margin="0,0,0,10"
                                 Padding="16"
@@ -393,19 +520,16 @@
                                 BorderThickness="1"
                                 CornerRadius="8">
                             <StackPanel>
-                                <Grid Margin="0,0,0,10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Spacing="2">
-                                        <TextBlock Text="NVIDIA performance tweaks" FontSize="16" FontWeight="SemiBold" />
-                                        <TextBlock Text="Refresh this tab after switching GPUs or applying multiple changes to pull the current registry state back into the list." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                <StackPanel x:Name="PerformanceTweaksHeaderPanel" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+                                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="NVIDIA performance tweaks" FontSize="16" FontWeight="SemiBold" local:LocalizedText.TextKey="GpuPage_PerformanceTweaks" />
+                                        <TextBlock Text="{Binding SelectedGpuDisplayName, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding SelectedGpuDriverSummaryText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                                        <Button x:Name="RefreshNvidiaTweakStatesButton" Click="RefreshNvidiaTweakStatesButton_Click" Content="Refresh values" />
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="8" VerticalAlignment="Center">
+                                        <Button x:Name="RefreshNvidiaTweakStatesButton" Click="RefreshNvidiaTweakStatesButton_Click" Content="Refresh values" local:LocalizedText.ContentKey="GpuPage_RefreshValues" />
                                     </StackPanel>
-                                </Grid>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
 
@@ -416,18 +540,14 @@
                                 BorderThickness="1"
                                 CornerRadius="8">
                             <StackPanel>
-                                <Grid Margin="0,0,0,10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Spacing="2">
-                                        <TextBlock Text="Settings" FontSize="16" FontWeight="SemiBold" />
-                                        <TextBlock Text="General NVIDIA registry settings." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                <StackPanel x:Name="PerformanceSettingsHeaderPanel" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+                                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="Settings" FontSize="16" FontWeight="SemiBold" local:LocalizedText.TextKey="GpuPageText91F2E57EF962" />
+                                        <TextBlock Text="General NVIDIA registry settings." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" local:LocalizedText.TextKey="GpuPage_SettingsGroupDescription" />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                                        <Button x:Name="ApplyNvidiaSettingsGroupButton" Click="ApplyNvidiaTweakGroup_Click" Tag="NvidiaSettings" Content="Apply all" />
-                                        <Button x:Name="RevertNvidiaSettingsGroupButton" Click="RevertNvidiaTweakGroup_Click" Tag="NvidiaSettings" Content="Remove all" />
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="8" VerticalAlignment="Center">
+                                        <Button x:Name="ApplyNvidiaSettingsGroupButton" Click="ApplyNvidiaTweakGroup_Click" Tag="NvidiaSettings" Content="Apply all" local:LocalizedText.ContentKey="GpuPage_ApplyAll" />
+                                        <Button x:Name="RevertNvidiaSettingsGroupButton" Click="RevertNvidiaTweakGroup_Click" Tag="NvidiaSettings" Content="Remove all" local:LocalizedText.ContentKey="GpuPage_RemoveAll" />
                                     </StackPanel>
                                 </StackPanel>
                                 <StackPanel x:Name="NvidiaSettingsListPanel" Spacing="0" />
@@ -441,18 +561,14 @@
                                 BorderThickness="1"
                                 CornerRadius="8">
                             <StackPanel>
-                                <Grid Margin="0,0,0,10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Spacing="2">
-                                        <TextBlock Text="RM Power Feature" FontSize="16" FontWeight="SemiBold" />
-                                        <TextBlock Text="Driver power-management flags." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                <StackPanel x:Name="PerformanceRmPowerHeaderPanel" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+                                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="RM Power Feature" FontSize="16" FontWeight="SemiBold" local:LocalizedText.TextKey="GpuPage_RmPowerFeature" />
+                                        <TextBlock Text="Driver power-management flags." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" local:LocalizedText.TextKey="GpuPage_RmPowerFeatureDescription" />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                                        <Button x:Name="ApplyNvidiaRmPowerFeatureGroupButton" Click="ApplyNvidiaTweakGroup_Click" Tag="RmPowerFeature" Content="Apply all" />
-                                        <Button x:Name="RevertNvidiaRmPowerFeatureGroupButton" Click="RevertNvidiaTweakGroup_Click" Tag="RmPowerFeature" Content="Remove all" />
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="8" VerticalAlignment="Center">
+                                        <Button x:Name="ApplyNvidiaRmPowerFeatureGroupButton" Click="ApplyNvidiaTweakGroup_Click" Tag="RmPowerFeature" Content="Apply all" local:LocalizedText.ContentKey="GpuPage_ApplyAll" />
+                                        <Button x:Name="RevertNvidiaRmPowerFeatureGroupButton" Click="RevertNvidiaTweakGroup_Click" Tag="RmPowerFeature" Content="Remove all" local:LocalizedText.ContentKey="GpuPage_RemoveAll" />
                                     </StackPanel>
                                 </StackPanel>
                                 <StackPanel x:Name="NvidiaRmPowerFeatureListPanel" Spacing="0" />
@@ -466,18 +582,14 @@
                                 BorderThickness="1"
                                 CornerRadius="8">
                             <StackPanel>
-                                <Grid Margin="0,0,0,10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Spacing="2">
-                                        <TextBlock Text="Telemetry" FontSize="16" FontWeight="SemiBold" />
-                                        <TextBlock Text="Telemetry-related registry values." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                <StackPanel x:Name="PerformanceTelemetryHeaderPanel" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+                                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="Telemetry" FontSize="16" FontWeight="SemiBold" local:LocalizedText.TextKey="GpuPage_Telemetry" />
+                                        <TextBlock Text="Telemetry-related registry values." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" local:LocalizedText.TextKey="GpuPage_TelemetryDescription" />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                                        <Button x:Name="ApplyNvidiaTelemetryGroupButton" Click="ApplyNvidiaTweakGroup_Click" Tag="Telemetry" Content="Apply all" />
-                                        <Button x:Name="RevertNvidiaTelemetryGroupButton" Click="RevertNvidiaTweakGroup_Click" Tag="Telemetry" Content="Remove all" />
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="8" VerticalAlignment="Center">
+                                        <Button x:Name="ApplyNvidiaTelemetryGroupButton" Click="ApplyNvidiaTweakGroup_Click" Tag="Telemetry" Content="Apply all" local:LocalizedText.ContentKey="GpuPage_ApplyAll" />
+                                        <Button x:Name="RevertNvidiaTelemetryGroupButton" Click="RevertNvidiaTweakGroup_Click" Tag="Telemetry" Content="Remove all" local:LocalizedText.ContentKey="GpuPage_RemoveAll" />
                                     </StackPanel>
                                 </StackPanel>
                                 <StackPanel x:Name="NvidiaTelemetryListPanel" Spacing="0" />
@@ -491,18 +603,14 @@
                                 BorderThickness="1"
                                 CornerRadius="8">
                             <StackPanel>
-                                <Grid Margin="0,0,0,10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Spacing="2">
-                                        <TextBlock Text="ECC" FontSize="16" FontWeight="SemiBold" />
-                                        <TextBlock Text="ECC-related registry values." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                <StackPanel x:Name="PerformanceEccHeaderPanel" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+                                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="ECC" FontSize="16" FontWeight="SemiBold" local:LocalizedText.TextKey="GpuPage_Ecc" />
+                                        <TextBlock Text="ECC-related registry values." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" local:LocalizedText.TextKey="GpuPage_EccDescription" />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                                        <Button x:Name="ApplyNvidiaEccGroupButton" Click="ApplyNvidiaTweakGroup_Click" Tag="Ecc" Content="Apply all" />
-                                        <Button x:Name="RevertNvidiaEccGroupButton" Click="RevertNvidiaTweakGroup_Click" Tag="Ecc" Content="Remove all" />
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="8" VerticalAlignment="Center">
+                                        <Button x:Name="ApplyNvidiaEccGroupButton" Click="ApplyNvidiaTweakGroup_Click" Tag="Ecc" Content="Apply all" local:LocalizedText.ContentKey="GpuPage_ApplyAll" />
+                                        <Button x:Name="RevertNvidiaEccGroupButton" Click="RevertNvidiaTweakGroup_Click" Tag="Ecc" Content="Remove all" local:LocalizedText.ContentKey="GpuPage_RemoveAll" />
                                     </StackPanel>
                                 </StackPanel>
                                 <StackPanel x:Name="NvidiaEccListPanel" Spacing="0" />
@@ -516,18 +624,14 @@
                                 BorderThickness="1"
                                 CornerRadius="8">
                             <StackPanel>
-                                <Grid Margin="0,0,0,10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Spacing="2">
-                                        <TextBlock Text="HDCP" FontSize="16" FontWeight="SemiBold" />
-                                        <TextBlock Text="HDCP-related registry values." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                <StackPanel x:Name="PerformanceHdcpHeaderPanel" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+                                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="HDCP" FontSize="16" FontWeight="SemiBold" local:LocalizedText.TextKey="GpuPage_Hdcp" />
+                                        <TextBlock Text="HDCP-related registry values." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" local:LocalizedText.TextKey="GpuPage_HdcpDescription" />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                                        <Button x:Name="ApplyNvidiaHdcpGroupButton" Click="ApplyNvidiaTweakGroup_Click" Tag="Hdcp" Content="Apply all" />
-                                        <Button x:Name="RevertNvidiaHdcpGroupButton" Click="RevertNvidiaTweakGroup_Click" Tag="Hdcp" Content="Remove all" />
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="8" VerticalAlignment="Center">
+                                        <Button x:Name="ApplyNvidiaHdcpGroupButton" Click="ApplyNvidiaTweakGroup_Click" Tag="Hdcp" Content="Apply all" local:LocalizedText.ContentKey="GpuPage_ApplyAll" />
+                                        <Button x:Name="RevertNvidiaHdcpGroupButton" Click="RevertNvidiaTweakGroup_Click" Tag="Hdcp" Content="Remove all" local:LocalizedText.ContentKey="GpuPage_RemoveAll" />
                                     </StackPanel>
                                 </StackPanel>
                                 <StackPanel x:Name="NvidiaHdcpListPanel" Spacing="0" />
@@ -543,23 +647,24 @@
                                 BorderThickness="1"
                                 CornerRadius="8">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Removal options" FontSize="16" FontWeight="SemiBold" />
-                                <TextBlock Text="Run the built-in driver cleanup workflow for the selected vendor." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
-                                <TextBlock Text="Choose the cleanup steps below, then watch the live log update in-place once removal starts." Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
-                                <CheckBox Content="Run vendor uninstaller" IsChecked="{Binding RunVendorUninstaller, Mode=TwoWay}" />
-                                <CheckBox Content="Remove driver store packages" IsChecked="{Binding RemoveDriverStorePackages, Mode=TwoWay}" />
-                                <CheckBox Content="Stop and remove services" IsChecked="{Binding RemoveServices, Mode=TwoWay}" />
-                                <CheckBox Content="Delete leftover files" IsChecked="{Binding RemoveLeftoverFiles, Mode=TwoWay}" />
-                                <CheckBox Content="Delete leftover registry entries" IsChecked="{Binding RemoveRegistryEntries, Mode=TwoWay}" />
-                                <CheckBox Content="Block automatic driver reinstall" IsChecked="{Binding BlockAutomaticReinstall, Mode=TwoWay}" />
-                                <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <Button x:Name="RunRemovalButton" Click="RunRemovalButton_Click" Content="Run removal" Style="{StaticResource AccentButtonStyle}" />
-                                    <Button x:Name="RebootNowButton" Click="RebootNowButton_Click" Content="Reboot now" />
+                                <TextBlock Text="Removal options" FontSize="16" FontWeight="SemiBold" local:LocalizedText.TextKey="GpuPage_RemovalOptions" />
+                                <TextBlock Text="Run the built-in driver cleanup workflow for the selected vendor." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" local:LocalizedText.TextKey="GpuPage_RemovalOptionsDescription" />
+                                <TextBlock Text="{Binding SelectedGpuDisplayName, Mode=OneWay}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding RemovalActionSummaryText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+                                <CheckBox Content="Run vendor uninstaller" IsChecked="{Binding RunVendorUninstaller, Mode=TwoWay}" local:LocalizedText.ContentKey="GpuPage_RunVendorUninstaller" />
+                                <CheckBox Content="Remove driver store packages" IsChecked="{Binding RemoveDriverStorePackages, Mode=TwoWay}" local:LocalizedText.ContentKey="GpuPage_RemoveDriverStorePackages" />
+                                <CheckBox Content="Stop and remove services" IsChecked="{Binding RemoveServices, Mode=TwoWay}" local:LocalizedText.ContentKey="GpuPage_StopRemoveServices" />
+                                <CheckBox Content="Delete leftover files" IsChecked="{Binding RemoveLeftoverFiles, Mode=TwoWay}" local:LocalizedText.ContentKey="GpuPage_DeleteLeftoverFiles" />
+                                <CheckBox Content="Delete leftover registry entries" IsChecked="{Binding RemoveRegistryEntries, Mode=TwoWay}" local:LocalizedText.ContentKey="GpuPage_DeleteLeftoverRegistry" />
+                                <CheckBox Content="Block automatic driver reinstall" IsChecked="{Binding BlockAutomaticReinstall, Mode=TwoWay}" local:LocalizedText.ContentKey="GpuPage_BlockAutomaticReinstall" />
+                                <StackPanel x:Name="RemovalActionsPanel" Orientation="Horizontal" Spacing="10">
+                                    <Button x:Name="RunRemovalButton" Click="RunRemovalButton_Click" Content="Run removal" Style="{StaticResource AccentButtonStyle}" local:LocalizedText.ContentKey="GpuPage_RunRemoval" />
+                                    <Button x:Name="RebootNowButton" Click="RebootNowButton_Click" Content="Reboot now" local:LocalizedText.ContentKey="GpuPage_RebootNow" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
 
-                        <TextBlock Style="{StaticResource SubGroupHeader}" Text="Removal log" />
+                        <TextBlock Style="{StaticResource SubGroupHeader}" Text="Removal log" local:LocalizedText.TextKey="GpuPage_RemovalLog" />
                         <Border
                             Padding="12"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -583,4 +688,3 @@
         </ScrollViewer>
     </Grid>
 </Page>
-

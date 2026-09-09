@@ -8,8 +8,6 @@
   "SystemInfo_NotDetected": "Không phát hiện playbook nào",
   "SystemInfo_Conflicting": "Phát hiện nhiều dấu hiệu playbook xung đột",
   "SystemInfo_ReadOnly": "Được phát hiện cục bộ mà không thay đổi cài đặt",
-
-
   "ToBeTranslated": "Đang cấu hình với độ trễ bằng 0..",
   "ConfigurationStatus_Applying": "Đang áp dụng thay đổi...",
   "ConfigurationStatus_Unavailable": "Không khả dụng",
@@ -121,17 +119,12 @@
   "ShortcutIcon": "Thay đổi biểu tượng của shortcut",
   "Mitigations": "Thay đổi trạng thái biện pháp giảm thiểu",
   "SafeMode": "Vào Safe Mode khi khởi động",
-
-
   "Animations": "Hiệu ứng động",
   "AnimationsDescription": "Bật hoặc tắt hiệu ứng động của Windows",
-
   "ExtractContextMenu": "Tùy chọn \"Giải nén\" trong menu ngữ cảnh",
   "ExtractContextMenuDescription": "Thêm tùy chọn \"Giải nén\" vào menu ngữ cảnh cho các tệp nén",
-
   "RunWithPriority": "Tùy chọn \"Chạy với mức ưu tiên\" trong menu ngữ cảnh",
   "RunWithPriorityDescription": "Thêm tùy chọn \"Chạy với mức ưu tiên\" vào menu ngữ cảnh cho các ứng dụng",
-
   "LanmanWorkstation": "Lanman Workstation (SMB)",
   "LanmanWorkstationDescription": "Bật hoặc tắt dịch vụ Lanman Workstation cho chia sẻ tệp SMB",
   "SyncWindowsClock": "Đồng bộ đồng hồ Windows",
@@ -140,182 +133,122 @@
   "RestartAudioServices": "Khởi động lại dịch vụ âm thanh",
   "RestartAudioServicesDescription": "Khởi động lại Windows Audio và Audio Endpoint Builder. Âm thanh sẽ ngắt trong chốc lát khi thiết bị kết nối lại.",
   "RestartAudioServicesSuccess": "Đã khởi động lại dịch vụ âm thanh.",
-
   "NetworkDiscovery": "Khám phá mạng (Network Discovery)",
   "NetworkDiscoveryDescription": "Bật hoặc tắt khám phá mạng để chia sẻ tệp dễ dàng hơn",
-
   "Printing": "In ấn",
   "PrintingDescription": "Bật các dịch vụ in mà SynergyOS tắt theo mặc định. Tắt sẽ áp dụng lại trạng thái dịch vụ Spooler/in ấn đã bị SynergyOS vô hiệu hóa. Có thể cần khởi động lại.",
-
   "WiFi": "Wi-Fi",
   "WiFiDescription": "Bật các dịch vụ Wi-Fi mà SynergyOS tắt theo mặc định. Tắt sẽ vô hiệu hóa lại các dịch vụ liên quan đến WLAN/WWAN.",
-
   "NvidiaDispayContainer": "NVIDIA Display Container",
   "NvidiaDispayContainerDescription": "Bật hoặc tắt dịch vụ NVIDIA Display Container",
-
   "AddNvidiaDisplayContainerContextMenu": "NVIDIA Display Container trong menu ngữ cảnh",
   "AddNvidiaDisplayContainerContextMenuDescription": "Thêm nút bật/tắt NVIDIA Display Container vào menu ngữ cảnh",
-
   "CpuIdleContextMenu": "Nút bật/tắt CPU Idle trong menu ngữ cảnh",
   "CpuIdleContextMenuDescription": "Thêm nút bật/tắt CPU Idle vào menu ngữ cảnh",
-
   "LockScreen": "Bật màn hình khóa",
   "LockScreenDescription": "Bật hoặc tắt màn hình khóa của Windows",
-
   "ShortcutText": "Chữ \"Shortcut\"",
   "ShortcutTextDescription": "Hiện hoặc ẩn chữ \"Shortcut\" trên các shortcut",
-
   "BootLogo": "Logo khởi động",
   "BootLogoDescription": "Bật hoặc tắt logo khởi động Windows",
-
   "BootMessages": "Thông báo khởi động",
   "BootMessagesDescription": "Bật hoặc tắt thông báo khởi động Windows",
-
   "NewBootMenu": "Menu khởi động mới",
   "NewBootMenuDescription": "Bật hoặc tắt menu khởi động mới của Windows",
-
   "SpinningAnimation": "Hiệu ứng xoay khi khởi động",
   "SpinningAnimationDescription": "Bật hoặc tắt hiệu ứng xoay khi khởi động",
-
   "AdvancedBootOptions": "Tùy chọn khởi động nâng cao khi khởi động",
   "AdvancedBootOptionsDescription": "Bật hoặc tắt tùy chọn khởi động nâng cao khi khởi động",
-
   "AutomaticRepair": "Tự động sửa chữa",
   "AutomaticRepairDescription": "Bật hoặc tắt tự động sửa chữa khi khởi động thất bại",
-
   "KernelParameters": "Tham số kernel khi khởi động",
   "KernelParametersDescription": "Bật hoặc tắt tham số kernel khi khởi động",
-
   "HighestMode": "Chế độ cao nhất",
   "HighestModeDescription": "Bật hoặc tắt chế độ cao nhất cho màn hình",
-
   "CompactView": "Chế độ xem thu gọn",
   "CompactViewDescription": "Bật hoặc tắt chế độ xem thu gọn trong File Explorer",
-
   "RemovableDrivesInSidebar": "Ổ đĩa di động trong thanh bên",
   "RemovableDrivesInSidebarDescription": "Hiện hoặc ẩn ổ đĩa di động trong thanh bên của File Explorer",
-
   "BackgroundApps": "Ứng dụng chạy nền",
   "BackgroundAppsDescription": "Bật hoặc tắt ứng dụng chạy nền",
-
   "SearchIndexing": "Lập chỉ mục tìm kiếm",
   "SearchIndexingDescription": "Bật hoặc tắt lập chỉ mục tìm kiếm",
-
   "FsoAndGameBar": "Tối ưu hóa toàn màn hình và Xbox Game Bar",
   "FsoAndGameBarDescription": "Bật hoặc tắt Fullscreen Optimizations và Xbox Game Bar, có lưu trạng thái để hoàn tác",
-
   "AutomaticUpdates": "Cập nhật tự động",
   "AutomaticUpdatesDescription": "Bật hoặc tắt cập nhật tự động",
-
   "DeliveryOptimisation": "Tối ưu hóa phân phối (Delivery Optimisation)",
   "DeliveryOptimisationDescription": "Bật hoặc tắt tối ưu hóa phân phối",
-
   "Hibernation": "Ngủ đông (Hibernation)",
   "HibernationDescription": "Bật hoặc tắt chế độ ngủ đông",
-
   "Location": "Vị trí",
   "LocationDescription": "Bật hoặc tắt dịch vụ định vị",
-
   "PhoneLink": "Phone Link và thiết bị di động",
   "PhoneLinkDescription": "Bật hoặc tắt Phone Link và các thiết bị di động",
-
   "PowerSaving": "Tiết kiệm điện",
   "PowerSavingDescription": "Bật hoặc tắt các tính năng tiết kiệm điện",
-
   "Sleep": "Chế độ ngủ (Sleep)",
   "SleepDescription": "Bật hoặc tắt chế độ ngủ",
-
   "SystemRestore": "Khôi phục hệ thống",
   "SystemRestoreDescription": "Mở Bảo vệ Hệ thống để quản lý điểm khôi phục hệ thống và cài đặt bảo vệ.",
-
   "UpdateNotifications": "Thông báo cập nhật",
   "UpdateNotificationsDescription": "Bật hoặc tắt thông báo cập nhật",
-
   "WebSearch": "Tìm kiếm web trong Menu Start",
   "WebSearchDescription": "Bật hoặc tắt tìm kiếm web trong Menu Start",
-
   "Widgets": "Tiện ích trên màn hình nền",
   "WidgetsDescription": "Bật hoặc tắt tiện ích trên màn hình nền",
-
   "WindowsSpotlight": "Windows Spotlight",
   "WindowsSpotlightDescription": "Bật hoặc tắt Windows Spotlight trên màn hình khóa",
-
   "AppStoreArchiving": "Lưu trữ Microsoft Store",
   "AppStoreArchivingDescription": "Bật hoặc tắt lưu trữ Microsoft Store",
-
   "TakeOwnership": "Thêm \"Lấy quyền sở hữu\" vào menu ngữ cảnh",
   "TakeOwnershipDescription": "Thêm tùy chọn \"Lấy quyền sở hữu\" vào menu ngữ cảnh cho tệp và thư mục",
-
   "OldContextMenu": "Menu ngữ cảnh cũ (trước Windows 11)",
   "OldContextMenuDescription": "Bật hoặc tắt menu ngữ cảnh cũ từ trước Windows 11",
-
   "EdgeSwipe": "Vuốt từ cạnh màn hình (Edge Swipe)",
   "EdgeSwipeDescription": "Bật hoặc tắt cử chỉ vuốt từ cạnh màn hình",
-
   "AppIconsThumbnail": "Biểu tượng ứng dụng trên hình thu nhỏ",
   "AppIconsThumbnailDescription": "Hiện hoặc ẩn biểu tượng ứng dụng trên hình thu nhỏ của tệp",
-
   "AutomaticFolderDiscovery": "Tự động phát hiện loại thư mục",
   "AutomaticFolderDiscoveryDescription": "Bật hoặc tắt tự động phát hiện loại thư mục trong File Explorer",
-
   "Gallery": "Bật thư viện ảnh (Gallery)",
   "GalleryDescription": "Bật hoặc tắt thư viện ảnh trong File Explorer",
-
   "SnapLayout": "Bật bố cục Snap cho cửa sổ",
   "SnapLayoutDescription": "Bật hoặc tắt bố cục Snap cho cửa sổ",
-
   "RecentItems": "Mở khóa mục gần đây trong File Explorer",
   "RecentItemsDescription": "Bật hoặc tắt mục gần đây trong File Explorer",
-
   "VerboseStatusMessage": "Thông báo trạng thái chi tiết",
   "VerboseStatusMessageDescription": "Bật hoặc tắt thông báo trạng thái chi tiết khi khởi động và tắt máy",
-
   "SuperFetch": "SuperFetch",
   "SuperFetchDescription": "Bật hoặc tắt dịch vụ SuperFetch (SysMain)",
-
   "StaticIp": "Tự động đặt IP tĩnh",
   "StaticIpDescription": "Tự động cấu hình địa chỉ IP tĩnh cho card mạng của bạn",
-
   "HideAppBrowserControl": "Điều khiển trình duyệt ứng dụng",
   "HideAppBrowserControlDescription": "Hiện/Ẩn thành phần trình duyệt nhúng trong Windows Security",
-
   "SecurityHealthTray": "Nút Security Health trong khay hệ thống",
   "SecurityHealthTrayDescription": "Hiện hoặc ẩn nút Security Health trong khay hệ thống của thanh tác vụ",
-
   "UAC": "Kiểm soát tài khoản người dùng (UAC)",
   "UACDescription": "Nhắc xác nhận nâng quyền khi ứng dụng cần quyền quản trị viên. Tắt sẽ loại bỏ các thông báo UAC (mặc định của SynergyOS) nhưng giảm khả năng bảo vệ trước các thay đổi hệ thống không mong muốn. Cần khởi động lại.",
-
   "FaultTolerantHeap": "Fault Tolerant Heap",
   "FaultTolerantHeapDescription": "Bật hoặc tắt biện pháp giảm thiểu Fault Tolerant Heap",
-
   "Copilot": "Bật Microsoft Copilot",
   "CopilotDescription": "Bật hoặc tắt tích hợp Microsoft Copilot trong Windows 11",
-
   "Recall": "Bật Windows Recall",
   "RecallDescription": "Bật hoặc tắt tính năng Windows Recall",
-
   "CpuIdle": "Bật CPU Idling",
   "CpuIdleDescription": "Bật hoặc tắt tính năng CPU idling",
-
   "ProcessExplorer": "Cài đặt Process Explorer",
   "ProcessExplorerDescription": "Cài đặt Process Explorer từ Microsoft Sysinternals",
-
   "VbsState": "Bảo mật dựa trên ảo hóa (VBS)",
   "VbsStateDescription": "Bật VBS, HVCI, Credential Guard và các tính năng bảo vệ liên quan mà SynergyOS tắt theo mặc định. Cần khởi động lại.",
-
   "GiveAccessToMenu": "Menu \"Cấp quyền truy cập cho\"",
   "GiveAccessToMenuDescription": "Thêm tùy chọn \"Cấp quyền truy cập cho\" vào menu ngữ cảnh cho tệp và thư mục",
-
   "NetworkNavigationPane": "Khung điều hướng mạng",
   "NetworkNavigationPaneDescription": "Hiện hoặc ẩn khung điều hướng mạng trong File Explorer",
-
   "FileSharing": "Chia sẻ tệp",
   "FileSharingDescription": "Bật hoặc tắt các tính năng chia sẻ tệp",
-
   "WindowsHello": "Windows Hello",
   "WindowsHelloDescription": "Bật hoặc tắt xác thực sinh trắc học Windows Hello",
-
-
   "Home_WinVer": "Phiên bản Windows",
   "Home_PlaybookVer": "Phiên bản Playbook",
   "Home_HeaderText": "Trang chủ",
@@ -340,7 +273,6 @@
   "NewProfilesButton": "Tạo hồ sơ mới",
   "IncompatibleVer": "Bản cài đặt Windows hiện tại không tương thích với phiên bản Toolbox này. Vui lòng cài đặt SynergyOS.",
   "StatingServices": "Đang khởi động dịch vụ...",
-
   "CurrentConfigIsSavedMessage": "Cấu hình hiện tại của bạn sẽ được lưu vào hồ sơ này",
   "DeleteProfileConfirmation": "Bạn có chắc chắn muốn xóa hồ sơ này không?",
   "TryDeleteDefaultProfile": "Bạn không thể xóa hồ sơ mặc định",
@@ -396,17 +328,13 @@
   "ResetWindowsUpdateDeferral": "Đặt lại trì hoãn Windows Update",
   "MicrosoftStoreToggle": "Bật/Tắt Microsoft Store",
   "MicrosoftStoreDescription": "Đăng ký hoặc hủy đăng ký gói Microsoft Store cho người dùng hiện tại.",
-
-
   "Tile_DocumentationTitle": "Ủng hộ Kwanteks",
   "Tile_DocumentationDescription": "Khám phá nội dung của Kwanteks!",
   "Tile_DiscordTitle": "Discord",
   "Tile_DiscordDescription": "Yêu cầu hỗ trợ và kết bạn!",
   "Tile_GithubTitle": "GitHub",
   "Tile_GithubDescription": "Khám phá mã nguồn và đóng góp",
-
   "SearchPlaceholder": "Tìm kiếm cài đặt...",
-
   "Home": "Trang chủ",
   "Installer": "Trình cài đặt",
   "Adjustments": "Tùy chỉnh",
@@ -420,7 +348,6 @@
   "Advanced": "Cấu hình nâng cao",
   "Security": "Bảo mật",
   "Troubleshooting": "Khôi phục",
-
   "SpecsPageTitle": "Thông số kỹ thuật",
   "SpecsPageDescription": "Ảnh chụp chỉ đọc về phần cứng và phiên bản Windows của hệ thống này. Không thể thay đổi gì tại đây.",
   "SpecsPageErrorTitle": "Thông số kỹ thuật",
@@ -443,14 +370,13 @@
   "CleanerPageRunDiskCleanup": "Chạy dọn dẹp đĩa",
   "CleanerPageJunkFiles": "Tệp rác",
   "CleanerPageScanCleanDescription": "Quét và dọn dẹp các tệp tạm thời, bộ đệm, nhật ký và các tệp rác khác.",
-  "CleanerPageScanClean": "Quét \u0026 Làm sạch",
+  "CleanerPageScanClean": "Quét & Làm sạch",
   "CleanerPageScan": "Quét",
   "CleanerPageCleanSelected": "Đã chọn sạch",
   "CleanerPageSelectAll": "Chọn tất cả",
   "CleanerPageSelectNone": "Chọn không có",
   "CleanerPageWizTreeDescription": "Khởi chạy WizTree xách tay (thông tin sử dụng đĩa chi tiết)",
   "CleanerPageLaunchWizTree": "Khởi chạy WizTree",
-
   "HomePageText3E77C2003BD6": "Có gì mới trong SynergyOS",
   "HomePageContentB7F2E2F3517E": "Xem tất cả các bản phát hành",
   "HomePageContent8C338141C3FC": "Đọc thêm",
@@ -540,15 +466,15 @@
   "GpuPageContentDFB2D4C80949": "Thành phần trình điều khiển hiển thị",
   "GpuPageContent021013D0F6AD": "Tối ưu hóa trình điều khiển",
   "GpuPageTextA9EEE4193E26": "Áp dụng cấu hình được đề xuất: vô hiệu hóa tất cả các tác vụ đã lên lịch, chỉ giữ lại trình điều khiển hiển thị và các gói Cài đặt AMD, đồng thời chỉ giữ lại các thành phần hiển thị cốt lõi. Nếu gói đã nhập của bạn khác với bố cục tiêu chuẩn của AMD, chỉ các mục phù hợp mới được điều chỉnh.",
-  "GpuPageTextE34E1FDCD339": "Bỏ chọn \u0027Giữ\u0027 cho các gói bạn muốn xóa.",
+  "GpuPageTextE34E1FDCD339": "Bỏ chọn 'Giữ' cho các gói bạn muốn xóa.",
   "GpuPageTextB62855F6E149": "Các gói là trình cài đặt và trình điều khiển MSI đi kèm với Phần mềm AMD Radeon. Các gói không được chọn sẽ bị loại khỏi quá trình cài đặt.",
   "GpuPageContentE03C27EFA9C8": "Chọn tất cả",
   "GpuPageContentEFB8BCD64AA5": "Chọn Không có",
   "GpuPageContent311C673C25C9": "Giữ",
-  "GpuPageText3D08116EF7A8": "Bỏ chọn \u0027Đã bật\u0027 để tắt tác vụ đã lên lịch.",
+  "GpuPageText3D08116EF7A8": "Bỏ chọn 'Đã bật' để tắt tác vụ đã lên lịch.",
   "GpuPageText14936C27052A": "Các tác vụ theo lịch trình được AMD tạo ra để chạy các hoạt động nền như cập nhật trình điều khiển, đo từ xa và các tính năng tự động khởi chạy. Việc tắt những tính năng này sẽ ngăn chặn hoạt động nền không cần thiết.",
   "GpuPageContent4DA4000696E1": "Đã bật",
-  "GpuPageText58AB99CEB612": "Bỏ chọn \u0027Giữ\u0027 cho các thành phần bạn muốn xóa.",
+  "GpuPageText58AB99CEB612": "Bỏ chọn 'Giữ' cho các thành phần bạn muốn xóa.",
   "GpuPageText3EB88E8793EF": "Các thành phần trình điều khiển hiển thị là các gói trình điều khiển INF cung cấp chức năng GPU cụ thể. Nên giữ lại các thành phần cốt lõi như trình điều khiển hiển thị, OpenCL, OpenGL và Vulkan. Các thành phần âm thanh, máy ảnh và đo từ xa thường có thể được gỡ bỏ.",
   "GpuPageContentC022DCF13526": "Áp dụng và mở trình cài đặt",
   "GpuPageContent327832D2E055": "Đặt lại về mặc định",
@@ -567,7 +493,6 @@
   "GpuPagePlaceholderTextFD59CDAB4C9D": "Giá trị",
   "GpuPageContent6BA9EA1B7E66": "Xóa",
   "GpuPageContent3CFAEF9F3C36": "Xuất hồ sơ mới sang .nip",
-
   "PowerPlansPageHeader9EF26DE51104": "Sơ đồ điện hiện tại",
   "PowerPlansPageDescription320073B0E4BC": "Gói Windows hiện đang sử dụng.",
   "PowerPlansPageHeaderEC2BEE95E81C": "Hiệu suất SOS của SynToolkit",
@@ -622,15 +547,11 @@
   "GpuPageHeaderAC283BA30A9F": "Tên hồ sơ",
   "GpuPageDescriptionF27AFB4CDFAD": "Tên thực thi được phân tách bằng dấu phẩy, ví dụ: game.exe, launcher.exe. Để trống cho cấu hình cơ sở áp dụng cho tất cả các ứng dụng.",
   "GpuPageHeader3EE89599DB6C": "Thực thi",
-
   "Language": "Ngôn ngữ",
-
   "NoFavorites": "Bạn chưa thêm mục nào vào danh sách yêu thích.",
   "SystemInfo": "Về hệ thống này:",
   "LearnMore": "Tìm hiểu thêm",
-
   "TroubleshootingDocumenation": "Tài liệu khắc phục sự cố",
-
   "ExperimentsHeader": "Thử nghiệm",
   "ExperimentsCardHeader": "Tính năng thử nghiệm",
   "ExperimentsCardDescription": "Các tính năng này đang trong giai đoạn thử nghiệm và có thể không hoạt động đúng như mong đợi. Cần khởi động lại để áp dụng thay đổi",
@@ -638,14 +559,12 @@
   "SearchExperimentDescription": "Bật thanh tìm kiếm để nhanh chóng tìm cài đặt trong SynToolkit",
   "IconsExperiment": "Biểu tượng",
   "IconsExperimentDescription": "Bật biểu tượng bên cạnh mỗi cài đặt để dễ nhận biết và bắt mắt hơn",
-
   "RadeonSlimmer_OptimizeDriver": "Tối ưu hóa Driver",
   "RadeonSlimmer_OptimizeDriverTooltip": "Áp dụng cấu hình được đề xuất: tắt tất cả các tác vụ đã lên lịch, chỉ giữ lại driver hiển thị và các gói AMD Settings, đồng thời chỉ giữ lại các thành phần hiển thị cốt lõi. Nếu gói bạn nhập khác với bố cục chuẩn của AMD, chỉ những mục trùng khớp mới được điều chỉnh.",
   "RadeonSlimmer_OptimizationSuccess": "Đã áp dụng tối ưu hóa được đề xuất.",
   "RadeonSlimmer_OptimizationPartial": "Đã áp dụng tối ưu hóa được đề xuất. Một số mục trong gói bạn nhập không khớp với bố cục chuẩn của AMD và đã được giữ nguyên — hãy kiểm tra lại các tab nếu cần.",
   "RadeonSlimmer_OptimizationSkipped": "Đã áp dụng tối ưu hóa ở những nơi có thể. {0} không khớp với gói này và đã bị bỏ qua.",
-  "RadeonSlimmer_OptimizationNoMatch": "Gói nhập này không khớp với bố cục gói AMD được nhận dạng, vì vậy không có tối ưu hóa nào được áp dụng. Bạn vẫn có thể cấu hình cài đặt theo cách thủ công."
-  ,
+  "RadeonSlimmer_OptimizationNoMatch": "Gói nhập này không khớp với bố cục gói AMD được nhận dạng, vì vậy không có tối ưu hóa nào được áp dụng. Bạn vẫn có thể cấu hình cài đặt theo cách thủ công.",
   "NeedsAttention": "Cần chú ý",
   "Installer_NvidiaAppDescription": "Ứng dụng NVIDIA chính thức cho trình điều khiển đồ họa, cài đặt trò chơi và các tính năng NVIDIA.",
   "Installer_AmdAdrenalinDescription": "Ứng dụng AMD chính thức cho trình điều khiển đồ họa Radeon, cài đặt trò chơi và các tính năng hiệu năng.",
@@ -654,8 +573,7 @@
   "Installer_FilterAll": "Tất cả",
   "Installer_FilterInstalled": "Đã cài đặt",
   "Installer_FilterNotInstalled": "Chưa cài đặt",
-  "Installer_FilterNeedsUpdate": "Cần cập nhật"
-  ,
+  "Installer_FilterNeedsUpdate": "Cần cập nhật",
   "NeedsAttention_Subtitle": "Kiểm tra trình điều khiển và ứng dụng lỗi thời hoặc bị thiếu, phiên bản SynToolkit cũ, không có điểm khôi phục và đồng hồ Windows không đồng bộ.",
   "NeedsAttention_Refresh": "Làm mới",
   "NeedsAttention_AllClear": "Mọi thứ đều ổn",
@@ -701,8 +619,107 @@
   "NeedsAttention_InstallerUpdateTitle": "Cập nhật {0}",
   "NeedsAttention_InstallerUpdateVersionDescription": "Cập nhật từ {0} lên {1}.",
   "NeedsAttention_InstallerUpdateDescription": "Đã có phiên bản mới hơn.",
-  "NeedsAttention_OpenInstaller": "Mở trình cài đặt"
-  ,
+  "NeedsAttention_OpenInstaller": "Mở trình cài đặt",
   "NeedsAttention_IgnoreForThreeMonths": "Bỏ qua trong 3 tháng",
-  "NeedsAttention_IgnoredForThreeMonths": "Đã bỏ qua cảnh báo trong 3 tháng."
+  "NeedsAttention_IgnoredForThreeMonths": "Đã bỏ qua cảnh báo trong 3 tháng.",
+  "GpuPage_Title": "Graphics Processing Unit",
+  "GpuPage_Description": "Download vendor drivers, slim installation packages, apply NVIDIA profile settings, and remove leftover GPU driver components when needed.",
+  "GpuPage_TabOverview": "Overview",
+  "GpuPage_TabDebloat": "Debloat",
+  "GpuPage_TabPerformance": "Performance",
+  "GpuPage_TabRemoval": "Removal",
+  "GpuPage_DetectedGpu": "Detected GPU",
+  "GpuPage_DetectedGpuDescription": "Choose which installed GPU to manage.",
+  "GpuPage_DriverVersion": "Driver version",
+  "GpuPage_DriverVersionDescription": "Fetch vendor releases for the selected GPU.",
+  "GpuPage_Refresh": "Refresh",
+  "GpuPage_PackageActions": "Package actions",
+  "GpuPage_PackageActionsDescription": "Prepare the installer package for stock or customized installation.",
+  "GpuPage_PreparePackage": "Prepare package",
+  "GpuPage_InstallPrepared": "Install prepared package",
+  "GpuPage_ReloadPackage": "Reload package",
+  "GpuPage_PreconfiguredProfilesDescriptionShort": "Pre-configured profiles bundled with SynToolkit.",
+  "GpuPage_NoBundledProfiles": "No bundled profiles found",
+  "GpuPage_ExecutablesDescriptionShort": "Comma-separated executable names, e.g. game.exe, launcher.exe.",
+  "GpuPage_DebloatHint": "Prepare a package in Overview, then customize its contents here before launching the installer.",
+  "GpuPage_DebloatPreset": "Debloat preset",
+  "GpuPage_DebloatPresetDescription": "Choose whether to keep the stock package, use the stripped preset, or customize manually.",
+  "GpuPage_InstallerFolders": "Installer Folders",
+  "GpuPage_PerformanceInfo": "Registry-backed tweaks apply only to NVIDIA systems with an installed NVIDIA display driver.",
+  "GpuPage_PerformanceTweaks": "NVIDIA performance tweaks",
+  "GpuPage_RefreshValues": "Refresh values",
+  "GpuPage_SettingsGroupDescription": "General NVIDIA registry settings.",
+  "GpuPage_ApplyAll": "Apply all",
+  "GpuPage_RemoveAll": "Remove all",
+  "GpuPage_RmPowerFeature": "RM Power Feature",
+  "GpuPage_RmPowerFeatureDescription": "Driver power-management flags.",
+  "GpuPage_Telemetry": "Telemetry",
+  "GpuPage_TelemetryDescription": "Telemetry-related registry values.",
+  "GpuPage_Ecc": "ECC",
+  "GpuPage_EccDescription": "ECC-related registry values.",
+  "GpuPage_Hdcp": "HDCP",
+  "GpuPage_HdcpDescription": "HDCP-related registry values.",
+  "GpuPage_RemovalOptions": "Removal options",
+  "GpuPage_RemovalOptionsDescription": "Run the built-in driver cleanup workflow for the selected vendor.",
+  "GpuPage_RunVendorUninstaller": "Run vendor uninstaller",
+  "GpuPage_RemoveDriverStorePackages": "Remove driver store packages",
+  "GpuPage_StopRemoveServices": "Stop and remove services",
+  "GpuPage_DeleteLeftoverFiles": "Delete leftover files",
+  "GpuPage_DeleteLeftoverRegistry": "Delete leftover registry entries",
+  "GpuPage_BlockAutomaticReinstall": "Block automatic driver reinstall",
+  "GpuPage_RunRemoval": "Run removal",
+  "GpuPage_RebootNow": "Reboot now",
+  "GpuPage_RemovalLog": "Removal log",
+  "GpuPage_DetectingGpus": "Detecting installed GPUs...",
+  "GpuPage_AmdDriversTitle": "AMD GPU Drivers",
+  "GpuPage_NvidiaDriversTitle": "NVIDIA GPU Drivers",
+  "GpuPage_GpuDriversTitle": "GPU Drivers",
+  "GpuPage_AmdDriversSubtitle": "Download, debloat, and remove AMD graphics drivers.",
+  "GpuPage_NvidiaDriversSubtitle": "Download, debloat, tune, and remove NVIDIA graphics drivers.",
+  "GpuPage_NoGpuSelected": "No GPU selected",
+  "GpuPage_UnsupportedVendor": "Unsupported vendor",
+  "GpuPage_InstalledDriverFormat": "Installed driver: {0}",
+  "GpuPage_PreparedPackageFormat": "Prepared {0} package at {1}",
+  "GpuPage_NoCleanupSteps": "No cleanup steps selected.",
+  "GpuPage_WillRunFormat": "Will run: {0}",
+  "GpuPage_NoGpuDetected": "No GPU could be detected.",
+  "GpuPage_DetectedFormat": "Detected: {0}",
+  "GpuPage_DebloatStripped": "Stripped",
+  "GpuPage_DebloatStock": "Stock",
+  "GpuPage_DebloatCustom": "Custom",
+  "GpuPage_ActionVendorUninstall": "vendor uninstall",
+  "GpuPage_ActionDriverStorePurge": "driver-store purge",
+  "GpuPage_ActionServiceRemoval": "service removal",
+  "GpuPage_ActionFileCleanup": "file cleanup",
+  "GpuPage_ActionRegistryCleanup": "registry cleanup",
+  "GpuPage_ActionAutoReinstallBlock": "auto-reinstall block",
+  "GpuPage_NoCompatibleGpu": "No compatible GPU is selected.",
+  "GpuPage_ChooseDriverFirst": "Choose a driver version first.",
+  "GpuPage_ExtractingPackage": "Extracting driver package...",
+  "GpuPage_DownloadingPackageFormat": "Downloading driver package: {0}%",
+  "GpuPage_PrepareBeforeInstall": "Prepare a driver package before installing.",
+  "GpuPage_InstallerLaunched": "Installer launched successfully.",
+  "GpuPage_PackageRefreshed": "Prepared package refreshed.",
+  "GpuPage_NoGpuForRemoval": "No GPU is selected for removal.",
+  "GpuPage_RemovalCancelled": "Driver removal was cancelled.",
+  "GpuPage_Unknown": "Unknown",
+  "GpuPage_RebootDialogTitle": "Reboot to finish GPU cleanup?",
+  "GpuPage_RebootDialogContent": "The removal workflow finished. Reboot Windows now to complete GPU driver cleanup.",
+  "GpuPage_RebootDialogLater": "Later",
+  "GpuPage_ApplyProfilesDialogTitle": "Apply profiles to the NVIDIA driver?",
+  "GpuPage_ApplyProfilesDialogContent": "This writes the profiles above directly to your NVIDIA driver settings, creating any profiles that do not already exist.",
+  "GpuPage_ApplyProfilesDialogPrimary": "Apply",
+  "GpuPage_ApplyProfilesDialogClose": "Cancel",
+  "GpuPage_NotSet": "Not set",
+  "GpuPage_Checking": "Checking...",
+  "GpuPage_Unavailable": "Unavailable",
+  "GpuPage_AppliedTweakFormat": "Applied {0}. Restart Windows to finish applying changes.",
+  "GpuPage_RemovedTweakFormat": "Removed {0}. Restart Windows to finish applying changes.",
+  "GpuPage_LoadNipBeforeExport": "Load a .nip profile before exporting loaded profiles.",
+  "GpuPage_ExportedLoadedFormat": "Exported {0} setting(s) across {1} loaded profile(s) to {2}.",
+  "GpuPage_EnterProfileName": "Enter a profile name before exporting a new profile.",
+  "GpuPage_AddSettingBeforeExport": "Add at least one setting before exporting a new profile. To export an imported file, use 'Export loaded to .nip'.",
+  "GpuPage_ExportedNewFormat": "Exported '{0}' to {1}.",
+  "GpuPage_AppliedProfilesFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created).",
+  "GpuPage_AppliedProfilesSkippedFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created). {3} setting(s) were skipped - see the log for details."
 }

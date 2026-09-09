@@ -8,8 +8,6 @@
   "SystemInfo_NotDetected": "既知のPlaybookは検出されませんでした",
   "SystemInfo_Conflicting": "複数のPlaybookマーカーが検出されました",
   "SystemInfo_ReadOnly": "設定を変更せずにローカルで検出されました",
-
-
   "ToBeTranslated": "遅延0で設定中..",
   "ConfigurationStatus_Applying": "変更を適用中...",
   "ConfigurationStatus_Unavailable": "利用不可",
@@ -121,17 +119,12 @@
   "ShortcutIcon": "ショートカットのアイコンを変更",
   "Mitigations": "緩和策の状態を変更",
   "SafeMode": "起動時にセーフモードで開始",
-
-
   "Animations": "アニメーション",
   "AnimationsDescription": "Windowsのアニメーションを有効または無効にします",
-
   "ExtractContextMenu": "コンテキストメニューの「展開」オプション",
   "ExtractContextMenuDescription": "圧縮ファイルのコンテキストメニューに「展開」オプションを追加します",
-
   "RunWithPriority": "コンテキストメニューの「優先度を指定して実行」",
   "RunWithPriorityDescription": "アプリケーションのコンテキストメニューに「優先度を指定して実行」オプションを追加します",
-
   "LanmanWorkstation": "Lanman Workstation（SMB）",
   "LanmanWorkstationDescription": "SMBファイル共有用のLanman Workstationサービスを有効または無効にします",
   "SyncWindowsClock": "Windows の時刻を同期",
@@ -140,182 +133,122 @@
   "RestartAudioServices": "オーディオ サービスを再起動",
   "RestartAudioServicesDescription": "Windows Audio と Audio Endpoint Builder を再起動します。デバイスの再接続中は音声が一時的に途切れます。",
   "RestartAudioServicesSuccess": "オーディオ サービスを再起動しました。",
-
   "NetworkDiscovery": "ネットワーク探索",
   "NetworkDiscoveryDescription": "ファイル共有を容易にするネットワーク探索を有効または無効にします",
-
   "Printing": "印刷",
   "PrintingDescription": "SynergyOSが既定で無効化している印刷サービスを有効にします。オフにするとSynergyOSの無効化状態（Spooler/印刷サービス）が再適用されます。再起動が必要な場合があります。",
-
   "WiFi": "Wi-Fi",
   "WiFiDescription": "SynergyOSが既定で無効化しているWi-Fiサービスを有効にします。オフにするとWLAN/WWAN関連のサービスが再び無効化されます。",
-
   "NvidiaDispayContainer": "NVIDIA Display Container",
   "NvidiaDispayContainerDescription": "NVIDIA Display Containerサービスを有効または無効にします",
-
   "AddNvidiaDisplayContainerContextMenu": "コンテキストメニューのNVIDIA Display Container",
   "AddNvidiaDisplayContainerContextMenuDescription": "コンテキストメニューにNVIDIA Display Containerの切り替えを追加します",
-
   "CpuIdleContextMenu": "コンテキストメニューのCPU Idle切り替え",
   "CpuIdleContextMenuDescription": "コンテキストメニューにCPU Idleの切り替えを追加します",
-
   "LockScreen": "ロック画面を有効にする",
   "LockScreenDescription": "Windowsのロック画面を有効または無効にします",
-
   "ShortcutText": "「ショートカット」の文字",
   "ShortcutTextDescription": "ショートカットに表示される「ショートカット」の文字を表示または非表示にします",
-
   "BootLogo": "起動ロゴ",
   "BootLogoDescription": "Windowsの起動ロゴを有効または無効にします",
-
   "BootMessages": "起動メッセージ",
   "BootMessagesDescription": "Windowsの起動メッセージを有効または無効にします",
-
   "NewBootMenu": "新しい起動メニュー",
   "NewBootMenuDescription": "新しいWindows起動メニューを有効または無効にします",
-
   "SpinningAnimation": "回転アニメーション",
   "SpinningAnimationDescription": "起動時の回転アニメーションを有効または無効にします",
-
   "AdvancedBootOptions": "起動時の詳細ブートオプション",
   "AdvancedBootOptionsDescription": "起動時の詳細ブートオプションを有効または無効にします",
-
   "AutomaticRepair": "自動修復",
   "AutomaticRepairDescription": "起動失敗時の自動修復を有効または無効にします",
-
   "KernelParameters": "起動時のカーネルパラメータ",
   "KernelParametersDescription": "起動時のカーネルパラメータを有効または無効にします",
-
   "HighestMode": "最高モード",
   "HighestModeDescription": "ディスプレイの最高モードを有効または無効にします",
-
   "CompactView": "コンパクト ビュー",
   "CompactViewDescription": "エクスプローラーのコンパクト ビューを有効または無効にします",
-
   "RemovableDrivesInSidebar": "サイドバーのリムーバブルドライブ",
   "RemovableDrivesInSidebarDescription": "エクスプローラーのサイドバーにリムーバブルドライブを表示または非表示にします",
-
   "BackgroundApps": "バックグラウンドアプリ",
   "BackgroundAppsDescription": "バックグラウンドアプリを有効または無効にします",
-
   "SearchIndexing": "検索インデックス作成",
   "SearchIndexingDescription": "検索インデックス作成を有効または無効にします",
-
   "FsoAndGameBar": "全画面最適化とXbox Game Bar",
   "FsoAndGameBarDescription": "全画面最適化とXbox Game Barを有効または無効にします（状態を保存して元に戻せます）",
-
   "AutomaticUpdates": "自動更新",
   "AutomaticUpdatesDescription": "自動更新を有効または無効にします",
-
   "DeliveryOptimisation": "配信の最適化",
   "DeliveryOptimisationDescription": "配信の最適化を有効または無効にします",
-
   "Hibernation": "休止状態",
   "HibernationDescription": "休止状態を有効または無効にします",
-
   "Location": "位置情報",
   "LocationDescription": "位置情報サービスを有効または無効にします",
-
   "PhoneLink": "スマホ連携とモバイルデバイス",
   "PhoneLinkDescription": "スマホ連携とモバイルデバイスを有効または無効にします",
-
   "PowerSaving": "省電力",
   "PowerSavingDescription": "省電力機能を有効または無効にします",
-
   "Sleep": "スリープ",
   "SleepDescription": "スリープモードを有効または無効にします",
-
   "SystemRestore": "システムの復元",
   "SystemRestoreDescription": "システムの保護を開いて、システムの復元ポイントと保護設定を管理します。",
-
   "UpdateNotifications": "更新通知",
   "UpdateNotificationsDescription": "更新通知を有効または無効にします",
-
   "WebSearch": "スタートメニューのWeb検索",
   "WebSearchDescription": "スタートメニューのWeb検索を有効または無効にします",
-
   "Widgets": "デスクトップ ウィジェット",
   "WidgetsDescription": "デスクトップ ウィジェットを有効または無効にします",
-
   "WindowsSpotlight": "Windowsスポットライト",
   "WindowsSpotlightDescription": "ロック画面のWindowsスポットライトを有効または無効にします",
-
   "AppStoreArchiving": "Microsoft Storeのアーカイブ",
   "AppStoreArchivingDescription": "Microsoft Storeのアーカイブを有効または無効にします",
-
   "TakeOwnership": "コンテキストメニューに「所有権を取得」を追加",
   "TakeOwnershipDescription": "ファイルとフォルダーのコンテキストメニューに「所有権を取得」オプションを追加します",
-
   "OldContextMenu": "従来のコンテキストメニュー（Windows 11以前）",
   "OldContextMenuDescription": "Windows 11以前の従来のコンテキストメニューを有効または無効にします",
-
   "EdgeSwipe": "エッジスワイプ",
   "EdgeSwipeDescription": "エッジスワイプのジェスチャーを有効または無効にします",
-
   "AppIconsThumbnail": "サムネイルのアプリアイコン",
   "AppIconsThumbnailDescription": "ファイルのサムネイルにアプリアイコンを表示または非表示にします",
-
   "AutomaticFolderDiscovery": "フォルダーの自動検出",
   "AutomaticFolderDiscoveryDescription": "エクスプローラーのフォルダー自動検出を有効または無効にします",
-
   "Gallery": "ギャラリーを有効にする",
   "GalleryDescription": "エクスプローラーのギャラリーを有効または無効にします",
-
   "SnapLayout": "ウィンドウのスナップレイアウトを有効にする",
   "SnapLayoutDescription": "ウィンドウのスナップレイアウトを有効または無効にします",
-
   "RecentItems": "エクスプローラーの最近使用した項目を有効にする",
   "RecentItemsDescription": "エクスプローラーの最近使用した項目を有効または無効にします",
-
   "VerboseStatusMessage": "詳細なステータスメッセージ",
   "VerboseStatusMessageDescription": "起動時とシャットダウン時の詳細なステータスメッセージを有効または無効にします",
-
   "SuperFetch": "SuperFetch",
   "SuperFetchDescription": "SuperFetch（SysMain）サービスを有効または無効にします",
-
   "StaticIp": "静的IPを自動設定",
   "StaticIpDescription": "ネットワークアダプターに静的IPアドレスを自動的に設定します",
-
   "HideAppBrowserControl": "アプリのブラウザーコントロール",
   "HideAppBrowserControlDescription": "Windowsセキュリティの埋め込みブラウザーコントロールを表示/非表示にします",
-
   "SecurityHealthTray": "タスクバートレイのセキュリティ正常性ボタン",
   "SecurityHealthTrayDescription": "タスクバートレイのセキュリティ正常性ボタンを表示または非表示にします",
-
   "UAC": "ユーザーアカウント制御",
   "UACDescription": "アプリが管理者権限を必要とする場合に昇格の確認を表示します。無効にするとUACプロンプトが表示されなくなります（SynergyOSの既定）が、意図しないシステム変更に対する保護レベルが低下します。再起動が必要です。",
-
   "FaultTolerantHeap": "Fault Tolerant Heap",
   "FaultTolerantHeapDescription": "Fault Tolerant Heapの緩和策を有効または無効にします",
-
   "Copilot": "Microsoft Copilotを有効にする",
   "CopilotDescription": "Windows 11のMicrosoft Copilot統合を有効または無効にします",
-
   "Recall": "Windows Recallを有効にする",
   "RecallDescription": "Windows Recall機能を有効または無効にします",
-
   "CpuIdle": "CPU Idlingを有効にする",
   "CpuIdleDescription": "CPU Idling機能を有効または無効にします",
-
   "ProcessExplorer": "Process Explorerをインストール",
   "ProcessExplorerDescription": "Microsoft SysinternalsのProcess Explorerをインストールします",
-
   "VbsState": "仮想化ベースのセキュリティ",
   "VbsStateDescription": "SynergyOSが既定で無効化しているVBS、HVCI、Credential Guardなどの保護機能を有効にします。再起動が必要です。",
-
   "GiveAccessToMenu": "「アクセスを許可する」メニュー",
   "GiveAccessToMenuDescription": "ファイルとフォルダーのコンテキストメニューに「アクセスを許可する」オプションを追加します",
-
   "NetworkNavigationPane": "ナビゲーションウィンドウのネットワーク",
   "NetworkNavigationPaneDescription": "エクスプローラーのナビゲーションウィンドウにネットワークを表示または非表示にします",
-
   "FileSharing": "ファイル共有",
   "FileSharingDescription": "ファイル共有機能を有効または無効にします",
-
   "WindowsHello": "Windows Hello",
   "WindowsHelloDescription": "Windows Helloの生体認証を有効または無効にします",
-
-
   "Home_WinVer": "Windowsのバージョン",
   "Home_PlaybookVer": "Playbookのバージョン",
   "Home_HeaderText": "ホーム",
@@ -340,7 +273,6 @@
   "NewProfilesButton": "新しいプロファイルを作成",
   "IncompatibleVer": "現在のWindowsインストールはこのToolboxバージョンと互換性がありません。SynergyOSをインストールしてください。",
   "StatingServices": "サービスを開始しています...",
-
   "CurrentConfigIsSavedMessage": "現在の構成がこのプロファイルに保存されます",
   "DeleteProfileConfirmation": "本当にこのプロファイルを削除しますか？",
   "TryDeleteDefaultProfile": "既定のプロファイルは削除できません",
@@ -396,17 +328,13 @@
   "ResetWindowsUpdateDeferral": "Windows Updateの延期をリセット",
   "MicrosoftStoreToggle": "Microsoft Storeを切り替え",
   "MicrosoftStoreDescription": "現在のユーザーのMicrosoft Storeパッケージを登録または登録解除します。",
-
-
   "Tile_DocumentationTitle": "Kwanteksを応援する",
   "Tile_DocumentationDescription": "Kwanteksのコンテンツをチェックしよう！",
   "Tile_DiscordTitle": "Discord",
   "Tile_DiscordDescription": "サポートを受けたり、仲間を作ろう！",
   "Tile_GithubTitle": "GitHub",
   "Tile_GithubDescription": "コードを見て、開発に貢献しよう",
-
   "SearchPlaceholder": "設定を検索...",
-
   "Home": "ホーム",
   "Installer": "インストーラー",
   "Adjustments": "カスタマイズ",
@@ -420,7 +348,6 @@
   "Advanced": "詳細設定",
   "Security": "セキュリティ",
   "Troubleshooting": "復元",
-
   "SpecsPageTitle": "システム情報",
   "SpecsPageDescription": "このシステムのハードウェアと Windows バージョンを読み取り専用で表示します。ここでは変更できません。",
   "SpecsPageErrorTitle": "システム情報",
@@ -450,7 +377,6 @@
   "CleanerPageSelectNone": "何も選択しない",
   "CleanerPageWizTreeDescription": "WizTree ポータブルの起動 (詳細なディスク使用量情報)",
   "CleanerPageLaunchWizTree": "ウィズツリーを起動する",
-
   "HomePageText3E77C2003BD6": "SynergyOS の新機能",
   "HomePageContentB7F2E2F3517E": "すべてのリリースを表示",
   "HomePageContent8C338141C3FC": "続きを読む",
@@ -567,7 +493,6 @@
   "GpuPagePlaceholderTextFD59CDAB4C9D": "値",
   "GpuPageContent6BA9EA1B7E66": "削除",
   "GpuPageContent3CFAEF9F3C36": "新しいプロファイルを .nip にエクスポート",
-
   "PowerPlansPageHeader9EF26DE51104": "現在の電源プラン",
   "PowerPlansPageDescription320073B0E4BC": "Windows が現在使用しているプラン。",
   "PowerPlansPageHeaderEC2BEE95E81C": "SynToolkit SOS のパフォーマンス",
@@ -622,15 +547,11 @@
   "GpuPageHeaderAC283BA30A9F": "プロファイル名",
   "GpuPageDescriptionF27AFB4CDFAD": "カンマで区切られた実行可能ファイル名。例:ゲーム.exe、ランチャー.exe。すべてのアプリケーションに適用される基本プロファイルの場合は、空白のままにします。",
   "GpuPageHeader3EE89599DB6C": "実行可能ファイル",
-
   "Language": "言語",
-
   "NoFavorites": "まだお気に入りに何も追加されていません。",
   "SystemInfo": "このシステムについて:",
   "LearnMore": "詳細情報",
-
   "TroubleshootingDocumenation": "トラブルシューティングのドキュメント",
-
   "ExperimentsHeader": "実験的機能",
   "ExperimentsCardHeader": "実験的機能",
   "ExperimentsCardDescription": "これらの機能は実験的なもので、意図したとおりに動作しない場合があります。変更を適用するには再起動が必要です",
@@ -638,14 +559,12 @@
   "SearchExperimentDescription": "SynToolkit内の設定をすばやく見つけるための検索バーを有効にします",
   "IconsExperiment": "アイコン",
   "IconsExperimentDescription": "各設定の横にアイコンを表示し、見分けやすく見た目も向上させます",
-
   "RadeonSlimmer_OptimizeDriver": "ドライバーを最適化",
   "RadeonSlimmer_OptimizeDriverTooltip": "推奨構成を適用します。すべてのスケジュールされたタスクを無効にし、ディスプレイドライバーとAMD Settingsパッケージのみを残し、コアのディスプレイコンポーネントのみを保持します。インポートしたパッケージがAMDの標準レイアウトと異なる場合、一致する項目のみが調整されます。",
   "RadeonSlimmer_OptimizationSuccess": "推奨最適化が適用されました。",
   "RadeonSlimmer_OptimizationPartial": "推奨最適化が適用されました。インポートした一部の項目はAMDの標準レイアウトと一致しなかったため変更されませんでした。必要に応じて各タブをご確認ください。",
   "RadeonSlimmer_OptimizationSkipped": "可能な範囲で最適化が適用されました。{0}はこのパッケージと一致しなかったためスキップされました。",
-  "RadeonSlimmer_OptimizationNoMatch": "このインポートは既知のAMDパッケージレイアウトと一致しなかったため、最適化は適用されませんでした。引き続き手動で設定を構成できます。"
-  ,
+  "RadeonSlimmer_OptimizationNoMatch": "このインポートは既知のAMDパッケージレイアウトと一致しなかったため、最適化は適用されませんでした。引き続き手動で設定を構成できます。",
   "NeedsAttention": "要確認",
   "Installer_NvidiaAppDescription": "グラフィックス ドライバー、ゲーム設定、NVIDIA 機能のための公式 NVIDIA アプリです。",
   "Installer_AmdAdrenalinDescription": "Radeon グラフィックス ドライバー、ゲーム設定、パフォーマンス機能のための公式 AMD アプリです。",
@@ -654,8 +573,7 @@
   "Installer_FilterAll": "すべて",
   "Installer_FilterInstalled": "インストール済み",
   "Installer_FilterNotInstalled": "未インストール",
-  "Installer_FilterNeedsUpdate": "更新あり"
-  ,
+  "Installer_FilterNeedsUpdate": "更新あり",
   "NeedsAttention_Subtitle": "古いまたは不足しているドライバーとアプリ、古い SynToolkit バージョン、復元ポイントの不在、同期されていない Windows の時計を確認します。",
   "NeedsAttention_Refresh": "更新",
   "NeedsAttention_AllClear": "問題はありません",
@@ -701,8 +619,107 @@
   "NeedsAttention_InstallerUpdateTitle": "{0} を更新",
   "NeedsAttention_InstallerUpdateVersionDescription": "{0} から {1} に更新します。",
   "NeedsAttention_InstallerUpdateDescription": "新しいバージョンを利用できます。",
-  "NeedsAttention_OpenInstaller": "インストーラーを開く"
-  ,
+  "NeedsAttention_OpenInstaller": "インストーラーを開く",
   "NeedsAttention_IgnoreForThreeMonths": "3 か月間無視",
-  "NeedsAttention_IgnoredForThreeMonths": "警告を 3 か月間無視します。"
+  "NeedsAttention_IgnoredForThreeMonths": "警告を 3 か月間無視します。",
+  "GpuPage_Title": "グラフィックス プロセッシング ユニット",
+  "GpuPage_Description": "Download vendor drivers, slim installation packages, apply NVIDIA profile settings, and remove leftover GPU driver components when needed.",
+  "GpuPage_TabOverview": "概要",
+  "GpuPage_TabDebloat": "スリム化",
+  "GpuPage_TabPerformance": "パフォーマンス",
+  "GpuPage_TabRemoval": "削除",
+  "GpuPage_DetectedGpu": "Detected GPU",
+  "GpuPage_DetectedGpuDescription": "Choose which installed GPU to manage.",
+  "GpuPage_DriverVersion": "Driver version",
+  "GpuPage_DriverVersionDescription": "Fetch vendor releases for the selected GPU.",
+  "GpuPage_Refresh": "更新",
+  "GpuPage_PackageActions": "Package actions",
+  "GpuPage_PackageActionsDescription": "Prepare the installer package for stock or customized installation.",
+  "GpuPage_PreparePackage": "パッケージを準備",
+  "GpuPage_InstallPrepared": "準備済みパッケージをインストール",
+  "GpuPage_ReloadPackage": "Reload package",
+  "GpuPage_PreconfiguredProfilesDescriptionShort": "Pre-configured profiles bundled with SynToolkit.",
+  "GpuPage_NoBundledProfiles": "No bundled profiles found",
+  "GpuPage_ExecutablesDescriptionShort": "Comma-separated executable names, e.g. game.exe, launcher.exe.",
+  "GpuPage_DebloatHint": "Prepare a package in Overview, then customize its contents here before launching the installer.",
+  "GpuPage_DebloatPreset": "Debloat preset",
+  "GpuPage_DebloatPresetDescription": "Choose whether to keep the stock package, use the stripped preset, or customize manually.",
+  "GpuPage_InstallerFolders": "Installer Folders",
+  "GpuPage_PerformanceInfo": "Registry-backed tweaks apply only to NVIDIA systems with an installed NVIDIA display driver.",
+  "GpuPage_PerformanceTweaks": "NVIDIA performance tweaks",
+  "GpuPage_RefreshValues": "Refresh values",
+  "GpuPage_SettingsGroupDescription": "General NVIDIA registry settings.",
+  "GpuPage_ApplyAll": "すべて適用",
+  "GpuPage_RemoveAll": "すべて削除",
+  "GpuPage_RmPowerFeature": "RM Power Feature",
+  "GpuPage_RmPowerFeatureDescription": "Driver power-management flags.",
+  "GpuPage_Telemetry": "Telemetry",
+  "GpuPage_TelemetryDescription": "Telemetry-related registry values.",
+  "GpuPage_Ecc": "ECC",
+  "GpuPage_EccDescription": "ECC-related registry values.",
+  "GpuPage_Hdcp": "HDCP",
+  "GpuPage_HdcpDescription": "HDCP-related registry values.",
+  "GpuPage_RemovalOptions": "Removal options",
+  "GpuPage_RemovalOptionsDescription": "Run the built-in driver cleanup workflow for the selected vendor.",
+  "GpuPage_RunVendorUninstaller": "Run vendor uninstaller",
+  "GpuPage_RemoveDriverStorePackages": "Remove driver store packages",
+  "GpuPage_StopRemoveServices": "Stop and remove services",
+  "GpuPage_DeleteLeftoverFiles": "Delete leftover files",
+  "GpuPage_DeleteLeftoverRegistry": "Delete leftover registry entries",
+  "GpuPage_BlockAutomaticReinstall": "Block automatic driver reinstall",
+  "GpuPage_RunRemoval": "削除を実行",
+  "GpuPage_RebootNow": "今すぐ再起動",
+  "GpuPage_RemovalLog": "削除ログ",
+  "GpuPage_DetectingGpus": "Detecting installed GPUs...",
+  "GpuPage_AmdDriversTitle": "AMD GPU Drivers",
+  "GpuPage_NvidiaDriversTitle": "NVIDIA GPU Drivers",
+  "GpuPage_GpuDriversTitle": "GPU Drivers",
+  "GpuPage_AmdDriversSubtitle": "Download, debloat, and remove AMD graphics drivers.",
+  "GpuPage_NvidiaDriversSubtitle": "Download, debloat, tune, and remove NVIDIA graphics drivers.",
+  "GpuPage_NoGpuSelected": "No GPU selected",
+  "GpuPage_UnsupportedVendor": "Unsupported vendor",
+  "GpuPage_InstalledDriverFormat": "Installed driver: {0}",
+  "GpuPage_PreparedPackageFormat": "Prepared {0} package at {1}",
+  "GpuPage_NoCleanupSteps": "No cleanup steps selected.",
+  "GpuPage_WillRunFormat": "実行内容: {0}",
+  "GpuPage_NoGpuDetected": "No GPU could be detected.",
+  "GpuPage_DetectedFormat": "Detected: {0}",
+  "GpuPage_DebloatStripped": "Stripped",
+  "GpuPage_DebloatStock": "Stock",
+  "GpuPage_DebloatCustom": "Custom",
+  "GpuPage_ActionVendorUninstall": "vendor uninstall",
+  "GpuPage_ActionDriverStorePurge": "driver-store purge",
+  "GpuPage_ActionServiceRemoval": "service removal",
+  "GpuPage_ActionFileCleanup": "file cleanup",
+  "GpuPage_ActionRegistryCleanup": "registry cleanup",
+  "GpuPage_ActionAutoReinstallBlock": "auto-reinstall block",
+  "GpuPage_NoCompatibleGpu": "No compatible GPU is selected.",
+  "GpuPage_ChooseDriverFirst": "Choose a driver version first.",
+  "GpuPage_ExtractingPackage": "Extracting driver package...",
+  "GpuPage_DownloadingPackageFormat": "Downloading driver package: {0}%",
+  "GpuPage_PrepareBeforeInstall": "Prepare a driver package before installing.",
+  "GpuPage_InstallerLaunched": "Installer launched successfully.",
+  "GpuPage_PackageRefreshed": "Prepared package refreshed.",
+  "GpuPage_NoGpuForRemoval": "No GPU is selected for removal.",
+  "GpuPage_RemovalCancelled": "Driver removal was cancelled.",
+  "GpuPage_Unknown": "Unknown",
+  "GpuPage_RebootDialogTitle": "Reboot to finish GPU cleanup?",
+  "GpuPage_RebootDialogContent": "The removal workflow finished. Reboot Windows now to complete GPU driver cleanup.",
+  "GpuPage_RebootDialogLater": "Later",
+  "GpuPage_ApplyProfilesDialogTitle": "Apply profiles to the NVIDIA driver?",
+  "GpuPage_ApplyProfilesDialogContent": "This writes the profiles above directly to your NVIDIA driver settings, creating any profiles that do not already exist.",
+  "GpuPage_ApplyProfilesDialogPrimary": "Apply",
+  "GpuPage_ApplyProfilesDialogClose": "Cancel",
+  "GpuPage_NotSet": "未設定",
+  "GpuPage_Checking": "Checking...",
+  "GpuPage_Unavailable": "Unavailable",
+  "GpuPage_AppliedTweakFormat": "Applied {0}. Restart Windows to finish applying changes.",
+  "GpuPage_RemovedTweakFormat": "Removed {0}. Restart Windows to finish applying changes.",
+  "GpuPage_LoadNipBeforeExport": "Load a .nip profile before exporting loaded profiles.",
+  "GpuPage_ExportedLoadedFormat": "Exported {0} setting(s) across {1} loaded profile(s) to {2}.",
+  "GpuPage_EnterProfileName": "Enter a profile name before exporting a new profile.",
+  "GpuPage_AddSettingBeforeExport": "Add at least one setting before exporting a new profile. To export an imported file, use 'Export loaded to .nip'.",
+  "GpuPage_ExportedNewFormat": "Exported '{0}' to {1}.",
+  "GpuPage_AppliedProfilesFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created).",
+  "GpuPage_AppliedProfilesSkippedFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created). {3} setting(s) were skipped - see the log for details."
 }

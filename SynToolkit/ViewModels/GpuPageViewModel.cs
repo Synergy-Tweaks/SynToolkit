@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,7 +49,7 @@ namespace SynToolkit.ViewModels
         public partial string StatusMessage { get; set; } = string.Empty;
 
         [ObservableProperty]
-        public partial string DetectedGpuSummary { get; set; } = "Detecting installed GPUs...";
+        public partial string DetectedGpuSummary { get; set; } = L("GpuPage_DetectingGpus");
 
         [ObservableProperty]
         public partial GpuDeviceInfo? SelectedGpuDevice { get; set; }
@@ -60,7 +61,7 @@ namespace SynToolkit.ViewModels
         public partial GpuPreparedPackage? PreparedPackage { get; set; }
 
         [ObservableProperty]
-        public partial string SelectedDebloatModeText { get; set; } = "Stripped";
+        public partial string SelectedDebloatModeText { get; set; } = L("GpuPage_DebloatStripped");
 
         [ObservableProperty]
         public partial bool RunVendorUninstaller { get; set; } = true;
@@ -108,57 +109,83 @@ namespace SynToolkit.ViewModels
         public ObservableCollection<GpuDriverOption> AvailableDrivers { get; } = new();
         public ObservableCollection<GpuPackageComponent> DebloatComponents { get; } = new();
         public ObservableCollection<GpuRemovalLogEntry> RemovalLogs { get; } = new();
-        public ObservableCollection<string> DebloatModeOptions { get; } = new() { "Stripped", "Stock", "Custom" };
+        public ObservableCollection<string> DebloatModeOptions { get; } = new();
         public ObservableCollection<NvidiaProfile> NvidiaProfiles { get; } = new();
         public ObservableCollection<BundledNvidiaProfileFile> BundledProfiles { get; } = new();
         public ObservableCollection<NvidiaProfileSetting> NewProfileSettings { get; } = new();
 
         public string CurrentVendorTitle => SelectedVendor switch
         {
-            GpuVendorSelection.AMD => "AMD GPU Drivers",
-            GpuVendorSelection.NVIDIA => "NVIDIA GPU Drivers",
-            _ => "GPU Drivers"
+            GpuVendorSelection.AMD => L("GpuPage_AmdDriversTitle"),
+            GpuVendorSelection.NVIDIA => L("GpuPage_NvidiaDriversTitle"),
+            _ => L("GpuPage_GpuDriversTitle")
         };
 
         public string CurrentVendorSubtitle => SelectedVendor switch
         {
-            GpuVendorSelection.AMD => "Download, debloat, and remove AMD graphics drivers.",
-            GpuVendorSelection.NVIDIA => "Download, debloat, tune, and remove NVIDIA graphics drivers.",
+            GpuVendorSelection.AMD => L("GpuPage_AmdDriversSubtitle"),
+            GpuVendorSelection.NVIDIA => L("GpuPage_NvidiaDriversSubtitle"),
             _ => string.Empty
         };
 
         public bool IsAmdVendorSelected => SelectedVendor == GpuVendorSelection.AMD;
         public bool IsNvidiaVendorSelected => SelectedVendor == GpuVendorSelection.NVIDIA;
         public bool HasPreparedPackage => PreparedPackage is not null;
-        public string SelectedGpuDisplayName => SelectedGpuDevice?.DisplayName ?? "No GPU selected";
+        public string SelectedGpuDisplayName => SelectedGpuDevice?.DisplayName ?? L("GpuPage_NoGpuSelected");
         public string SelectedGpuVendorName => SelectedGpuDevice is null
-            ? "Unsupported vendor"
+            ? L("GpuPage_UnsupportedVendor")
             : SelectedGpuDevice.IsNvidia
                 ? "NVIDIA"
                 : SelectedGpuDevice.IsAmd
                     ? "AMD"
-                    : "Unsupported vendor";
-        public string SelectedGpuDriverVersionText => SelectedGpuDevice?.DriverVersion ?? "Unknown";
-        public string SelectedGpuDriverSummaryText => $"Installed driver: {SelectedGpuDriverVersionText}";
+                    : L("GpuPage_UnsupportedVendor");
+        public string SelectedGpuDriverVersionText => SelectedGpuDevice?.DriverVersion ?? L("GpuPage_Unknown");
+        public string SelectedGpuDriverSummaryText => Lf("GpuPage_InstalledDriverFormat", SelectedGpuDriverVersionText);
         public string PreparedPackageSummary => PreparedPackage is null
             ? string.Empty
-            : $"Prepared {PreparedPackage.Vendor} package at {PreparedPackage.ExtractedPath}";
+            : Lf("GpuPage_PreparedPackageFormat", PreparedPackage.Vendor, PreparedPackage.ExtractedPath);
         public string RemovalActionSummary => string.Join(
             ", ",
             GetEnabledRemovalActions());
-        public string RemovalActionSummaryText => $"Will run: {RemovalActionSummary}";
-
-        public GpuDebloatMode SelectedDebloatMode => SelectedDebloatModeText switch
+        public string RemovalActionSummaryText
         {
-            "Stock" => GpuDebloatMode.Stock,
-            "Custom" => GpuDebloatMode.Custom,
-            _ => GpuDebloatMode.Stripped
-        };
+            get
+            {
+                string summary = RemovalActionSummary;
+                return string.IsNullOrWhiteSpace(summary)
+                    ? L("GpuPage_NoCleanupSteps")
+                    : Lf("GpuPage_WillRunFormat", summary);
+            }
+        }
+
+        public GpuDebloatMode SelectedDebloatMode
+        {
+            get
+            {
+                if (IsDebloatMode(SelectedDebloatModeText, "GpuPage_DebloatStock", "Stock"))
+                {
+                    return GpuDebloatMode.Stock;
+                }
+
+                if (IsDebloatMode(SelectedDebloatModeText, "GpuPage_DebloatCustom", "Custom"))
+                {
+                    return GpuDebloatMode.Custom;
+                }
+
+                return GpuDebloatMode.Stripped;
+            }
+        }
 
         public GpuPageViewModel(IGpuDriverCatalogService gpuDriverCatalogService, IGpuDriverPackageService gpuDriverPackageService)
         {
             _gpuDriverCatalogService = gpuDriverCatalogService;
             _gpuDriverPackageService = gpuDriverPackageService;
+
+            string stripped = L("GpuPage_DebloatStripped");
+            DebloatModeOptions.Add(stripped);
+            DebloatModeOptions.Add(L("GpuPage_DebloatStock"));
+            DebloatModeOptions.Add(L("GpuPage_DebloatCustom"));
+            SelectedDebloatModeText = stripped;
 
             foreach (BundledNvidiaProfileFile bundledProfile in NvidiaProfileGalleryService.GetBundledProfiles())
             {
@@ -218,8 +245,8 @@ namespace SynToolkit.ViewModels
                 HasAmdGpu = GpuDevices.Any(device => device.IsAmd);
                 HasNvidiaGpu = GpuDevices.Any(device => device.IsNvidia);
                 DetectedGpuSummary = GpuDevices.Count == 0
-                    ? "No GPU could be detected."
-                    : $"Detected: {string.Join(", ", GpuDevices.Select(device => device.DisplayName))}";
+                    ? L("GpuPage_NoGpuDetected")
+                    : Lf("GpuPage_DetectedFormat", string.Join(", ", GpuDevices.Select(device => device.DisplayName)));
 
                 SelectFirstDeviceForCurrentVendor();
             }
@@ -249,7 +276,7 @@ namespace SynToolkit.ViewModels
 
             if (SelectedGpuDevice is null)
             {
-                StatusMessage = "No compatible GPU is selected.";
+                StatusMessage = L("GpuPage_NoCompatibleGpu");
                 return;
             }
 
@@ -281,7 +308,7 @@ namespace SynToolkit.ViewModels
         {
             if (SelectedDriver is null)
             {
-                StatusMessage = "Choose a driver version first.";
+                StatusMessage = L("GpuPage_ChooseDriverFirst");
                 return;
             }
 
@@ -293,12 +320,12 @@ namespace SynToolkit.ViewModels
                 {
                     int percent = Math.Clamp((int)Math.Round(value * 100), 0, 100);
                     StatusMessage = percent >= 100
-                        ? "Extracting driver package..."
-                        : $"Downloading driver package: {percent}%";
+                        ? L("GpuPage_ExtractingPackage")
+                        : Lf("GpuPage_DownloadingPackageFormat", percent);
                 });
 
                 PreparedPackage = await _gpuDriverPackageService.PreparePackageAsync(SelectedDriver, progress);
-                SelectedDebloatModeText = "Stripped";
+                SelectedDebloatModeText = L("GpuPage_DebloatStripped");
                 RefreshDebloatComponentsForSelectedMode();
                 StatusMessage = PreparedPackageSummary;
             }
@@ -318,7 +345,7 @@ namespace SynToolkit.ViewModels
         {
             if (PreparedPackage is null)
             {
-                StatusMessage = "Prepare a driver package before installing.";
+                StatusMessage = L("GpuPage_PrepareBeforeInstall");
                 return;
             }
 
@@ -338,7 +365,7 @@ namespace SynToolkit.ViewModels
                 }
 
                 _gpuDriverPackageService.LaunchExtractedSetup(PreparedPackage.Vendor, PreparedPackage.ExtractedPath);
-                StatusMessage = "Installer launched successfully.";
+                StatusMessage = L("GpuPage_InstallerLaunched");
             }
             catch (Exception exception)
             {
@@ -364,7 +391,7 @@ namespace SynToolkit.ViewModels
             {
                 await _gpuDriverPackageService.RefreshPreparedPackageAsync(PreparedPackage);
                 RefreshDebloatComponentsForSelectedMode();
-                StatusMessage = "Prepared package refreshed.";
+                StatusMessage = L("GpuPage_PackageRefreshed");
             }
             catch (Exception exception)
             {
@@ -404,7 +431,7 @@ namespace SynToolkit.ViewModels
         {
             if (SelectedGpuDevice is null)
             {
-                StatusMessage = "No GPU is selected for removal.";
+                StatusMessage = L("GpuPage_NoGpuForRemoval");
                 return;
             }
 
@@ -435,7 +462,7 @@ namespace SynToolkit.ViewModels
             }
             catch (OperationCanceledException)
             {
-                StatusMessage = "Driver removal was cancelled.";
+                StatusMessage = L("GpuPage_RemovalCancelled");
             }
             catch (Exception exception)
             {
@@ -466,13 +493,13 @@ namespace SynToolkit.ViewModels
                 List<NvidiaProfile> profiles = NvidiaProfiles.ToList();
                 if (profiles.Count == 0)
                 {
-                    throw new InvalidOperationException("Load a .nip profile before exporting loaded profiles.");
+                    throw new InvalidOperationException(L("GpuPage_LoadNipBeforeExport"));
                 }
 
                 await Task.Run(() => NvidiaProfilePreviewService.SaveProfiles(profiles, exportFilePath));
 
                 int settingCount = profiles.Sum(profile => profile.Settings.Count);
-                StatusMessage = $"Exported {settingCount} setting(s) across {profiles.Count} loaded profile(s) to {exportFilePath}.";
+                StatusMessage = Lf("GpuPage_ExportedLoadedFormat", settingCount, profiles.Count, exportFilePath);
             }
             catch (Exception exception)
             {
@@ -489,12 +516,12 @@ namespace SynToolkit.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(NewProfileName))
                 {
-                    throw new InvalidOperationException("Enter a profile name before exporting a new profile.");
+                    throw new InvalidOperationException(L("GpuPage_EnterProfileName"));
                 }
 
                 if (NewProfileSettings.Count == 0)
                 {
-                    throw new InvalidOperationException("Add at least one setting before exporting a new profile. To export an imported file, use 'Export loaded to .nip'.");
+                    throw new InvalidOperationException(L("GpuPage_AddSettingBeforeExport"));
                 }
 
                 NvidiaProfile profile = new()
@@ -507,7 +534,7 @@ namespace SynToolkit.ViewModels
                 };
 
                 await Task.Run(() => NvidiaProfilePreviewService.SaveProfiles(new List<NvidiaProfile> { profile }, exportFilePath));
-                StatusMessage = $"Exported '{profile.ProfileName}' to {exportFilePath}.";
+                StatusMessage = Lf("GpuPage_ExportedNewFormat", profile.ProfileName, exportFilePath);
             }
             catch (Exception exception)
             {
@@ -553,8 +580,8 @@ namespace SynToolkit.ViewModels
                 int profilesCreated = results.Count(profile => profile.ProfileCreated);
 
                 NvidiaApplyResultSummary = settingsSkipped == 0
-                    ? $"Applied {settingsApplied} setting(s) across {results.Count} profile(s) ({profilesCreated} newly created)."
-                    : $"Applied {settingsApplied} setting(s) across {results.Count} profile(s) ({profilesCreated} newly created). {settingsSkipped} setting(s) were skipped - see the log for details.";
+                    ? Lf("GpuPage_AppliedProfilesFormat", settingsApplied, results.Count, profilesCreated)
+                    : Lf("GpuPage_AppliedProfilesSkippedFormat", settingsApplied, results.Count, profilesCreated, settingsSkipped);
 
                 if (settingsSkipped > 0)
                 {
@@ -598,17 +625,17 @@ namespace SynToolkit.ViewModels
         private IEnumerable<string> GetEnabledRemovalActions()
         {
             if (RunVendorUninstaller)
-                yield return "vendor uninstall";
+                yield return L("GpuPage_ActionVendorUninstall");
             if (RemoveDriverStorePackages)
-                yield return "driver-store purge";
+                yield return L("GpuPage_ActionDriverStorePurge");
             if (RemoveServices)
-                yield return "service removal";
+                yield return L("GpuPage_ActionServiceRemoval");
             if (RemoveLeftoverFiles)
-                yield return "file cleanup";
+                yield return L("GpuPage_ActionFileCleanup");
             if (RemoveRegistryEntries)
-                yield return "registry cleanup";
+                yield return L("GpuPage_ActionRegistryCleanup");
             if (BlockAutomaticReinstall)
-                yield return "auto-reinstall block";
+                yield return L("GpuPage_ActionAutoReinstallBlock");
         }
 
         private void OnRemovalOptionsChanged()
@@ -616,5 +643,23 @@ namespace SynToolkit.ViewModels
             OnPropertyChanged(nameof(RemovalActionSummary));
             OnPropertyChanged(nameof(RemovalActionSummaryText));
         }
+
+        private static string L(string key) => App.GetValueFromItemList(key);
+
+        private static string Lf(string key, params object[] args)
+        {
+            try
+            {
+                return string.Format(CultureInfo.CurrentCulture, L(key), args);
+            }
+            catch (FormatException)
+            {
+                return L(key);
+            }
+        }
+
+        private static bool IsDebloatMode(string text, string key, string englishFallback) =>
+            string.Equals(text, L(key), StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(text, englishFallback, StringComparison.OrdinalIgnoreCase);
     }
 }

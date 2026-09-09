@@ -8,8 +8,6 @@
   "SystemInfo_NotDetected": "未检测到已知的 Playbook",
   "SystemInfo_Conflicting": "检测到多个 Playbook 标记",
   "SystemInfo_ReadOnly": "本地检测，未更改任何设置",
-
-
   "ToBeTranslated": "正在配置为 0 延迟..",
   "ConfigurationStatus_Applying": "正在应用更改...",
   "ConfigurationStatus_Unavailable": "不可用",
@@ -121,17 +119,12 @@
   "ShortcutIcon": "更改快捷方式的图标",
   "Mitigations": "更改缓解措施状态",
   "SafeMode": "启动时进入安全模式",
-
-
   "Animations": "动画",
   "AnimationsDescription": "启用或禁用 Windows 动画",
-
   "ExtractContextMenu": "右键菜单中的“解压”选项",
   "ExtractContextMenuDescription": "在压缩文件的右键菜单中添加“解压”选项",
-
   "RunWithPriority": "右键菜单中的“以优先级运行”选项",
   "RunWithPriorityDescription": "在应用程序的右键菜单中添加“以优先级运行”选项",
-
   "LanmanWorkstation": "Lanman Workstation (SMB)",
   "LanmanWorkstationDescription": "启用或禁用用于 SMB 文件共享的 Lanman Workstation 服务",
   "SyncWindowsClock": "同步 Windows 时钟",
@@ -140,182 +133,122 @@
   "RestartAudioServices": "重启音频服务",
   "RestartAudioServicesDescription": "重启 Windows 音频和音频终结点生成器。设备重新连接时，声音会短暂中断。",
   "RestartAudioServicesSuccess": "已重启音频服务。",
-
   "NetworkDiscovery": "网络发现",
   "NetworkDiscoveryDescription": "启用或禁用网络发现以便更轻松地共享文件",
-
   "Printing": "打印",
   "PrintingDescription": "启用 SynergyOS 默认禁用的打印服务。关闭此选项会重新应用 SynergyOS 禁用的后台处理程序/打印服务状态。可能需要重启。",
-
   "WiFi": "Wi-Fi",
   "WiFiDescription": "启用 SynergyOS 默认禁用的 Wi-Fi 服务。关闭此选项会再次禁用 WLAN/WWAN 相关服务。",
-
   "NvidiaDispayContainer": "NVIDIA Display Container",
   "NvidiaDispayContainerDescription": "启用或禁用 NVIDIA Display Container 服务",
-
   "AddNvidiaDisplayContainerContextMenu": "右键菜单中的 NVIDIA Display Container",
   "AddNvidiaDisplayContainerContextMenuDescription": "在右键菜单中添加 NVIDIA Display Container 开关",
-
   "CpuIdleContextMenu": "右键菜单中的 CPU 空闲开关",
   "CpuIdleContextMenuDescription": "在右键菜单中添加 CPU 空闲开关",
-
   "LockScreen": "启用锁屏界面",
   "LockScreenDescription": "启用或禁用 Windows 锁屏界面",
-
   "ShortcutText": "快捷方式文字",
   "ShortcutTextDescription": "显示或隐藏快捷方式上的“快捷方式”文字",
-
   "BootLogo": "启动徽标",
   "BootLogoDescription": "启用或禁用 Windows 启动徽标",
-
   "BootMessages": "启动消息",
   "BootMessagesDescription": "启用或禁用 Windows 启动消息",
-
   "NewBootMenu": "新版启动菜单",
   "NewBootMenuDescription": "启用或禁用新版 Windows 启动菜单",
-
   "SpinningAnimation": "旋转动画",
   "SpinningAnimationDescription": "启用或禁用启动时的旋转动画",
-
   "AdvancedBootOptions": "启动时的高级启动选项",
   "AdvancedBootOptionsDescription": "启用或禁用启动时的高级启动选项",
-
   "AutomaticRepair": "自动修复",
   "AutomaticRepairDescription": "启用或禁用启动失败时的自动修复",
-
   "KernelParameters": "启动时的内核参数",
   "KernelParametersDescription": "启用或禁用启动时的内核参数",
-
   "HighestMode": "最高模式",
   "HighestModeDescription": "启用或禁用显示器的最高模式",
-
   "CompactView": "紧凑视图",
   "CompactViewDescription": "启用或禁用文件资源管理器中的紧凑视图",
-
   "RemovableDrivesInSidebar": "侧边栏中的可移动驱动器",
   "RemovableDrivesInSidebarDescription": "在文件资源管理器侧边栏中显示或隐藏可移动驱动器",
-
   "BackgroundApps": "后台应用",
   "BackgroundAppsDescription": "启用或禁用后台应用",
-
   "SearchIndexing": "搜索索引",
   "SearchIndexingDescription": "启用或禁用搜索索引",
-
   "FsoAndGameBar": "全屏优化与 Xbox Game Bar",
   "FsoAndGameBarDescription": "启用或禁用全屏优化和 Xbox Game Bar，并保存状态以便还原",
-
   "AutomaticUpdates": "自动更新",
   "AutomaticUpdatesDescription": "启用或禁用自动更新",
-
   "DeliveryOptimisation": "传递优化",
   "DeliveryOptimisationDescription": "启用或禁用传递优化",
-
   "Hibernation": "休眠",
   "HibernationDescription": "启用或禁用休眠",
-
   "Location": "位置",
   "LocationDescription": "启用或禁用位置服务",
-
   "PhoneLink": "手机连接和移动设备",
   "PhoneLinkDescription": "启用或禁用手机连接和移动设备",
-
   "PowerSaving": "节能",
   "PowerSavingDescription": "启用或禁用节能功能",
-
   "Sleep": "睡眠",
   "SleepDescription": "启用或禁用睡眠模式",
-
   "SystemRestore": "系统还原",
   "SystemRestoreDescription": "打开系统保护以管理系统还原点和保护设置。",
-
   "UpdateNotifications": "更新通知",
   "UpdateNotificationsDescription": "启用或禁用更新通知",
-
   "WebSearch": "开始菜单网页搜索",
   "WebSearchDescription": "启用或禁用开始菜单中的网页搜索",
-
   "Widgets": "桌面小组件",
   "WidgetsDescription": "启用或禁用桌面小组件",
-
   "WindowsSpotlight": "Windows 聚焦",
   "WindowsSpotlightDescription": "启用或禁用锁屏界面上的 Windows 聚焦",
-
   "AppStoreArchiving": "Microsoft Store 应用归档",
   "AppStoreArchivingDescription": "启用或禁用 Microsoft Store 应用归档",
-
   "TakeOwnership": "在右键菜单中添加“获取所有权”",
   "TakeOwnershipDescription": "在文件和文件夹的右键菜单中添加“获取所有权”选项",
-
   "OldContextMenu": "旧版右键菜单（Windows 11 之前）",
   "OldContextMenuDescription": "启用或禁用 Windows 11 之前版本的旧版右键菜单",
-
   "EdgeSwipe": "边缘滑动",
   "EdgeSwipeDescription": "启用或禁用边缘滑动手势",
-
   "AppIconsThumbnail": "缩略图上的应用图标",
   "AppIconsThumbnailDescription": "在文件缩略图上显示或隐藏应用图标",
-
   "AutomaticFolderDiscovery": "自动文件夹类型发现",
   "AutomaticFolderDiscoveryDescription": "启用或禁用文件资源管理器中的自动文件夹类型发现",
-
   "Gallery": "启用图库",
   "GalleryDescription": "启用或禁用文件资源管理器中的图库",
-
   "SnapLayout": "启用窗口贴靠布局",
   "SnapLayoutDescription": "启用或禁用窗口贴靠布局",
-
   "RecentItems": "解锁文件资源管理器中的最近使用项目",
   "RecentItemsDescription": "启用或禁用文件资源管理器中的最近使用项目",
-
   "VerboseStatusMessage": "详细状态消息",
   "VerboseStatusMessageDescription": "启用或禁用启动和关机过程中的详细状态消息",
-
   "SuperFetch": "SuperFetch",
   "SuperFetchDescription": "启用或禁用 SuperFetch (SysMain) 服务",
-
   "StaticIp": "自动设置静态 IP",
   "StaticIpDescription": "自动为你的网络适配器配置静态 IP 地址",
-
   "HideAppBrowserControl": "应用内浏览器控件",
   "HideAppBrowserControlDescription": "显示/隐藏 Windows 安全中心内嵌的浏览器控件",
-
   "SecurityHealthTray": "任务栏通知区域中的安全按钮",
   "SecurityHealthTrayDescription": "在任务栏通知区域中显示或隐藏安全按钮",
-
   "UAC": "用户帐户控制",
   "UACDescription": "当应用需要管理员权限时提示进行提权。禁用后会移除 UAC 提示（SynergyOS 默认设置），但会降低对系统意外更改的防护。需要重启。",
-
   "FaultTolerantHeap": "容错堆",
   "FaultTolerantHeapDescription": "启用或禁用容错堆缓解措施",
-
   "Copilot": "启用 Microsoft Copilot",
   "CopilotDescription": "启用或禁用 Windows 11 中的 Microsoft Copilot 集成",
-
   "Recall": "启用 Windows Recall",
   "RecallDescription": "启用或禁用 Windows Recall 功能",
-
   "CpuIdle": "启用 CPU 空闲",
   "CpuIdleDescription": "启用或禁用 CPU 空闲功能",
-
   "ProcessExplorer": "安装 Process Explorer",
   "ProcessExplorerDescription": "安装来自 Microsoft Sysinternals 的 Process Explorer",
-
   "VbsState": "基于虚拟化的安全性",
   "VbsStateDescription": "启用 SynergyOS 默认禁用的 VBS、HVCI、Credential Guard 及相关保护措施。需要重启。",
-
   "GiveAccessToMenu": "“授予访问权限给”菜单",
   "GiveAccessToMenuDescription": "在文件和文件夹的右键菜单中添加“授予访问权限给”选项",
-
   "NetworkNavigationPane": "网络导航窗格",
   "NetworkNavigationPaneDescription": "在文件资源管理器中显示或隐藏网络导航窗格",
-
   "FileSharing": "文件共享",
   "FileSharingDescription": "启用或禁用文件共享功能",
-
   "WindowsHello": "Windows Hello",
   "WindowsHelloDescription": "启用或禁用 Windows Hello 生物识别身份验证",
-
-
   "Home_WinVer": "Windows 版本",
   "Home_PlaybookVer": "Playbook 版本",
   "Home_HeaderText": "主页",
@@ -340,7 +273,6 @@
   "NewProfilesButton": "创建新配置文件",
   "IncompatibleVer": "当前的 Windows 安装与此版本的 Toolbox 不兼容。请安装 SynergyOS。",
   "StatingServices": "正在启动服务...",
-
   "CurrentConfigIsSavedMessage": "你当前的配置将被保存到此配置文件中",
   "DeleteProfileConfirmation": "你确定要删除此配置文件吗？",
   "TryDeleteDefaultProfile": "你无法删除默认配置文件",
@@ -396,17 +328,13 @@
   "ResetWindowsUpdateDeferral": "重置 Windows 更新推迟设置",
   "MicrosoftStoreToggle": "切换 Microsoft Store",
   "MicrosoftStoreDescription": "为当前用户注册或取消注册 Microsoft Store 应用包。",
-
-
   "Tile_DocumentationTitle": "支持 Kwanteks",
   "Tile_DocumentationDescription": "看看 Kwanteks 的内容！",
   "Tile_DiscordTitle": "Discord",
   "Tile_DiscordDescription": "寻求支持并结交朋友！",
   "Tile_GithubTitle": "GitHub",
   "Tile_GithubDescription": "探索代码并参与贡献",
-
   "SearchPlaceholder": "搜索设置...",
-
   "Home": "主页",
   "Installer": "安装程序",
   "Adjustments": "自定义设置",
@@ -420,7 +348,6 @@
   "Advanced": "高级配置",
   "Security": "安全",
   "Troubleshooting": "还原",
-
   "SpecsPageTitle": "系统规格",
   "SpecsPageDescription": "此系统的硬件和 Windows 版本只读概览。无法在此处更改任何内容。",
   "SpecsPageErrorTitle": "系统规格",
@@ -450,7 +377,6 @@
   "CleanerPageSelectNone": "不选择",
   "CleanerPageWizTreeDescription": "启动WizTree 便携式（详细的磁盘使用信息）",
   "CleanerPageLaunchWizTree": "启动 WizTree",
-
   "HomePageText3E77C2003BD6": "SynergyOS 的新增功能",
   "HomePageContentB7F2E2F3517E": "查看所有版本",
   "HomePageContent8C338141C3FC": "了解更多",
@@ -567,7 +493,6 @@
   "GpuPagePlaceholderTextFD59CDAB4C9D": "价值",
   "GpuPageContent6BA9EA1B7E66": "删除",
   "GpuPageContent3CFAEF9F3C36": "将新配置文件导出到 .nip",
-
   "PowerPlansPageHeader9EF26DE51104": "当前电源计划",
   "PowerPlansPageDescription320073B0E4BC": "Windows 目前正在使用的计划。",
   "PowerPlansPageHeaderEC2BEE95E81C": "SynToolkit SOS 性能",
@@ -622,15 +547,11 @@
   "GpuPageHeaderAC283BA30A9F": "个人资料名称",
   "GpuPageDescriptionF27AFB4CDFAD": "以逗号分隔的可执行文件名称，例如游戏.exe，启动器.exe。对于适用于所有应用程序的基本配置文件，将其留空。",
   "GpuPageHeader3EE89599DB6C": "可执行文件",
-
   "Language": "语言",
-
   "NoFavorites": "你还没有添加任何内容到收藏夹。",
   "SystemInfo": "关于此系统：",
   "LearnMore": "了解更多",
-
   "TroubleshootingDocumenation": "疑难解答文档",
-
   "ExperimentsHeader": "实验功能",
   "ExperimentsCardHeader": "实验性功能",
   "ExperimentsCardDescription": "这些功能属于实验性质，可能无法完全按预期工作。需要重启才能应用更改",
@@ -638,14 +559,12 @@
   "SearchExperimentDescription": "启用搜索栏以快速在 SynToolkit 中查找设置",
   "IconsExperiment": "图标",
   "IconsExperimentDescription": "在每个设置旁启用图标，便于识别并提升视觉效果",
-
   "RadeonSlimmer_OptimizeDriver": "优化驱动程序",
   "RadeonSlimmer_OptimizeDriverTooltip": "应用推荐配置：禁用所有计划任务，仅保留显示驱动程序和 AMD Settings 软件包，并仅保留核心显示组件。如果你导入的软件包与 AMD 的标准布局不同，则只会调整匹配的项目。",
   "RadeonSlimmer_OptimizationSuccess": "已应用推荐的优化。",
   "RadeonSlimmer_OptimizationPartial": "已应用推荐的优化。你导入内容中的部分项目与 AMD 标准布局不匹配，因此保持不变——如有需要，请查看各选项卡。",
   "RadeonSlimmer_OptimizationSkipped": "已在可能的范围内应用优化。{0} 与此软件包不匹配，已被跳过。",
-  "RadeonSlimmer_OptimizationNoMatch": "此导入内容与已识别的 AMD 软件包布局不匹配，因此未应用任何优化。你仍然可以手动配置设置。"
-  ,
+  "RadeonSlimmer_OptimizationNoMatch": "此导入内容与已识别的 AMD 软件包布局不匹配，因此未应用任何优化。你仍然可以手动配置设置。",
   "NeedsAttention": "需要注意",
   "Installer_NvidiaAppDescription": "用于图形驱动程序、游戏设置和 NVIDIA 功能的官方 NVIDIA 应用。",
   "Installer_AmdAdrenalinDescription": "用于 Radeon 图形驱动程序、游戏设置和性能功能的官方 AMD 应用。",
@@ -654,8 +573,7 @@
   "Installer_FilterAll": "全部",
   "Installer_FilterInstalled": "已安装",
   "Installer_FilterNotInstalled": "未安装",
-  "Installer_FilterNeedsUpdate": "需要更新"
-  ,
+  "Installer_FilterNeedsUpdate": "需要更新",
   "NeedsAttention_Subtitle": "检查过期或缺失的驱动程序和应用、旧版 SynToolkit、没有还原点以及未同步的 Windows 时钟。",
   "NeedsAttention_Refresh": "刷新",
   "NeedsAttention_AllClear": "一切正常",
@@ -701,8 +619,107 @@
   "NeedsAttention_InstallerUpdateTitle": "更新 {0}",
   "NeedsAttention_InstallerUpdateVersionDescription": "从 {0} 更新到 {1}。",
   "NeedsAttention_InstallerUpdateDescription": "有更新版本可用。",
-  "NeedsAttention_OpenInstaller": "打开安装程序"
-  ,
+  "NeedsAttention_OpenInstaller": "打开安装程序",
   "NeedsAttention_IgnoreForThreeMonths": "忽略 3 个月",
-  "NeedsAttention_IgnoredForThreeMonths": "该警告已忽略 3 个月。"
+  "NeedsAttention_IgnoredForThreeMonths": "该警告已忽略 3 个月。",
+  "GpuPage_Title": "图形处理单元",
+  "GpuPage_Description": "下载厂商驱动程序、精简安装包、应用 NVIDIA 配置文件设置，并在需要时清理残留的 GPU 驱动组件。",
+  "GpuPage_TabOverview": "概览",
+  "GpuPage_TabDebloat": "精简",
+  "GpuPage_TabPerformance": "性能",
+  "GpuPage_TabRemoval": "卸载",
+  "GpuPage_DetectedGpu": "检测到的 GPU",
+  "GpuPage_DetectedGpuDescription": "选择要管理的已安装 GPU。",
+  "GpuPage_DriverVersion": "驱动版本",
+  "GpuPage_DriverVersionDescription": "获取所选 GPU 的厂商发布版本。",
+  "GpuPage_Refresh": "刷新",
+  "GpuPage_PackageActions": "安装包操作",
+  "GpuPage_PackageActionsDescription": "准备用于原版或自定义安装的安装包。",
+  "GpuPage_PreparePackage": "准备安装包",
+  "GpuPage_InstallPrepared": "安装已准备的安装包",
+  "GpuPage_ReloadPackage": "重新加载安装包",
+  "GpuPage_PreconfiguredProfilesDescriptionShort": "SynToolkit 自带的预配置配置文件。",
+  "GpuPage_NoBundledProfiles": "未找到捆绑配置文件",
+  "GpuPage_ExecutablesDescriptionShort": "逗号分隔的可执行文件名，例如 game.exe, launcher.exe。",
+  "GpuPage_DebloatHint": "先在概览中准备安装包，再在此自定义内容，然后启动安装程序。",
+  "GpuPage_DebloatPreset": "精简预设",
+  "GpuPage_DebloatPresetDescription": "选择保留原版安装包、使用精简预设，或手动自定义。",
+  "GpuPage_InstallerFolders": "安装程序文件夹",
+  "GpuPage_PerformanceInfo": "基于注册表的调整仅适用于已安装 NVIDIA 显示驱动的系统。",
+  "GpuPage_PerformanceTweaks": "NVIDIA 性能调整",
+  "GpuPage_RefreshValues": "刷新数值",
+  "GpuPage_SettingsGroupDescription": "常规 NVIDIA 注册表设置。",
+  "GpuPage_ApplyAll": "全部应用",
+  "GpuPage_RemoveAll": "全部移除",
+  "GpuPage_RmPowerFeature": "RM 电源特性",
+  "GpuPage_RmPowerFeatureDescription": "驱动程序电源管理标志。",
+  "GpuPage_Telemetry": "遥测",
+  "GpuPage_TelemetryDescription": "与遥测相关的注册表值。",
+  "GpuPage_Ecc": "ECC",
+  "GpuPage_EccDescription": "与 ECC 相关的注册表值。",
+  "GpuPage_Hdcp": "HDCP",
+  "GpuPage_HdcpDescription": "与 HDCP 相关的注册表值。",
+  "GpuPage_RemovalOptions": "卸载选项",
+  "GpuPage_RemovalOptionsDescription": "对所选厂商运行内置驱动清理流程。",
+  "GpuPage_RunVendorUninstaller": "运行厂商卸载程序",
+  "GpuPage_RemoveDriverStorePackages": "移除驱动存储包",
+  "GpuPage_StopRemoveServices": "停止并移除服务",
+  "GpuPage_DeleteLeftoverFiles": "删除残留文件",
+  "GpuPage_DeleteLeftoverRegistry": "删除残留注册表项",
+  "GpuPage_BlockAutomaticReinstall": "阻止自动重新安装驱动",
+  "GpuPage_RunRemoval": "开始卸载",
+  "GpuPage_RebootNow": "立即重启",
+  "GpuPage_RemovalLog": "卸载日志",
+  "GpuPage_DetectingGpus": "正在检测已安装的 GPU...",
+  "GpuPage_AmdDriversTitle": "AMD GPU 驱动",
+  "GpuPage_NvidiaDriversTitle": "NVIDIA GPU 驱动",
+  "GpuPage_GpuDriversTitle": "GPU 驱动",
+  "GpuPage_AmdDriversSubtitle": "下载、精简并卸载 AMD 图形驱动程序。",
+  "GpuPage_NvidiaDriversSubtitle": "下载、精简、调优并卸载 NVIDIA 图形驱动程序。",
+  "GpuPage_NoGpuSelected": "未选择 GPU",
+  "GpuPage_UnsupportedVendor": "不支持的厂商",
+  "GpuPage_InstalledDriverFormat": "已安装驱动：{0}",
+  "GpuPage_PreparedPackageFormat": "已在 {1} 准备 {0} 安装包",
+  "GpuPage_NoCleanupSteps": "未选择清理步骤。",
+  "GpuPage_WillRunFormat": "将执行：{0}",
+  "GpuPage_NoGpuDetected": "未能检测到 GPU。",
+  "GpuPage_DetectedFormat": "已检测：{0}",
+  "GpuPage_DebloatStripped": "精简",
+  "GpuPage_DebloatStock": "原版",
+  "GpuPage_DebloatCustom": "自定义",
+  "GpuPage_ActionVendorUninstall": "厂商卸载",
+  "GpuPage_ActionDriverStorePurge": "驱动存储清理",
+  "GpuPage_ActionServiceRemoval": "服务移除",
+  "GpuPage_ActionFileCleanup": "文件清理",
+  "GpuPage_ActionRegistryCleanup": "注册表清理",
+  "GpuPage_ActionAutoReinstallBlock": "阻止自动重装",
+  "GpuPage_NoCompatibleGpu": "未选择兼容的 GPU。",
+  "GpuPage_ChooseDriverFirst": "请先选择驱动版本。",
+  "GpuPage_ExtractingPackage": "正在解压驱动安装包...",
+  "GpuPage_DownloadingPackageFormat": "正在下载驱动安装包：{0}%",
+  "GpuPage_PrepareBeforeInstall": "请先准备驱动安装包再安装。",
+  "GpuPage_InstallerLaunched": "安装程序已成功启动。",
+  "GpuPage_PackageRefreshed": "已刷新准备好的安装包。",
+  "GpuPage_NoGpuForRemoval": "未选择要卸载的 GPU。",
+  "GpuPage_RemovalCancelled": "驱动卸载已取消。",
+  "GpuPage_Unknown": "未知",
+  "GpuPage_RebootDialogTitle": "重启以完成 GPU 清理？",
+  "GpuPage_RebootDialogContent": "卸载流程已完成。立即重启 Windows 以完成 GPU 驱动清理。",
+  "GpuPage_RebootDialogLater": "稍后",
+  "GpuPage_ApplyProfilesDialogTitle": "将配置文件应用到 NVIDIA 驱动？",
+  "GpuPage_ApplyProfilesDialogContent": "这会将上方配置文件直接写入 NVIDIA 驱动设置，并创建尚不存在的配置文件。",
+  "GpuPage_ApplyProfilesDialogPrimary": "应用",
+  "GpuPage_ApplyProfilesDialogClose": "取消",
+  "GpuPage_NotSet": "未设置",
+  "GpuPage_Checking": "正在检查...",
+  "GpuPage_Unavailable": "不可用",
+  "GpuPage_AppliedTweakFormat": "已应用 {0}。请重启 Windows 以完成更改。",
+  "GpuPage_RemovedTweakFormat": "已移除 {0}。请重启 Windows 以完成更改。",
+  "GpuPage_LoadNipBeforeExport": "导出已加载配置文件前请先加载 .nip 配置文件。",
+  "GpuPage_ExportedLoadedFormat": "已将 {1} 个已加载配置文件中的 {0} 项设置导出到 {2}。",
+  "GpuPage_EnterProfileName": "导出新配置文件前请输入配置文件名称。",
+  "GpuPage_AddSettingBeforeExport": "导出新配置文件前请至少添加一项设置。若要导出已导入的文件，请使用“导出已加载到 .nip”。",
+  "GpuPage_ExportedNewFormat": "已将“{0}”导出到 {1}。",
+  "GpuPage_AppliedProfilesFormat": "已在 {1} 个配置文件中应用 {0} 项设置（新建 {2} 个）。",
+  "GpuPage_AppliedProfilesSkippedFormat": "已在 {1} 个配置文件中应用 {0} 项设置（新建 {2} 个）。跳过了 {3} 项设置 — 详情请查看日志。"
 }

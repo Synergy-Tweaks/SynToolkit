@@ -8,8 +8,6 @@
   "SystemInfo_NotDetected": "No se detectó ningún playbook conocido",
   "SystemInfo_Conflicting": "Se detectaron varios marcadores de playbook",
   "SystemInfo_ReadOnly": "Detectado localmente sin cambiar la configuración",
-
-
   "ToBeTranslated": "Configurando para 0 de retraso..",
   "ConfigurationStatus_Applying": "Aplicando cambio...",
   "ConfigurationStatus_Unavailable": "No disponible",
@@ -121,17 +119,12 @@
   "ShortcutIcon": "Cambiar el icono de los accesos directos",
   "Mitigations": "Cambiar el estado de las mitigaciones",
   "SafeMode": "Entrar en modo seguro al iniciar",
-
-
   "Animations": "Animaciones",
   "AnimationsDescription": "Habilita o deshabilita las animaciones de Windows",
-
   "ExtractContextMenu": "Opción \"Extraer\" en el menú contextual",
   "ExtractContextMenuDescription": "Agrega una opción \"Extraer\" en el menú contextual para archivos comprimidos",
-
   "RunWithPriority": "Ejecutar con prioridad en el menú contextual",
   "RunWithPriorityDescription": "Agrega una opción \"Ejecutar con prioridad\" en el menú contextual para aplicaciones",
-
   "LanmanWorkstation": "Estación de trabajo Lanman (SMB)",
   "LanmanWorkstationDescription": "Habilita o deshabilita el servicio Estación de trabajo Lanman para el uso compartido de archivos SMB",
   "SyncWindowsClock": "Sincronizar reloj de Windows",
@@ -140,182 +133,122 @@
   "RestartAudioServices": "Reiniciar servicios de audio",
   "RestartAudioServicesDescription": "Reinicia Windows Audio y el Generador de extremos de audio. El sonido se interrumpirá brevemente mientras se vuelven a conectar los dispositivos.",
   "RestartAudioServicesSuccess": "Se reiniciaron los servicios de audio.",
-
   "NetworkDiscovery": "Detección de redes",
   "NetworkDiscoveryDescription": "Habilita o deshabilita la detección de redes para facilitar el uso compartido de archivos",
-
   "Printing": "Impresión",
   "PrintingDescription": "Habilita los servicios de impresión que SynergyOS deshabilita de forma predeterminada. Al desactivarlo, se restaura el estado deshabilitado del servicio de cola de impresión de SynergyOS. Puede requerir un reinicio.",
-
   "WiFi": "Wi-Fi",
   "WiFiDescription": "Habilita los servicios de Wi-Fi que SynergyOS deshabilita de forma predeterminada. Al desactivarlo, se vuelven a deshabilitar los servicios relacionados con WLAN/WWAN.",
-
   "NvidiaDispayContainer": "NVIDIA Display Container",
   "NvidiaDispayContainerDescription": "Habilita o deshabilita el servicio NVIDIA Display Container",
-
   "AddNvidiaDisplayContainerContextMenu": "NVIDIA Display Container en el menú contextual",
   "AddNvidiaDisplayContainerContextMenuDescription": "Agrega un interruptor de NVIDIA Display Container en el menú contextual",
-
   "CpuIdleContextMenu": "Interruptor de inactividad de CPU en el menú contextual",
   "CpuIdleContextMenuDescription": "Agrega un interruptor de inactividad de CPU en el menú contextual",
-
   "LockScreen": "Habilitar la pantalla de bloqueo",
   "LockScreenDescription": "Habilita o deshabilita la pantalla de bloqueo de Windows",
-
   "ShortcutText": "Texto de acceso directo",
   "ShortcutTextDescription": "Muestra u oculta el texto \"Acceso directo\" en los accesos directos",
-
   "BootLogo": "Logotipo de arranque",
   "BootLogoDescription": "Habilita o deshabilita el logotipo de arranque de Windows",
-
   "BootMessages": "Mensajes de arranque",
   "BootMessagesDescription": "Habilita o deshabilita los mensajes de arranque de Windows",
-
   "NewBootMenu": "Nuevo menú de arranque",
   "NewBootMenuDescription": "Habilita o deshabilita el nuevo menú de arranque de Windows",
-
   "SpinningAnimation": "Animación giratoria",
   "SpinningAnimationDescription": "Habilita o deshabilita la animación giratoria durante el arranque",
-
   "AdvancedBootOptions": "Opciones de arranque avanzadas al iniciar",
   "AdvancedBootOptionsDescription": "Habilita o deshabilita las opciones de arranque avanzadas al iniciar",
-
   "AutomaticRepair": "Reparación automática",
   "AutomaticRepairDescription": "Habilita o deshabilita la reparación automática en caso de error de arranque",
-
   "KernelParameters": "Parámetros del kernel al iniciar",
   "KernelParametersDescription": "Habilita o deshabilita los parámetros del kernel al iniciar",
-
   "HighestMode": "Modo más alto",
   "HighestModeDescription": "Habilita o deshabilita el modo más alto para las pantallas",
-
   "CompactView": "Vista compacta",
   "CompactViewDescription": "Habilita o deshabilita la vista compacta en el Explorador de archivos",
-
   "RemovableDrivesInSidebar": "Unidades extraíbles en la barra lateral",
   "RemovableDrivesInSidebarDescription": "Muestra u oculta las unidades extraíbles en la barra lateral del Explorador de archivos",
-
   "BackgroundApps": "Aplicaciones en segundo plano",
   "BackgroundAppsDescription": "Habilita o deshabilita las aplicaciones en segundo plano",
-
   "SearchIndexing": "Indexación de búsqueda",
   "SearchIndexingDescription": "Habilita o deshabilita la indexación de búsqueda",
-
   "FsoAndGameBar": "Optimizaciones de pantalla completa y Xbox Game Bar",
   "FsoAndGameBarDescription": "Habilita o deshabilita las optimizaciones de pantalla completa y Xbox Game Bar con reversión de estado guardado",
-
   "AutomaticUpdates": "Actualizaciones automáticas",
   "AutomaticUpdatesDescription": "Habilita o deshabilita las actualizaciones automáticas",
-
   "DeliveryOptimisation": "Optimización de entrega",
   "DeliveryOptimisationDescription": "Habilita o deshabilita la optimización de entrega",
-
   "Hibernation": "Hibernación",
   "HibernationDescription": "Habilita o deshabilita la hibernación",
-
   "Location": "Ubicación",
   "LocationDescription": "Habilita o deshabilita los servicios de ubicación",
-
   "PhoneLink": "Vincular al teléfono y dispositivos móviles",
   "PhoneLinkDescription": "Habilita o deshabilita Vincular al teléfono y los dispositivos móviles",
-
   "PowerSaving": "Ahorro de energía",
   "PowerSavingDescription": "Habilita o deshabilita las funciones de ahorro de energía",
-
   "Sleep": "Suspensión",
   "SleepDescription": "Habilita o deshabilita el modo de suspensión",
-
   "SystemRestore": "Restaurar sistema",
   "SystemRestoreDescription": "Abre Protección del sistema para administrar puntos de restauración del sistema y la configuración de protección.",
-
   "UpdateNotifications": "Notificaciones de actualización",
   "UpdateNotificationsDescription": "Habilita o deshabilita las notificaciones de actualización",
-
   "WebSearch": "Búsqueda web del menú Inicio",
   "WebSearchDescription": "Habilita o deshabilita la búsqueda web en el menú Inicio",
-
   "Widgets": "Widgets de escritorio",
   "WidgetsDescription": "Habilita o deshabilita los widgets de escritorio",
-
   "WindowsSpotlight": "Windows Spotlight",
   "WindowsSpotlightDescription": "Habilita o deshabilita Windows Spotlight en la pantalla de bloqueo",
-
   "AppStoreArchiving": "Archivado de Microsoft Store",
   "AppStoreArchivingDescription": "Habilita o deshabilita el archivado de Microsoft Store",
-
   "TakeOwnership": "Agregar \"Tomar posesión\" en el menú contextual",
   "TakeOwnershipDescription": "Agrega una opción \"Tomar posesión\" en el menú contextual para archivos y carpetas",
-
   "OldContextMenu": "Menú contextual clásico (anterior a Windows 11)",
   "OldContextMenuDescription": "Habilita o deshabilita el menú contextual clásico anterior a Windows 11",
-
   "EdgeSwipe": "Deslizar desde el borde",
   "EdgeSwipeDescription": "Habilita o deshabilita los gestos de deslizamiento desde el borde",
-
   "AppIconsThumbnail": "Iconos de aplicaciones en las miniaturas",
   "AppIconsThumbnailDescription": "Muestra u oculta los iconos de aplicaciones en las miniaturas de archivos",
-
   "AutomaticFolderDiscovery": "Detección automática de carpetas",
   "AutomaticFolderDiscoveryDescription": "Habilita o deshabilita la detección automática de carpetas en el Explorador de archivos",
-
   "Gallery": "Habilitar la galería",
   "GalleryDescription": "Habilita o deshabilita la galería en el Explorador de archivos",
-
   "SnapLayout": "Habilita los diseños de acoplamiento para ventanas",
   "SnapLayoutDescription": "Habilita o deshabilita los diseños de acoplamiento para ventanas",
-
   "RecentItems": "Desbloquea los elementos recientes en el Explorador de archivos",
   "RecentItemsDescription": "Habilita o deshabilita los elementos recientes en el Explorador de archivos",
-
   "VerboseStatusMessage": "Mensajes de estado detallados",
   "VerboseStatusMessageDescription": "Habilita o deshabilita los mensajes de estado detallados durante el arranque y el apagado",
-
   "SuperFetch": "SuperFetch",
   "SuperFetchDescription": "Habilita o deshabilita el servicio SuperFetch (SysMain)",
-
   "StaticIp": "Establecer IP estática automáticamente",
   "StaticIpDescription": "Configura automáticamente una dirección IP estática para tu adaptador de red",
-
   "HideAppBrowserControl": "Control de navegador de aplicaciones",
   "HideAppBrowserControlDescription": "Muestra u oculta el control de navegador integrado en Seguridad de Windows",
-
   "SecurityHealthTray": "Botón de estado de seguridad en la bandeja de la barra de tareas",
   "SecurityHealthTrayDescription": "Muestra u oculta el botón de estado de seguridad en la bandeja de la barra de tareas",
-
   "UAC": "Control de cuentas de usuario",
   "UACDescription": "Solicita elevación cuando las aplicaciones necesitan permisos de administrador. Deshabilitarlo elimina los avisos de UAC (predeterminado en SynergyOS), pero reduce la protección contra cambios no deseados en el sistema. Requiere reinicio.",
-
   "FaultTolerantHeap": "Montón tolerante a errores",
   "FaultTolerantHeapDescription": "Habilita o deshabilita la mitigación de Montón tolerante a errores (FTH)",
-
   "Copilot": "Habilitar Microsoft Copilot",
   "CopilotDescription": "Habilita o deshabilita la integración de Microsoft Copilot en Windows 11",
-
   "Recall": "Habilitar Windows Recall",
   "RecallDescription": "Habilita o deshabilita la función Windows Recall",
-
   "CpuIdle": "Habilitar inactividad de CPU",
   "CpuIdleDescription": "Habilita o deshabilita la función de inactividad de CPU",
-
   "ProcessExplorer": "Instalar Process Explorer",
   "ProcessExplorerDescription": "Instala Process Explorer de Microsoft Sysinternals",
-
   "VbsState": "Seguridad basada en virtualización",
   "VbsStateDescription": "Habilita VBS, HVCI, Credential Guard y otras protecciones que SynergyOS deshabilita de forma predeterminada. Requiere reinicio.",
-
   "GiveAccessToMenu": "Menú Dar acceso a",
   "GiveAccessToMenuDescription": "Agrega una opción \"Dar acceso a\" en el menú contextual para archivos y carpetas",
-
   "NetworkNavigationPane": "Panel de navegación de red",
   "NetworkNavigationPaneDescription": "Muestra u oculta el panel de navegación de red en el Explorador de archivos",
-
   "FileSharing": "Uso compartido de archivos",
   "FileSharingDescription": "Habilita o deshabilita las funciones de uso compartido de archivos",
-
   "WindowsHello": "Windows Hello",
   "WindowsHelloDescription": "Habilita o deshabilita la autenticación biométrica de Windows Hello",
-
-
   "Home_WinVer": "Versión de Windows",
   "Home_PlaybookVer": "Versión del Playbook",
   "Home_HeaderText": "Inicio",
@@ -340,7 +273,6 @@
   "NewProfilesButton": "Crear un nuevo perfil",
   "IncompatibleVer": "La instalación actual de Windows es incompatible con esta versión de Toolbox. Instala SynergyOS.",
   "StatingServices": "Iniciando servicios...",
-
   "CurrentConfigIsSavedMessage": "Tu configuración actual se guardará en este perfil",
   "DeleteProfileConfirmation": "¿Realmente deseas eliminar este perfil?",
   "TryDeleteDefaultProfile": "No puedes eliminar el perfil predeterminado",
@@ -396,17 +328,13 @@
   "ResetWindowsUpdateDeferral": "Restablecer el aplazamiento de Windows Update",
   "MicrosoftStoreToggle": "Alternar Microsoft Store",
   "MicrosoftStoreDescription": "Registra o anula el registro del paquete de Microsoft Store para el usuario actual.",
-
-
   "Tile_DocumentationTitle": "Apoya a Kwanteks",
   "Tile_DocumentationDescription": "¡Descubre el contenido de Kwanteks!",
   "Tile_DiscordTitle": "Discord",
   "Tile_DiscordDescription": "¡Pide ayuda y haz nuevos amigos!",
   "Tile_GithubTitle": "GitHub",
   "Tile_GithubDescription": "Explora el código y contribuye",
-
   "SearchPlaceholder": "Buscar configuración...",
-
   "Home": "Inicio",
   "Installer": "Instalador",
   "Adjustments": "Personalizaciones",
@@ -420,7 +348,6 @@
   "Advanced": "Configuración avanzada",
   "Security": "Seguridad",
   "Troubleshooting": "Restauración",
-
   "SpecsPageTitle": "Especificaciones",
   "SpecsPageDescription": "Una vista de solo lectura del hardware y la versión de Windows de este sistema. Aquí no se puede cambiar nada.",
   "SpecsPageErrorTitle": "Especificaciones",
@@ -450,7 +377,6 @@
   "CleanerPageSelectNone": "No seleccionar ninguno",
   "CleanerPageWizTreeDescription": "Inicie WizTree portable (información detallada sobre el uso del disco)",
   "CleanerPageLaunchWizTree": "Iniciar WizTree",
-
   "HomePageText3E77C2003BD6": "Novedades de SynergyOS",
   "HomePageContentB7F2E2F3517E": "Ver todos los lanzamientos",
   "HomePageContent8C338141C3FC": "Leer más",
@@ -540,12 +466,12 @@
   "GpuPageContentDFB2D4C80949": "Componentes del controlador de pantalla",
   "GpuPageContent021013D0F6AD": "Optimizar controlador",
   "GpuPageTextA9EEE4193E26": "Aplica una configuración recomendada: deshabilita todas las tareas programadas, conserva solo el controlador de pantalla y los paquetes de configuración de AMD, y conserva solo los componentes principales de la pantalla. Si su paquete importado difiere del diseño estándar de AMD, solo se ajustarán los elementos que coincidan.",
-  "GpuPageTextE34E1FDCD339": "Desmarque \u0027Conservar\u0027 para los paquetes que desea eliminar.",
+  "GpuPageTextE34E1FDCD339": "Desmarque 'Conservar' para los paquetes que desea eliminar.",
   "GpuPageTextB62855F6E149": "Los paquetes son instaladores y controladores MSI incluidos con el software AMD Radeon. Los paquetes no marcados serán excluidos de la instalación.",
   "GpuPageContentE03C27EFA9C8": "Seleccionar todo",
   "GpuPageContentEFB8BCD64AA5": "Seleccionar Ninguno",
   "GpuPageContent311C673C25C9": "mantener",
-  "GpuPageText3D08116EF7A8": "Desmarque \u0027Habilitado\u0027 para deshabilitar la tarea programada.",
+  "GpuPageText3D08116EF7A8": "Desmarque 'Habilitado' para deshabilitar la tarea programada.",
   "GpuPageText14936C27052A": "AMD crea tareas programadas para ejecutar operaciones en segundo plano, como actualizaciones de controladores, telemetría y funciones de inicio automático. Deshabilitarlos evita actividad en segundo plano innecesaria.",
   "GpuPageContent4DA4000696E1": "Habilitado",
   "GpuPageText58AB99CEB612": "Desmarque \"Conservar\" para los componentes que desea eliminar.",
@@ -567,7 +493,6 @@
   "GpuPagePlaceholderTextFD59CDAB4C9D": "Valor",
   "GpuPageContent6BA9EA1B7E66": "Quitar",
   "GpuPageContent3CFAEF9F3C36": "Exportar nuevo perfil a .nip",
-
   "PowerPlansPageHeader9EF26DE51104": "Plan de energía actual",
   "PowerPlansPageDescription320073B0E4BC": "El plan que Windows está usando ahora mismo.",
   "PowerPlansPageHeaderEC2BEE95E81C": "Rendimiento SynToolkit SOS",
@@ -622,15 +547,11 @@
   "GpuPageHeaderAC283BA30A9F": "Nombre del perfil",
   "GpuPageDescriptionF27AFB4CDFAD": "Nombres ejecutables separados por comas, p. juego.exe, lanzador.exe. Déjelo en blanco para obtener un perfil base que se aplique a todas las aplicaciones.",
   "GpuPageHeader3EE89599DB6C": "Ejecutables",
-
   "Language": "Idioma",
-
   "NoFavorites": "Aún no has agregado nada a tus favoritos.",
   "SystemInfo": "Acerca de este sistema:",
   "LearnMore": "Más información",
-
   "TroubleshootingDocumenation": "Documentación de solución de problemas",
-
   "ExperimentsHeader": "Experimentos",
   "ExperimentsCardHeader": "Funciones experimentales",
   "ExperimentsCardDescription": "Estas funciones son experimentales y es posible que no funcionen exactamente como se espera. Requiere un reinicio para aplicar los cambios",
@@ -638,14 +559,12 @@
   "SearchExperimentDescription": "Habilita una barra de búsqueda para encontrar rápidamente configuraciones en SynToolkit",
   "IconsExperiment": "Iconos",
   "IconsExperimentDescription": "Habilita iconos junto a cada configuración para una identificación más fácil y mayor atractivo visual",
-
   "RadeonSlimmer_OptimizeDriver": "Optimizar controlador",
   "RadeonSlimmer_OptimizeDriverTooltip": "Aplica una configuración recomendada: deshabilita todas las tareas programadas, conserva solo el controlador de pantalla y los paquetes de AMD Settings, y conserva solo los componentes de pantalla principales. Si tu paquete importado difiere del diseño estándar de AMD, solo se ajustarán los elementos coincidentes.",
   "RadeonSlimmer_OptimizationSuccess": "Se aplicó la optimización recomendada.",
   "RadeonSlimmer_OptimizationPartial": "Se aplicó la optimización recomendada. Algunos elementos de tu importación no coincidían con el diseño estándar de AMD y se dejaron sin cambios; revisa las pestañas si es necesario.",
   "RadeonSlimmer_OptimizationSkipped": "Optimización aplicada donde fue posible. {0} no coincidían con este paquete y se omitieron.",
-  "RadeonSlimmer_OptimizationNoMatch": "Esta importación no coincide con un diseño de paquete de AMD reconocido, por lo que no se aplicó ninguna optimización. Aún puedes configurar los ajustes manualmente."
-  ,
+  "RadeonSlimmer_OptimizationNoMatch": "Esta importación no coincide con un diseño de paquete de AMD reconocido, por lo que no se aplicó ninguna optimización. Aún puedes configurar los ajustes manualmente.",
   "NeedsAttention": "Requiere atención",
   "Installer_NvidiaAppDescription": "Aplicación oficial de NVIDIA para controladores gráficos, ajustes de juegos y funciones de NVIDIA.",
   "Installer_AmdAdrenalinDescription": "Aplicación oficial de AMD para controladores gráficos Radeon, ajustes de juegos y funciones de rendimiento.",
@@ -654,8 +573,7 @@
   "Installer_FilterAll": "Todas",
   "Installer_FilterInstalled": "Instaladas",
   "Installer_FilterNotInstalled": "No instaladas",
-  "Installer_FilterNeedsUpdate": "Necesitan actualización"
-  ,
+  "Installer_FilterNeedsUpdate": "Necesitan actualización",
   "NeedsAttention_Subtitle": "Comprueba si hay controladores y aplicaciones desactualizados o ausentes, una versión antigua de SynToolkit, ningún punto de restauración y un reloj de Windows desincronizado.",
   "NeedsAttention_Refresh": "Actualizar",
   "NeedsAttention_AllClear": "Todo correcto",
@@ -701,8 +619,107 @@
   "NeedsAttention_InstallerUpdateTitle": "Actualizar {0}",
   "NeedsAttention_InstallerUpdateVersionDescription": "Actualizar de {0} a {1}.",
   "NeedsAttention_InstallerUpdateDescription": "Hay una versión más reciente disponible.",
-  "NeedsAttention_OpenInstaller": "Abrir instalador"
-  ,
+  "NeedsAttention_OpenInstaller": "Abrir instalador",
   "NeedsAttention_IgnoreForThreeMonths": "Ignorar durante 3 meses",
-  "NeedsAttention_IgnoredForThreeMonths": "Advertencia ignorada durante 3 meses."
+  "NeedsAttention_IgnoredForThreeMonths": "Advertencia ignorada durante 3 meses.",
+  "GpuPage_Title": "Unidad de procesamiento gráfico",
+  "GpuPage_Description": "Download vendor drivers, slim installation packages, apply NVIDIA profile settings, and remove leftover GPU driver components when needed.",
+  "GpuPage_TabOverview": "Resumen",
+  "GpuPage_TabDebloat": "Optimizar",
+  "GpuPage_TabPerformance": "Rendimiento",
+  "GpuPage_TabRemoval": "Eliminación",
+  "GpuPage_DetectedGpu": "Detected GPU",
+  "GpuPage_DetectedGpuDescription": "Choose which installed GPU to manage.",
+  "GpuPage_DriverVersion": "Driver version",
+  "GpuPage_DriverVersionDescription": "Fetch vendor releases for the selected GPU.",
+  "GpuPage_Refresh": "Actualizar",
+  "GpuPage_PackageActions": "Package actions",
+  "GpuPage_PackageActionsDescription": "Prepare the installer package for stock or customized installation.",
+  "GpuPage_PreparePackage": "Preparar paquete",
+  "GpuPage_InstallPrepared": "Instalar paquete preparado",
+  "GpuPage_ReloadPackage": "Reload package",
+  "GpuPage_PreconfiguredProfilesDescriptionShort": "Pre-configured profiles bundled with SynToolkit.",
+  "GpuPage_NoBundledProfiles": "No bundled profiles found",
+  "GpuPage_ExecutablesDescriptionShort": "Comma-separated executable names, e.g. game.exe, launcher.exe.",
+  "GpuPage_DebloatHint": "Prepare a package in Overview, then customize its contents here before launching the installer.",
+  "GpuPage_DebloatPreset": "Debloat preset",
+  "GpuPage_DebloatPresetDescription": "Choose whether to keep the stock package, use the stripped preset, or customize manually.",
+  "GpuPage_InstallerFolders": "Installer Folders",
+  "GpuPage_PerformanceInfo": "Registry-backed tweaks apply only to NVIDIA systems with an installed NVIDIA display driver.",
+  "GpuPage_PerformanceTweaks": "NVIDIA performance tweaks",
+  "GpuPage_RefreshValues": "Refresh values",
+  "GpuPage_SettingsGroupDescription": "General NVIDIA registry settings.",
+  "GpuPage_ApplyAll": "Aplicar todo",
+  "GpuPage_RemoveAll": "Quitar todo",
+  "GpuPage_RmPowerFeature": "RM Power Feature",
+  "GpuPage_RmPowerFeatureDescription": "Driver power-management flags.",
+  "GpuPage_Telemetry": "Telemetry",
+  "GpuPage_TelemetryDescription": "Telemetry-related registry values.",
+  "GpuPage_Ecc": "ECC",
+  "GpuPage_EccDescription": "ECC-related registry values.",
+  "GpuPage_Hdcp": "HDCP",
+  "GpuPage_HdcpDescription": "HDCP-related registry values.",
+  "GpuPage_RemovalOptions": "Removal options",
+  "GpuPage_RemovalOptionsDescription": "Run the built-in driver cleanup workflow for the selected vendor.",
+  "GpuPage_RunVendorUninstaller": "Run vendor uninstaller",
+  "GpuPage_RemoveDriverStorePackages": "Remove driver store packages",
+  "GpuPage_StopRemoveServices": "Stop and remove services",
+  "GpuPage_DeleteLeftoverFiles": "Delete leftover files",
+  "GpuPage_DeleteLeftoverRegistry": "Delete leftover registry entries",
+  "GpuPage_BlockAutomaticReinstall": "Block automatic driver reinstall",
+  "GpuPage_RunRemoval": "Ejecutar eliminación",
+  "GpuPage_RebootNow": "Reiniciar ahora",
+  "GpuPage_RemovalLog": "Registro de eliminación",
+  "GpuPage_DetectingGpus": "Detecting installed GPUs...",
+  "GpuPage_AmdDriversTitle": "AMD GPU Drivers",
+  "GpuPage_NvidiaDriversTitle": "NVIDIA GPU Drivers",
+  "GpuPage_GpuDriversTitle": "GPU Drivers",
+  "GpuPage_AmdDriversSubtitle": "Download, debloat, and remove AMD graphics drivers.",
+  "GpuPage_NvidiaDriversSubtitle": "Download, debloat, tune, and remove NVIDIA graphics drivers.",
+  "GpuPage_NoGpuSelected": "No GPU selected",
+  "GpuPage_UnsupportedVendor": "Unsupported vendor",
+  "GpuPage_InstalledDriverFormat": "Installed driver: {0}",
+  "GpuPage_PreparedPackageFormat": "Prepared {0} package at {1}",
+  "GpuPage_NoCleanupSteps": "No cleanup steps selected.",
+  "GpuPage_WillRunFormat": "Se ejecutará: {0}",
+  "GpuPage_NoGpuDetected": "No GPU could be detected.",
+  "GpuPage_DetectedFormat": "Detected: {0}",
+  "GpuPage_DebloatStripped": "Stripped",
+  "GpuPage_DebloatStock": "Stock",
+  "GpuPage_DebloatCustom": "Custom",
+  "GpuPage_ActionVendorUninstall": "vendor uninstall",
+  "GpuPage_ActionDriverStorePurge": "driver-store purge",
+  "GpuPage_ActionServiceRemoval": "service removal",
+  "GpuPage_ActionFileCleanup": "file cleanup",
+  "GpuPage_ActionRegistryCleanup": "registry cleanup",
+  "GpuPage_ActionAutoReinstallBlock": "auto-reinstall block",
+  "GpuPage_NoCompatibleGpu": "No compatible GPU is selected.",
+  "GpuPage_ChooseDriverFirst": "Choose a driver version first.",
+  "GpuPage_ExtractingPackage": "Extracting driver package...",
+  "GpuPage_DownloadingPackageFormat": "Downloading driver package: {0}%",
+  "GpuPage_PrepareBeforeInstall": "Prepare a driver package before installing.",
+  "GpuPage_InstallerLaunched": "Installer launched successfully.",
+  "GpuPage_PackageRefreshed": "Prepared package refreshed.",
+  "GpuPage_NoGpuForRemoval": "No GPU is selected for removal.",
+  "GpuPage_RemovalCancelled": "Driver removal was cancelled.",
+  "GpuPage_Unknown": "Unknown",
+  "GpuPage_RebootDialogTitle": "Reboot to finish GPU cleanup?",
+  "GpuPage_RebootDialogContent": "The removal workflow finished. Reboot Windows now to complete GPU driver cleanup.",
+  "GpuPage_RebootDialogLater": "Later",
+  "GpuPage_ApplyProfilesDialogTitle": "Apply profiles to the NVIDIA driver?",
+  "GpuPage_ApplyProfilesDialogContent": "This writes the profiles above directly to your NVIDIA driver settings, creating any profiles that do not already exist.",
+  "GpuPage_ApplyProfilesDialogPrimary": "Apply",
+  "GpuPage_ApplyProfilesDialogClose": "Cancel",
+  "GpuPage_NotSet": "No establecido",
+  "GpuPage_Checking": "Checking...",
+  "GpuPage_Unavailable": "Unavailable",
+  "GpuPage_AppliedTweakFormat": "Applied {0}. Restart Windows to finish applying changes.",
+  "GpuPage_RemovedTweakFormat": "Removed {0}. Restart Windows to finish applying changes.",
+  "GpuPage_LoadNipBeforeExport": "Load a .nip profile before exporting loaded profiles.",
+  "GpuPage_ExportedLoadedFormat": "Exported {0} setting(s) across {1} loaded profile(s) to {2}.",
+  "GpuPage_EnterProfileName": "Enter a profile name before exporting a new profile.",
+  "GpuPage_AddSettingBeforeExport": "Add at least one setting before exporting a new profile. To export an imported file, use 'Export loaded to .nip'.",
+  "GpuPage_ExportedNewFormat": "Exported '{0}' to {1}.",
+  "GpuPage_AppliedProfilesFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created).",
+  "GpuPage_AppliedProfilesSkippedFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created). {3} setting(s) were skipped - see the log for details."
 }

@@ -8,8 +8,6 @@
   "SystemInfo_NotDetected": "Известный плейбук не обнаружен",
   "SystemInfo_Conflicting": "Обнаружено несколько маркеров плейбука",
   "SystemInfo_ReadOnly": "Обнаружено локально без изменения настроек",
-
-
   "ToBeTranslated": "Настройка на нулевую задержку..",
   "ConfigurationStatus_Applying": "Применение изменения...",
   "ConfigurationStatus_Unavailable": "Недоступно",
@@ -121,17 +119,12 @@
   "ShortcutIcon": "Изменить значок ярлыков",
   "Mitigations": "Изменить состояние мер защиты",
   "SafeMode": "Вход в безопасный режим при запуске",
-
-
   "Animations": "Анимации",
   "AnimationsDescription": "Включить или отключить анимации Windows",
-
   "ExtractContextMenu": "Пункт «Извлечь» в контекстном меню",
   "ExtractContextMenuDescription": "Добавляет пункт «Извлечь» в контекстное меню для сжатых файлов",
-
   "RunWithPriority": "Пункт «Запустить с приоритетом» в контекстном меню",
   "RunWithPriorityDescription": "Добавляет пункт «Запустить с приоритетом» в контекстное меню для приложений",
-
   "LanmanWorkstation": "Lanman Workstation (SMB)",
   "LanmanWorkstationDescription": "Включить или отключить службу Lanman Workstation для общего доступа к файлам по SMB",
   "SyncWindowsClock": "Синхронизировать часы Windows",
@@ -140,182 +133,122 @@
   "RestartAudioServices": "Перезапустить аудиослужбы",
   "RestartAudioServicesDescription": "Перезапускает Windows Audio и построитель аудиоконечных точек. Звук кратковременно прервётся во время повторного подключения устройств.",
   "RestartAudioServicesSuccess": "Аудиослужбы были перезапущены.",
-
   "NetworkDiscovery": "Сетевое обнаружение",
   "NetworkDiscoveryDescription": "Включить или отключить сетевое обнаружение для упрощения общего доступа к файлам",
-
   "Printing": "Печать",
   "PrintingDescription": "Включает службы печати, которые SynergyOS отключает по умолчанию. Отключение повторно применяет отключённое состояние службы диспетчера очереди печати, заданное SynergyOS. Может потребоваться перезагрузка.",
-
   "WiFi": "Wi-Fi",
   "WiFiDescription": "Включает службы Wi-Fi, которые SynergyOS отключает по умолчанию. Отключение снова отключает связанные службы WLAN/WWAN.",
-
   "NvidiaDispayContainer": "NVIDIA Display Container",
   "NvidiaDispayContainerDescription": "Включить или отключить службу NVIDIA Display Container",
-
   "AddNvidiaDisplayContainerContextMenu": "NVIDIA Display Container в контекстном меню",
   "AddNvidiaDisplayContainerContextMenuDescription": "Добавляет переключатель NVIDIA Display Container в контекстное меню",
-
   "CpuIdleContextMenu": "Переключатель CPU Idle в контекстном меню",
   "CpuIdleContextMenuDescription": "Добавляет переключатель CPU Idle в контекстное меню",
-
   "LockScreen": "Включить экран блокировки",
   "LockScreenDescription": "Включить или отключить экран блокировки Windows",
-
   "ShortcutText": "Текст ярлыка",
   "ShortcutTextDescription": "Показать или скрыть текст «Ярлык» на ярлыках",
-
   "BootLogo": "Логотип загрузки",
   "BootLogoDescription": "Включить или отключить логотип загрузки Windows",
-
   "BootMessages": "Сообщения загрузки",
   "BootMessagesDescription": "Включить или отключить сообщения загрузки Windows",
-
   "NewBootMenu": "Новое меню загрузки",
   "NewBootMenuDescription": "Включить или отключить новое меню загрузки Windows",
-
   "SpinningAnimation": "Анимация загрузки (вращение)",
   "SpinningAnimationDescription": "Включить или отключить анимацию вращения при загрузке",
-
   "AdvancedBootOptions": "Дополнительные параметры загрузки при запуске",
   "AdvancedBootOptionsDescription": "Включить или отключить дополнительные параметры загрузки при запуске",
-
   "AutomaticRepair": "Автоматическое восстановление",
   "AutomaticRepairDescription": "Включить или отключить автоматическое восстановление при сбое загрузки",
-
   "KernelParameters": "Параметры ядра при запуске",
   "KernelParametersDescription": "Включить или отключить параметры ядра при запуске",
-
   "HighestMode": "Наивысший режим",
   "HighestModeDescription": "Включить или отключить наивысший режим для дисплеев",
-
   "CompactView": "Компактный вид",
   "CompactViewDescription": "Включить или отключить компактный вид в проводнике",
-
   "RemovableDrivesInSidebar": "Съёмные диски на боковой панели",
   "RemovableDrivesInSidebarDescription": "Показать или скрыть съёмные диски на боковой панели проводника",
-
   "BackgroundApps": "Фоновые приложения",
   "BackgroundAppsDescription": "Включить или отключить фоновые приложения",
-
   "SearchIndexing": "Индексирование поиска",
   "SearchIndexingDescription": "Включить или отключить индексирование поиска",
-
   "FsoAndGameBar": "Полноэкранная оптимизация и игровая панель Xbox",
   "FsoAndGameBarDescription": "Включить или отключить полноэкранную оптимизацию и игровую панель Xbox с сохранением состояния для отката",
-
   "AutomaticUpdates": "Автоматические обновления",
   "AutomaticUpdatesDescription": "Включить или отключить автоматические обновления",
-
   "DeliveryOptimisation": "Оптимизация доставки",
   "DeliveryOptimisationDescription": "Включить или отключить оптимизацию доставки",
-
   "Hibernation": "Гибернация",
   "HibernationDescription": "Включить или отключить гибернацию",
-
   "Location": "Геолокация",
   "LocationDescription": "Включить или отключить службы геолокации",
-
   "PhoneLink": "Связь с телефоном и мобильные устройства",
   "PhoneLinkDescription": "Включить или отключить связь с телефоном и мобильные устройства",
-
   "PowerSaving": "Энергосбережение",
   "PowerSavingDescription": "Включить или отключить функции энергосбережения",
-
   "Sleep": "Сон",
   "SleepDescription": "Включить или отключить режим сна",
-
   "SystemRestore": "Восстановление системы",
   "SystemRestoreDescription": "Откройте «Защиту системы», чтобы управлять точками восстановления и параметрами защиты.",
-
   "UpdateNotifications": "Уведомления об обновлениях",
   "UpdateNotificationsDescription": "Включить или отключить уведомления об обновлениях",
-
   "WebSearch": "Веб-поиск в меню «Пуск»",
   "WebSearchDescription": "Включить или отключить веб-поиск в меню «Пуск»",
-
   "Widgets": "Виджеты рабочего стола",
   "WidgetsDescription": "Включить или отключить виджеты рабочего стола",
-
   "WindowsSpotlight": "Windows Spotlight",
   "WindowsSpotlightDescription": "Включить или отключить Windows Spotlight на экране блокировки",
-
   "AppStoreArchiving": "Архивирование Microsoft Store",
   "AppStoreArchivingDescription": "Включить или отключить архивирование Microsoft Store",
-
   "TakeOwnership": "Добавить «Стать владельцем» в контекстное меню",
   "TakeOwnershipDescription": "Добавляет пункт «Стать владельцем» в контекстное меню для файлов и папок",
-
   "OldContextMenu": "Классическое контекстное меню (до Windows 11)",
   "OldContextMenuDescription": "Включить или отключить классическое контекстное меню из версий до Windows 11",
-
   "EdgeSwipe": "Свайп от края экрана",
   "EdgeSwipeDescription": "Включить или отключить жесты свайпа от края экрана",
-
   "AppIconsThumbnail": "Значки приложений на эскизах",
   "AppIconsThumbnailDescription": "Показать или скрыть значки приложений на эскизах файлов",
-
   "AutomaticFolderDiscovery": "Автоматическое определение типа папки",
   "AutomaticFolderDiscoveryDescription": "Включить или отключить автоматическое определение типа папки в проводнике",
-
   "Gallery": "Включить галерею",
   "GalleryDescription": "Включить или отключить галерею в проводнике",
-
   "SnapLayout": "Включает макеты привязки окон",
   "SnapLayoutDescription": "Включить или отключить макеты привязки окон",
-
   "RecentItems": "Разблокирует недавние элементы в проводнике",
   "RecentItemsDescription": "Включить или отключить недавние элементы в проводнике",
-
   "VerboseStatusMessage": "Подробные сообщения о состоянии",
   "VerboseStatusMessageDescription": "Включить или отключить подробные сообщения о состоянии при загрузке и завершении работы",
-
   "SuperFetch": "SuperFetch",
   "SuperFetchDescription": "Включить или отключить службу SuperFetch (SysMain)",
-
   "StaticIp": "Автоматически задать статический IP",
   "StaticIpDescription": "Автоматически настраивает статический IP-адрес для сетевого адаптера",
-
   "HideAppBrowserControl": "Управление встроенным браузером",
   "HideAppBrowserControlDescription": "Показывает/скрывает элемент управления встроенным браузером в системе безопасности Windows",
-
   "SecurityHealthTray": "Кнопка «Безопасность» в области уведомлений панели задач",
   "SecurityHealthTrayDescription": "Показать или скрыть кнопку «Безопасность» в области уведомлений панели задач",
-
   "UAC": "Контроль учётных записей пользователей",
   "UACDescription": "Запрашивает повышение прав, когда приложениям требуются права администратора. Отключение убирает запросы UAC (по умолчанию в SynergyOS), но снижает защиту от нежелательных изменений в системе. Требуется перезагрузка.",
-
   "FaultTolerantHeap": "Отказоустойчивая куча",
   "FaultTolerantHeapDescription": "Включить или отключить меру защиты «Отказоустойчивая куча»",
-
   "Copilot": "Включить Microsoft Copilot",
   "CopilotDescription": "Включить или отключить интеграцию Microsoft Copilot в Windows 11",
-
   "Recall": "Включить Windows Recall",
   "RecallDescription": "Включить или отключить функцию Windows Recall",
-
   "CpuIdle": "Включить простой ЦП",
   "CpuIdleDescription": "Включить или отключить функцию простоя ЦП",
-
   "ProcessExplorer": "Установить Process Explorer",
   "ProcessExplorerDescription": "Установить Process Explorer от Microsoft Sysinternals",
-
   "VbsState": "Безопасность на основе виртуализации",
   "VbsStateDescription": "Включает VBS, HVCI, Credential Guard и связанные средства защиты, которые SynergyOS отключает по умолчанию. Требуется перезагрузка.",
-
   "GiveAccessToMenu": "Меню «Предоставить доступ к»",
   "GiveAccessToMenuDescription": "Добавляет пункт «Предоставить доступ к» в контекстное меню для файлов и папок",
-
   "NetworkNavigationPane": "Область навигации по сети",
   "NetworkNavigationPaneDescription": "Показать или скрыть область навигации по сети в проводнике",
-
   "FileSharing": "Общий доступ к файлам",
   "FileSharingDescription": "Включить или отключить функции общего доступа к файлам",
-
   "WindowsHello": "Windows Hello",
   "WindowsHelloDescription": "Включить или отключить биометрическую аутентификацию Windows Hello",
-
-
   "Home_WinVer": "Версия Windows",
   "Home_PlaybookVer": "Версия плейбука",
   "Home_HeaderText": "Главная",
@@ -340,7 +273,6 @@
   "NewProfilesButton": "Создать новый профиль",
   "IncompatibleVer": "Текущая установка Windows несовместима с этой версией Toolbox. Установите SynergyOS.",
   "StatingServices": "Запуск служб...",
-
   "CurrentConfigIsSavedMessage": "Ваша текущая конфигурация будет сохранена в этом профиле",
   "DeleteProfileConfirmation": "Вы действительно хотите удалить этот профиль?",
   "TryDeleteDefaultProfile": "Вы не можете удалить профиль по умолчанию",
@@ -396,17 +328,13 @@
   "ResetWindowsUpdateDeferral": "Сбросить отсрочку обновлений Windows",
   "MicrosoftStoreToggle": "Переключить Microsoft Store",
   "MicrosoftStoreDescription": "Зарегистрировать или отменить регистрацию пакета Microsoft Store для текущего пользователя.",
-
-
   "Tile_DocumentationTitle": "Поддержать Kwanteks",
   "Tile_DocumentationDescription": "Ознакомьтесь с материалами Kwanteks!",
   "Tile_DiscordTitle": "Discord",
   "Tile_DiscordDescription": "Обращайтесь за поддержкой и заводите друзей!",
   "Tile_GithubTitle": "GitHub",
   "Tile_GithubDescription": "Изучайте код и вносите свой вклад",
-
   "SearchPlaceholder": "Поиск настроек...",
-
   "Home": "Главная",
   "Installer": "Установщик",
   "Adjustments": "Настройки",
@@ -420,7 +348,6 @@
   "Advanced": "Расширенная конфигурация",
   "Security": "Безопасность",
   "Troubleshooting": "Восстановление",
-
   "SpecsPageTitle": "Характеристики",
   "SpecsPageDescription": "Сведения об оборудовании и версии Windows этого компьютера доступны только для чтения. Здесь ничего нельзя изменить.",
   "SpecsPageErrorTitle": "Характеристики",
@@ -450,7 +377,6 @@
   "CleanerPageSelectNone": "Выбрать нет",
   "CleanerPageWizTreeDescription": "Запустите портативный WizTree (подробная информация об использовании диска)",
   "CleanerPageLaunchWizTree": "Запустить WizTree",
-
   "HomePageText3E77C2003BD6": "Что нового в SynergyOS",
   "HomePageContentB7F2E2F3517E": "Посмотреть все выпуски",
   "HomePageContent8C338141C3FC": "Подробнее",
@@ -567,7 +493,6 @@
   "GpuPagePlaceholderTextFD59CDAB4C9D": "Значение",
   "GpuPageContent6BA9EA1B7E66": "Удалить",
   "GpuPageContent3CFAEF9F3C36": "Экспортировать новый профиль в .nip",
-
   "PowerPlansPageHeader9EF26DE51104": "Текущий план электропитания",
   "PowerPlansPageDescription320073B0E4BC": "План, который Windows использует прямо сейчас.",
   "PowerPlansPageHeaderEC2BEE95E81C": "Производительность SynToolkit SOS",
@@ -622,15 +547,11 @@
   "GpuPageHeaderAC283BA30A9F": "Имя профиля",
   "GpuPageDescriptionF27AFB4CDFAD": "Имена исполняемых файлов, разделенные запятыми, например. игра.exe, лаунчер.exe. Оставьте пустым, чтобы указать базовый профиль, который применяется ко всем приложениям.",
   "GpuPageHeader3EE89599DB6C": "Исполняемые файлы",
-
   "Language": "Язык",
-
   "NoFavorites": "Вы ещё не добавили ничего в избранное.",
   "SystemInfo": "Об этой системе:",
   "LearnMore": "Узнать больше",
-
   "TroubleshootingDocumenation": "Документация по устранению неполадок",
-
   "ExperimentsHeader": "Эксперименты",
   "ExperimentsCardHeader": "Экспериментальные функции",
   "ExperimentsCardDescription": "Эти функции являются экспериментальными и могут работать не так, как задумано. Для применения изменений требуется перезагрузка",
@@ -638,14 +559,12 @@
   "SearchExperimentDescription": "Включает строку поиска для быстрого поиска настроек в SynToolkit",
   "IconsExperiment": "Значки",
   "IconsExperimentDescription": "Включает значки рядом с каждой настройкой для удобства распознавания и большей наглядности",
-
   "RadeonSlimmer_OptimizeDriver": "Оптимизировать драйвер",
   "RadeonSlimmer_OptimizeDriverTooltip": "Применяет рекомендуемую конфигурацию: отключает все запланированные задачи, оставляет только драйвер дисплея и пакеты AMD Settings, а также оставляет только основные компоненты дисплея. Если импортированный пакет отличается от стандартной структуры AMD, будут скорректированы только совпадающие элементы.",
   "RadeonSlimmer_OptimizationSuccess": "Рекомендуемая оптимизация применена.",
   "RadeonSlimmer_OptimizationPartial": "Рекомендуемая оптимизация применена. Некоторые элементы вашего импорта не соответствовали стандартной структуре AMD и остались без изменений — при необходимости проверьте вкладки.",
   "RadeonSlimmer_OptimizationSkipped": "Оптимизация применена там, где это возможно. {0} не соответствовали этому пакету и были пропущены.",
-  "RadeonSlimmer_OptimizationNoMatch": "Этот импорт не соответствует распознанной структуре пакета AMD, поэтому оптимизация не была применена. Вы всё ещё можете настроить параметры вручную."
-  ,
+  "RadeonSlimmer_OptimizationNoMatch": "Этот импорт не соответствует распознанной структуре пакета AMD, поэтому оптимизация не была применена. Вы всё ещё можете настроить параметры вручную.",
   "NeedsAttention": "Требует внимания",
   "Installer_NvidiaAppDescription": "Официальное приложение NVIDIA для графических драйверов, игровых настроек и функций NVIDIA.",
   "Installer_AmdAdrenalinDescription": "Официальное приложение AMD для графических драйверов Radeon, игровых настроек и функций производительности.",
@@ -654,8 +573,7 @@
   "Installer_FilterAll": "Все",
   "Installer_FilterInstalled": "Установлено",
   "Installer_FilterNotInstalled": "Не установлено",
-  "Installer_FilterNeedsUpdate": "Требуется обновление"
-  ,
+  "Installer_FilterNeedsUpdate": "Требуется обновление",
   "NeedsAttention_Subtitle": "Проверяет устаревшие или отсутствующие драйверы и приложения, старую версию SynToolkit, отсутствие точки восстановления и несинхронизированные часы Windows.",
   "NeedsAttention_Refresh": "Обновить",
   "NeedsAttention_AllClear": "Всё в порядке",
@@ -701,8 +619,107 @@
   "NeedsAttention_InstallerUpdateTitle": "Обновить {0}",
   "NeedsAttention_InstallerUpdateVersionDescription": "Обновить с {0} до {1}.",
   "NeedsAttention_InstallerUpdateDescription": "Доступна более новая версия.",
-  "NeedsAttention_OpenInstaller": "Открыть установщик"
-  ,
+  "NeedsAttention_OpenInstaller": "Открыть установщик",
   "NeedsAttention_IgnoreForThreeMonths": "Игнорировать на 3 месяца",
-  "NeedsAttention_IgnoredForThreeMonths": "Предупреждение игнорируется 3 месяца."
+  "NeedsAttention_IgnoredForThreeMonths": "Предупреждение игнорируется 3 месяца.",
+  "GpuPage_Title": "Графический процессор",
+  "GpuPage_Description": "Download vendor drivers, slim installation packages, apply NVIDIA profile settings, and remove leftover GPU driver components when needed.",
+  "GpuPage_TabOverview": "Обзор",
+  "GpuPage_TabDebloat": "Облегчение",
+  "GpuPage_TabPerformance": "Производительность",
+  "GpuPage_TabRemoval": "Удаление",
+  "GpuPage_DetectedGpu": "Detected GPU",
+  "GpuPage_DetectedGpuDescription": "Choose which installed GPU to manage.",
+  "GpuPage_DriverVersion": "Driver version",
+  "GpuPage_DriverVersionDescription": "Fetch vendor releases for the selected GPU.",
+  "GpuPage_Refresh": "Обновить",
+  "GpuPage_PackageActions": "Package actions",
+  "GpuPage_PackageActionsDescription": "Prepare the installer package for stock or customized installation.",
+  "GpuPage_PreparePackage": "Подготовить пакет",
+  "GpuPage_InstallPrepared": "Установить подготовленный пакет",
+  "GpuPage_ReloadPackage": "Reload package",
+  "GpuPage_PreconfiguredProfilesDescriptionShort": "Pre-configured profiles bundled with SynToolkit.",
+  "GpuPage_NoBundledProfiles": "No bundled profiles found",
+  "GpuPage_ExecutablesDescriptionShort": "Comma-separated executable names, e.g. game.exe, launcher.exe.",
+  "GpuPage_DebloatHint": "Prepare a package in Overview, then customize its contents here before launching the installer.",
+  "GpuPage_DebloatPreset": "Debloat preset",
+  "GpuPage_DebloatPresetDescription": "Choose whether to keep the stock package, use the stripped preset, or customize manually.",
+  "GpuPage_InstallerFolders": "Installer Folders",
+  "GpuPage_PerformanceInfo": "Registry-backed tweaks apply only to NVIDIA systems with an installed NVIDIA display driver.",
+  "GpuPage_PerformanceTweaks": "NVIDIA performance tweaks",
+  "GpuPage_RefreshValues": "Refresh values",
+  "GpuPage_SettingsGroupDescription": "General NVIDIA registry settings.",
+  "GpuPage_ApplyAll": "Применить все",
+  "GpuPage_RemoveAll": "Удалить все",
+  "GpuPage_RmPowerFeature": "RM Power Feature",
+  "GpuPage_RmPowerFeatureDescription": "Driver power-management flags.",
+  "GpuPage_Telemetry": "Telemetry",
+  "GpuPage_TelemetryDescription": "Telemetry-related registry values.",
+  "GpuPage_Ecc": "ECC",
+  "GpuPage_EccDescription": "ECC-related registry values.",
+  "GpuPage_Hdcp": "HDCP",
+  "GpuPage_HdcpDescription": "HDCP-related registry values.",
+  "GpuPage_RemovalOptions": "Removal options",
+  "GpuPage_RemovalOptionsDescription": "Run the built-in driver cleanup workflow for the selected vendor.",
+  "GpuPage_RunVendorUninstaller": "Run vendor uninstaller",
+  "GpuPage_RemoveDriverStorePackages": "Remove driver store packages",
+  "GpuPage_StopRemoveServices": "Stop and remove services",
+  "GpuPage_DeleteLeftoverFiles": "Delete leftover files",
+  "GpuPage_DeleteLeftoverRegistry": "Delete leftover registry entries",
+  "GpuPage_BlockAutomaticReinstall": "Block automatic driver reinstall",
+  "GpuPage_RunRemoval": "Запустить удаление",
+  "GpuPage_RebootNow": "Перезагрузить сейчас",
+  "GpuPage_RemovalLog": "Журнал удаления",
+  "GpuPage_DetectingGpus": "Detecting installed GPUs...",
+  "GpuPage_AmdDriversTitle": "AMD GPU Drivers",
+  "GpuPage_NvidiaDriversTitle": "NVIDIA GPU Drivers",
+  "GpuPage_GpuDriversTitle": "GPU Drivers",
+  "GpuPage_AmdDriversSubtitle": "Download, debloat, and remove AMD graphics drivers.",
+  "GpuPage_NvidiaDriversSubtitle": "Download, debloat, tune, and remove NVIDIA graphics drivers.",
+  "GpuPage_NoGpuSelected": "No GPU selected",
+  "GpuPage_UnsupportedVendor": "Unsupported vendor",
+  "GpuPage_InstalledDriverFormat": "Installed driver: {0}",
+  "GpuPage_PreparedPackageFormat": "Prepared {0} package at {1}",
+  "GpuPage_NoCleanupSteps": "No cleanup steps selected.",
+  "GpuPage_WillRunFormat": "Будет выполнено: {0}",
+  "GpuPage_NoGpuDetected": "No GPU could be detected.",
+  "GpuPage_DetectedFormat": "Detected: {0}",
+  "GpuPage_DebloatStripped": "Stripped",
+  "GpuPage_DebloatStock": "Stock",
+  "GpuPage_DebloatCustom": "Custom",
+  "GpuPage_ActionVendorUninstall": "vendor uninstall",
+  "GpuPage_ActionDriverStorePurge": "driver-store purge",
+  "GpuPage_ActionServiceRemoval": "service removal",
+  "GpuPage_ActionFileCleanup": "file cleanup",
+  "GpuPage_ActionRegistryCleanup": "registry cleanup",
+  "GpuPage_ActionAutoReinstallBlock": "auto-reinstall block",
+  "GpuPage_NoCompatibleGpu": "No compatible GPU is selected.",
+  "GpuPage_ChooseDriverFirst": "Choose a driver version first.",
+  "GpuPage_ExtractingPackage": "Extracting driver package...",
+  "GpuPage_DownloadingPackageFormat": "Downloading driver package: {0}%",
+  "GpuPage_PrepareBeforeInstall": "Prepare a driver package before installing.",
+  "GpuPage_InstallerLaunched": "Installer launched successfully.",
+  "GpuPage_PackageRefreshed": "Prepared package refreshed.",
+  "GpuPage_NoGpuForRemoval": "No GPU is selected for removal.",
+  "GpuPage_RemovalCancelled": "Driver removal was cancelled.",
+  "GpuPage_Unknown": "Unknown",
+  "GpuPage_RebootDialogTitle": "Reboot to finish GPU cleanup?",
+  "GpuPage_RebootDialogContent": "The removal workflow finished. Reboot Windows now to complete GPU driver cleanup.",
+  "GpuPage_RebootDialogLater": "Later",
+  "GpuPage_ApplyProfilesDialogTitle": "Apply profiles to the NVIDIA driver?",
+  "GpuPage_ApplyProfilesDialogContent": "This writes the profiles above directly to your NVIDIA driver settings, creating any profiles that do not already exist.",
+  "GpuPage_ApplyProfilesDialogPrimary": "Apply",
+  "GpuPage_ApplyProfilesDialogClose": "Cancel",
+  "GpuPage_NotSet": "Не задано",
+  "GpuPage_Checking": "Checking...",
+  "GpuPage_Unavailable": "Unavailable",
+  "GpuPage_AppliedTweakFormat": "Applied {0}. Restart Windows to finish applying changes.",
+  "GpuPage_RemovedTweakFormat": "Removed {0}. Restart Windows to finish applying changes.",
+  "GpuPage_LoadNipBeforeExport": "Load a .nip profile before exporting loaded profiles.",
+  "GpuPage_ExportedLoadedFormat": "Exported {0} setting(s) across {1} loaded profile(s) to {2}.",
+  "GpuPage_EnterProfileName": "Enter a profile name before exporting a new profile.",
+  "GpuPage_AddSettingBeforeExport": "Add at least one setting before exporting a new profile. To export an imported file, use 'Export loaded to .nip'.",
+  "GpuPage_ExportedNewFormat": "Exported '{0}' to {1}.",
+  "GpuPage_AppliedProfilesFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created).",
+  "GpuPage_AppliedProfilesSkippedFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created). {3} setting(s) were skipped - see the log for details."
 }

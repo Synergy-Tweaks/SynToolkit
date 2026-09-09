@@ -8,8 +8,6 @@
   "SystemInfo_NotDetected": "알려진 Playbook이 감지되지 않았습니다",
   "SystemInfo_Conflicting": "여러 개의 Playbook 마커가 감지되었습니다",
   "SystemInfo_ReadOnly": "설정을 변경하지 않고 로컬에서 감지됨",
-
-
   "ToBeTranslated": "지연 0으로 구성 중..",
   "ConfigurationStatus_Applying": "변경 사항 적용 중...",
   "ConfigurationStatus_Unavailable": "사용할 수 없음",
@@ -121,17 +119,12 @@
   "ShortcutIcon": "바로 가기 아이콘 변경",
   "Mitigations": "완화 정책 상태 변경",
   "SafeMode": "시작 시 안전 모드로 부팅",
-
-
   "Animations": "애니메이션",
   "AnimationsDescription": "Windows 애니메이션을 사용하거나 사용하지 않도록 설정합니다",
-
   "ExtractContextMenu": "상황에 맞는 메뉴의 \"압축 풀기\" 옵션",
   "ExtractContextMenuDescription": "압축 파일의 상황에 맞는 메뉴에 \"압축 풀기\" 옵션을 추가합니다",
-
   "RunWithPriority": "상황에 맞는 메뉴의 \"우선 순위를 지정하여 실행\"",
   "RunWithPriorityDescription": "애플리케이션의 상황에 맞는 메뉴에 \"우선 순위를 지정하여 실행\" 옵션을 추가합니다",
-
   "LanmanWorkstation": "Lanman Workstation(SMB)",
   "LanmanWorkstationDescription": "SMB 파일 공유를 위한 Lanman Workstation 서비스를 사용하거나 사용하지 않도록 설정합니다",
   "SyncWindowsClock": "Windows 시계 동기화",
@@ -140,182 +133,122 @@
   "RestartAudioServices": "오디오 서비스 다시 시작",
   "RestartAudioServicesDescription": "Windows Audio 및 Audio Endpoint Builder를 다시 시작합니다. 장치가 다시 연결되는 동안 소리가 잠시 끊깁니다.",
   "RestartAudioServicesSuccess": "오디오 서비스를 다시 시작했습니다.",
-
   "NetworkDiscovery": "네트워크 검색",
   "NetworkDiscoveryDescription": "파일 공유를 쉽게 하기 위한 네트워크 검색을 사용하거나 사용하지 않도록 설정합니다",
-
   "Printing": "인쇄",
   "PrintingDescription": "SynergyOS가 기본적으로 비활성화하는 인쇄 서비스를 활성화합니다. 끄면 SynergyOS의 Spooler/인쇄 서비스 비활성화 상태가 다시 적용됩니다. 다시 시작해야 할 수 있습니다.",
-
   "WiFi": "Wi-Fi",
   "WiFiDescription": "SynergyOS가 기본적으로 비활성화하는 Wi-Fi 서비스를 활성화합니다. 끄면 WLAN/WWAN 관련 서비스가 다시 비활성화됩니다.",
-
   "NvidiaDispayContainer": "NVIDIA Display Container",
   "NvidiaDispayContainerDescription": "NVIDIA Display Container 서비스를 사용하거나 사용하지 않도록 설정합니다",
-
   "AddNvidiaDisplayContainerContextMenu": "상황에 맞는 메뉴의 NVIDIA Display Container",
   "AddNvidiaDisplayContainerContextMenuDescription": "상황에 맞는 메뉴에 NVIDIA Display Container 전환 옵션을 추가합니다",
-
   "CpuIdleContextMenu": "상황에 맞는 메뉴의 CPU Idle 전환",
   "CpuIdleContextMenuDescription": "상황에 맞는 메뉴에 CPU Idle 전환 옵션을 추가합니다",
-
   "LockScreen": "잠금 화면 사용",
   "LockScreenDescription": "Windows 잠금 화면을 사용하거나 사용하지 않도록 설정합니다",
-
   "ShortcutText": "바로 가기 텍스트",
   "ShortcutTextDescription": "바로 가기에 표시되는 \"바로 가기\" 텍스트를 표시하거나 숨깁니다",
-
   "BootLogo": "부팅 로고",
   "BootLogoDescription": "Windows 부팅 로고를 사용하거나 사용하지 않도록 설정합니다",
-
   "BootMessages": "부팅 메시지",
   "BootMessagesDescription": "Windows 부팅 메시지를 사용하거나 사용하지 않도록 설정합니다",
-
   "NewBootMenu": "새 부팅 메뉴",
   "NewBootMenuDescription": "새 Windows 부팅 메뉴를 사용하거나 사용하지 않도록 설정합니다",
-
   "SpinningAnimation": "회전 애니메이션",
   "SpinningAnimationDescription": "부팅 시 회전 애니메이션을 사용하거나 사용하지 않도록 설정합니다",
-
   "AdvancedBootOptions": "시작 시 고급 부팅 옵션",
   "AdvancedBootOptionsDescription": "시작 시 고급 부팅 옵션을 사용하거나 사용하지 않도록 설정합니다",
-
   "AutomaticRepair": "자동 복구",
   "AutomaticRepairDescription": "부팅 실패 시 자동 복구를 사용하거나 사용하지 않도록 설정합니다",
-
   "KernelParameters": "시작 시 커널 매개 변수",
   "KernelParametersDescription": "시작 시 커널 매개 변수를 사용하거나 사용하지 않도록 설정합니다",
-
   "HighestMode": "최고 모드",
   "HighestModeDescription": "디스플레이의 최고 모드를 사용하거나 사용하지 않도록 설정합니다",
-
   "CompactView": "간단히 보기",
   "CompactViewDescription": "파일 탐색기의 간단히 보기를 사용하거나 사용하지 않도록 설정합니다",
-
   "RemovableDrivesInSidebar": "사이드바의 이동식 드라이브",
   "RemovableDrivesInSidebarDescription": "파일 탐색기 사이드바에서 이동식 드라이브를 표시하거나 숨깁니다",
-
   "BackgroundApps": "백그라운드 앱",
   "BackgroundAppsDescription": "백그라운드 앱을 사용하거나 사용하지 않도록 설정합니다",
-
   "SearchIndexing": "검색 인덱싱",
   "SearchIndexingDescription": "검색 인덱싱을 사용하거나 사용하지 않도록 설정합니다",
-
   "FsoAndGameBar": "전체 화면 최적화 및 Xbox Game Bar",
   "FsoAndGameBarDescription": "전체 화면 최적화와 Xbox Game Bar를 사용하거나 사용하지 않도록 설정합니다(저장된 상태로 되돌리기 가능)",
-
   "AutomaticUpdates": "자동 업데이트",
   "AutomaticUpdatesDescription": "자동 업데이트를 사용하거나 사용하지 않도록 설정합니다",
-
   "DeliveryOptimisation": "전송 최적화",
   "DeliveryOptimisationDescription": "전송 최적화를 사용하거나 사용하지 않도록 설정합니다",
-
   "Hibernation": "최대 절전 모드",
   "HibernationDescription": "최대 절전 모드를 사용하거나 사용하지 않도록 설정합니다",
-
   "Location": "위치",
   "LocationDescription": "위치 서비스를 사용하거나 사용하지 않도록 설정합니다",
-
   "PhoneLink": "휴대폰 연결 및 모바일 장치",
   "PhoneLinkDescription": "휴대폰 연결 및 모바일 장치를 사용하거나 사용하지 않도록 설정합니다",
-
   "PowerSaving": "절전",
   "PowerSavingDescription": "절전 기능을 사용하거나 사용하지 않도록 설정합니다",
-
   "Sleep": "절전 모드",
   "SleepDescription": "절전 모드를 사용하거나 사용하지 않도록 설정합니다",
-
   "SystemRestore": "시스템 복원",
   "SystemRestoreDescription": "시스템 보호를 열어 시스템 복원 지점 및 보호 설정을 관리합니다.",
-
   "UpdateNotifications": "업데이트 알림",
   "UpdateNotificationsDescription": "업데이트 알림을 사용하거나 사용하지 않도록 설정합니다",
-
   "WebSearch": "시작 메뉴 웹 검색",
   "WebSearchDescription": "시작 메뉴의 웹 검색을 사용하거나 사용하지 않도록 설정합니다",
-
   "Widgets": "데스크톱 위젯",
   "WidgetsDescription": "데스크톱 위젯을 사용하거나 사용하지 않도록 설정합니다",
-
   "WindowsSpotlight": "Windows 스포트라이트",
   "WindowsSpotlightDescription": "잠금 화면의 Windows 스포트라이트를 사용하거나 사용하지 않도록 설정합니다",
-
   "AppStoreArchiving": "Microsoft Store 보관",
   "AppStoreArchivingDescription": "Microsoft Store 보관을 사용하거나 사용하지 않도록 설정합니다",
-
   "TakeOwnership": "상황에 맞는 메뉴에 \"소유권 가져오기\" 추가",
   "TakeOwnershipDescription": "파일 및 폴더의 상황에 맞는 메뉴에 \"소유권 가져오기\" 옵션을 추가합니다",
-
   "OldContextMenu": "기존 상황에 맞는 메뉴(Windows 11 이전)",
   "OldContextMenuDescription": "Windows 11 이전의 기존 상황에 맞는 메뉴를 사용하거나 사용하지 않도록 설정합니다",
-
   "EdgeSwipe": "가장자리 스와이프",
   "EdgeSwipeDescription": "가장자리 스와이프 제스처를 사용하거나 사용하지 않도록 설정합니다",
-
   "AppIconsThumbnail": "미리 보기 이미지의 앱 아이콘",
   "AppIconsThumbnailDescription": "파일 미리 보기 이미지에서 앱 아이콘을 표시하거나 숨깁니다",
-
   "AutomaticFolderDiscovery": "폴더 자동 검색",
   "AutomaticFolderDiscoveryDescription": "파일 탐색기의 폴더 자동 검색을 사용하거나 사용하지 않도록 설정합니다",
-
   "Gallery": "갤러리 사용",
   "GalleryDescription": "파일 탐색기의 갤러리를 사용하거나 사용하지 않도록 설정합니다",
-
   "SnapLayout": "창의 스냅 레이아웃 사용",
   "SnapLayoutDescription": "창의 스냅 레이아웃을 사용하거나 사용하지 않도록 설정합니다",
-
   "RecentItems": "파일 탐색기에서 최근 항목 사용",
   "RecentItemsDescription": "파일 탐색기의 최근 항목을 사용하거나 사용하지 않도록 설정합니다",
-
   "VerboseStatusMessage": "자세한 상태 메시지",
   "VerboseStatusMessageDescription": "부팅 및 종료 시 자세한 상태 메시지를 사용하거나 사용하지 않도록 설정합니다",
-
   "SuperFetch": "SuperFetch",
   "SuperFetchDescription": "SuperFetch(SysMain) 서비스를 사용하거나 사용하지 않도록 설정합니다",
-
   "StaticIp": "고정 IP 자동 설정",
   "StaticIpDescription": "네트워크 어댑터에 고정 IP 주소를 자동으로 구성합니다",
-
   "HideAppBrowserControl": "앱 브라우저 컨트롤",
   "HideAppBrowserControlDescription": "Windows 보안의 포함된 브라우저 컨트롤을 표시/숨김 처리합니다",
-
   "SecurityHealthTray": "작업 표시줄 트레이의 보안 상태 버튼",
   "SecurityHealthTrayDescription": "작업 표시줄 트레이의 보안 상태 버튼을 표시하거나 숨깁니다",
-
   "UAC": "사용자 계정 컨트롤",
   "UACDescription": "앱에 관리자 권한이 필요할 때 상승 확인을 표시합니다. 사용 안 함으로 설정하면 UAC 프롬프트가 사라지지만(SynergyOS 기본값) 원치 않는 시스템 변경에 대한 보호가 약해집니다. 다시 시작이 필요합니다.",
-
   "FaultTolerantHeap": "Fault Tolerant Heap",
   "FaultTolerantHeapDescription": "Fault Tolerant Heap 완화 정책을 사용하거나 사용하지 않도록 설정합니다",
-
   "Copilot": "Microsoft Copilot 사용",
   "CopilotDescription": "Windows 11의 Microsoft Copilot 통합을 사용하거나 사용하지 않도록 설정합니다",
-
   "Recall": "Windows Recall 사용",
   "RecallDescription": "Windows Recall 기능을 사용하거나 사용하지 않도록 설정합니다",
-
   "CpuIdle": "CPU Idling 사용",
   "CpuIdleDescription": "CPU Idling 기능을 사용하거나 사용하지 않도록 설정합니다",
-
   "ProcessExplorer": "Process Explorer 설치",
   "ProcessExplorerDescription": "Microsoft Sysinternals의 Process Explorer를 설치합니다",
-
   "VbsState": "가상화 기반 보안",
   "VbsStateDescription": "SynergyOS가 기본적으로 비활성화하는 VBS, HVCI, Credential Guard 및 관련 보호 기능을 활성화합니다. 다시 시작이 필요합니다.",
-
   "GiveAccessToMenu": "\"액세스 권한 부여\" 메뉴",
   "GiveAccessToMenuDescription": "파일 및 폴더의 상황에 맞는 메뉴에 \"액세스 권한 부여\" 옵션을 추가합니다",
-
   "NetworkNavigationPane": "탐색 창의 네트워크",
   "NetworkNavigationPaneDescription": "파일 탐색기 탐색 창에서 네트워크를 표시하거나 숨깁니다",
-
   "FileSharing": "파일 공유",
   "FileSharingDescription": "파일 공유 기능을 사용하거나 사용하지 않도록 설정합니다",
-
   "WindowsHello": "Windows Hello",
   "WindowsHelloDescription": "Windows Hello 생체 인증을 사용하거나 사용하지 않도록 설정합니다",
-
-
   "Home_WinVer": "Windows 버전",
   "Home_PlaybookVer": "Playbook 버전",
   "Home_HeaderText": "홈",
@@ -340,7 +273,6 @@
   "NewProfilesButton": "새 프로필 만들기",
   "IncompatibleVer": "현재 Windows 설치는 이 Toolbox 버전과 호환되지 않습니다. SynergyOS를 설치해 주세요.",
   "StatingServices": "서비스 시작 중...",
-
   "CurrentConfigIsSavedMessage": "현재 구성이 이 프로필에 저장됩니다",
   "DeleteProfileConfirmation": "정말 이 프로필을 삭제하시겠습니까?",
   "TryDeleteDefaultProfile": "기본 프로필은 삭제할 수 없습니다",
@@ -396,17 +328,13 @@
   "ResetWindowsUpdateDeferral": "Windows Update 연기 재설정",
   "MicrosoftStoreToggle": "Microsoft Store 전환",
   "MicrosoftStoreDescription": "현재 사용자에 대한 Microsoft Store 패키지를 등록하거나 등록 취소합니다.",
-
-
   "Tile_DocumentationTitle": "Kwanteks 후원하기",
   "Tile_DocumentationDescription": "Kwanteks의 콘텐츠를 확인해 보세요!",
   "Tile_DiscordTitle": "Discord",
   "Tile_DiscordDescription": "도움을 요청하고 친구를 사귀어 보세요!",
   "Tile_GithubTitle": "GitHub",
   "Tile_GithubDescription": "코드를 살펴보고 기여해 보세요",
-
   "SearchPlaceholder": "설정 검색...",
-
   "Home": "홈",
   "Installer": "설치 관리자",
   "Adjustments": "사용자 지정",
@@ -420,7 +348,6 @@
   "Advanced": "고급 구성",
   "Security": "보안",
   "Troubleshooting": "복원",
-
   "SpecsPageTitle": "시스템 사양",
   "SpecsPageDescription": "이 시스템의 하드웨어 및 Windows 버전을 읽기 전용으로 표시합니다. 여기에서는 변경할 수 없습니다.",
   "SpecsPageErrorTitle": "시스템 사양",
@@ -450,7 +377,6 @@
   "CleanerPageSelectNone": "없음을 선택하세요",
   "CleanerPageWizTreeDescription": "WizTree Portable 출시 (상세 디스크 사용량 정보)",
   "CleanerPageLaunchWizTree": "WizTree 실행",
-
   "HomePageText3E77C2003BD6": "SynergyOS의 새로운 기능",
   "HomePageContentB7F2E2F3517E": "모든 릴리스 보기",
   "HomePageContent8C338141C3FC": "더 읽어보세요",
@@ -540,15 +466,15 @@
   "GpuPageContentDFB2D4C80949": "디스플레이 드라이버 구성요소",
   "GpuPageContent021013D0F6AD": "드라이버 최적화",
   "GpuPageTextA9EEE4193E26": "권장 구성 적용: 예약된 모든 작업을 비활성화하고 디스플레이 드라이버 및 AMD 설정 패키지만 유지하며 핵심 디스플레이 구성 요소만 유지합니다. 가져온 패키지가 AMD의 표준 레이아웃과 다른 경우 일치하는 항목만 조정됩니다.",
-  "GpuPageTextE34E1FDCD339": "제거하려는 패키지에 대해 \u0027유지\u0027를 선택 취소하십시오.",
+  "GpuPageTextE34E1FDCD339": "제거하려는 패키지에 대해 '유지'를 선택 취소하십시오.",
   "GpuPageTextB62855F6E149": "패키지는 AMD Radeon 소프트웨어와 함께 번들로 제공되는 MSI 설치 프로그램 및 드라이버입니다. 선택하지 않은 패키지는 설치에서 제외됩니다.",
   "GpuPageContentE03C27EFA9C8": "모두 선택",
   "GpuPageContentEFB8BCD64AA5": "없음을 선택하세요",
   "GpuPageContent311C673C25C9": "유지하다",
-  "GpuPageText3D08116EF7A8": "예약된 작업을 비활성화하려면 \u0027활성화\u0027를 선택 취소하세요.",
+  "GpuPageText3D08116EF7A8": "예약된 작업을 비활성화하려면 '활성화'를 선택 취소하세요.",
   "GpuPageText14936C27052A": "예약된 작업은 드라이버 업데이트, 원격 측정 및 자동 실행 기능과 같은 백그라운드 작업을 실행하기 위해 AMD에서 생성됩니다. 이를 비활성화하면 불필요한 백그라운드 활동을 방지할 수 있습니다.",
   "GpuPageContent4DA4000696E1": "활성화됨",
-  "GpuPageText58AB99CEB612": "제거하려는 구성 요소에 대해 \u0027유지\u0027를 선택 취소하세요.",
+  "GpuPageText58AB99CEB612": "제거하려는 구성 요소에 대해 '유지'를 선택 취소하세요.",
   "GpuPageText3EB88E8793EF": "디스플레이 드라이버 구성 요소는 특정 GPU 기능을 제공하는 INF 드라이버 패키지입니다. 디스플레이 드라이버, OpenCL, OpenGL, Vulkan과 같은 핵심 구성 요소는 유지되어야 합니다. 오디오, 카메라 및 원격 측정 구성 요소는 일반적으로 제거할 수 있습니다.",
   "GpuPageContentC022DCF13526": "설치 프로그램 적용 및 열기",
   "GpuPageContent327832D2E055": "기본값으로 재설정",
@@ -567,7 +493,6 @@
   "GpuPagePlaceholderTextFD59CDAB4C9D": "가치",
   "GpuPageContent6BA9EA1B7E66": "제거",
   "GpuPageContent3CFAEF9F3C36": "새 프로필을 .nip으로 내보내기",
-
   "PowerPlansPageHeader9EF26DE51104": "현재 전원 계획",
   "PowerPlansPageDescription320073B0E4BC": "Windows가 현재 사용하고 있는 계획입니다.",
   "PowerPlansPageHeaderEC2BEE95E81C": "SynToolkit SOS 성능",
@@ -622,15 +547,11 @@
   "GpuPageHeaderAC283BA30A9F": "프로필 이름",
   "GpuPageDescriptionF27AFB4CDFAD": "쉼표로 구분된 실행 파일 이름(예: game.exe, launcher.exe. 모든 애플리케이션에 적용되는 기본 프로필을 비워 두세요.",
   "GpuPageHeader3EE89599DB6C": "실행 파일",
-
   "Language": "언어",
-
   "NoFavorites": "아직 즐겨찾기에 추가한 항목이 없습니다.",
   "SystemInfo": "이 시스템 정보:",
   "LearnMore": "자세히 알아보기",
-
   "TroubleshootingDocumenation": "문제 해결 문서",
-
   "ExperimentsHeader": "실험 기능",
   "ExperimentsCardHeader": "실험적 기능",
   "ExperimentsCardDescription": "이 기능들은 실험적이며 의도한 대로 완전히 작동하지 않을 수 있습니다. 변경 사항을 적용하려면 다시 시작해야 합니다",
@@ -638,14 +559,12 @@
   "SearchExperimentDescription": "SynToolkit에서 설정을 빠르게 찾을 수 있는 검색창을 활성화합니다",
   "IconsExperiment": "아이콘",
   "IconsExperimentDescription": "각 설정 옆에 아이콘을 표시하여 더 쉽게 구분하고 시각적으로 보기 좋게 만듭니다",
-
   "RadeonSlimmer_OptimizeDriver": "드라이버 최적화",
   "RadeonSlimmer_OptimizeDriverTooltip": "권장 구성을 적용합니다. 예약된 모든 작업을 비활성화하고 디스플레이 드라이버와 AMD Settings 패키지만 유지하며, 핵심 디스플레이 구성 요소만 남깁니다. 가져온 패키지가 AMD의 표준 레이아웃과 다른 경우 일치하는 항목만 조정됩니다.",
   "RadeonSlimmer_OptimizationSuccess": "권장 최적화가 적용되었습니다.",
   "RadeonSlimmer_OptimizationPartial": "권장 최적화가 적용되었습니다. 가져온 항목 중 일부는 AMD 표준 레이아웃과 일치하지 않아 변경되지 않았습니다. 필요한 경우 각 탭을 확인하세요.",
   "RadeonSlimmer_OptimizationSkipped": "가능한 범위에서 최적화가 적용되었습니다. {0} 항목은 이 패키지와 일치하지 않아 건너뛰었습니다.",
-  "RadeonSlimmer_OptimizationNoMatch": "이 가져오기는 알려진 AMD 패키지 레이아웃과 일치하지 않아 최적화가 적용되지 않았습니다. 여전히 수동으로 설정을 구성할 수 있습니다."
-  ,
+  "RadeonSlimmer_OptimizationNoMatch": "이 가져오기는 알려진 AMD 패키지 레이아웃과 일치하지 않아 최적화가 적용되지 않았습니다. 여전히 수동으로 설정을 구성할 수 있습니다.",
   "NeedsAttention": "확인 필요",
   "Installer_NvidiaAppDescription": "그래픽 드라이버, 게임 설정 및 NVIDIA 기능을 위한 공식 NVIDIA 앱입니다.",
   "Installer_AmdAdrenalinDescription": "Radeon 그래픽 드라이버, 게임 설정 및 성능 기능을 위한 공식 AMD 앱입니다.",
@@ -654,8 +573,7 @@
   "Installer_FilterAll": "모두",
   "Installer_FilterInstalled": "설치됨",
   "Installer_FilterNotInstalled": "설치되지 않음",
-  "Installer_FilterNeedsUpdate": "업데이트 필요"
-  ,
+  "Installer_FilterNeedsUpdate": "업데이트 필요",
   "NeedsAttention_Subtitle": "오래되었거나 없는 드라이버와 앱, 이전 SynToolkit 버전, 복원 지점 없음 및 동기화되지 않은 Windows 시계를 확인합니다.",
   "NeedsAttention_Refresh": "새로 고침",
   "NeedsAttention_AllClear": "모두 정상입니다",
@@ -701,8 +619,107 @@
   "NeedsAttention_InstallerUpdateTitle": "{0} 업데이트",
   "NeedsAttention_InstallerUpdateVersionDescription": "{0}에서 {1}(으)로 업데이트합니다.",
   "NeedsAttention_InstallerUpdateDescription": "더 새로운 버전을 사용할 수 있습니다.",
-  "NeedsAttention_OpenInstaller": "설치 관리자 열기"
-  ,
+  "NeedsAttention_OpenInstaller": "설치 관리자 열기",
   "NeedsAttention_IgnoreForThreeMonths": "3개월 동안 무시",
-  "NeedsAttention_IgnoredForThreeMonths": "경고를 3개월 동안 무시합니다."
+  "NeedsAttention_IgnoredForThreeMonths": "경고를 3개월 동안 무시합니다.",
+  "GpuPage_Title": "그래픽 처리 장치",
+  "GpuPage_Description": "Download vendor drivers, slim installation packages, apply NVIDIA profile settings, and remove leftover GPU driver components when needed.",
+  "GpuPage_TabOverview": "개요",
+  "GpuPage_TabDebloat": "슬림화",
+  "GpuPage_TabPerformance": "성능",
+  "GpuPage_TabRemoval": "제거",
+  "GpuPage_DetectedGpu": "Detected GPU",
+  "GpuPage_DetectedGpuDescription": "Choose which installed GPU to manage.",
+  "GpuPage_DriverVersion": "Driver version",
+  "GpuPage_DriverVersionDescription": "Fetch vendor releases for the selected GPU.",
+  "GpuPage_Refresh": "새로 고침",
+  "GpuPage_PackageActions": "Package actions",
+  "GpuPage_PackageActionsDescription": "Prepare the installer package for stock or customized installation.",
+  "GpuPage_PreparePackage": "패키지 준비",
+  "GpuPage_InstallPrepared": "준비된 패키지 설치",
+  "GpuPage_ReloadPackage": "Reload package",
+  "GpuPage_PreconfiguredProfilesDescriptionShort": "Pre-configured profiles bundled with SynToolkit.",
+  "GpuPage_NoBundledProfiles": "No bundled profiles found",
+  "GpuPage_ExecutablesDescriptionShort": "Comma-separated executable names, e.g. game.exe, launcher.exe.",
+  "GpuPage_DebloatHint": "Prepare a package in Overview, then customize its contents here before launching the installer.",
+  "GpuPage_DebloatPreset": "Debloat preset",
+  "GpuPage_DebloatPresetDescription": "Choose whether to keep the stock package, use the stripped preset, or customize manually.",
+  "GpuPage_InstallerFolders": "Installer Folders",
+  "GpuPage_PerformanceInfo": "Registry-backed tweaks apply only to NVIDIA systems with an installed NVIDIA display driver.",
+  "GpuPage_PerformanceTweaks": "NVIDIA performance tweaks",
+  "GpuPage_RefreshValues": "Refresh values",
+  "GpuPage_SettingsGroupDescription": "General NVIDIA registry settings.",
+  "GpuPage_ApplyAll": "모두 적용",
+  "GpuPage_RemoveAll": "모두 제거",
+  "GpuPage_RmPowerFeature": "RM Power Feature",
+  "GpuPage_RmPowerFeatureDescription": "Driver power-management flags.",
+  "GpuPage_Telemetry": "Telemetry",
+  "GpuPage_TelemetryDescription": "Telemetry-related registry values.",
+  "GpuPage_Ecc": "ECC",
+  "GpuPage_EccDescription": "ECC-related registry values.",
+  "GpuPage_Hdcp": "HDCP",
+  "GpuPage_HdcpDescription": "HDCP-related registry values.",
+  "GpuPage_RemovalOptions": "Removal options",
+  "GpuPage_RemovalOptionsDescription": "Run the built-in driver cleanup workflow for the selected vendor.",
+  "GpuPage_RunVendorUninstaller": "Run vendor uninstaller",
+  "GpuPage_RemoveDriverStorePackages": "Remove driver store packages",
+  "GpuPage_StopRemoveServices": "Stop and remove services",
+  "GpuPage_DeleteLeftoverFiles": "Delete leftover files",
+  "GpuPage_DeleteLeftoverRegistry": "Delete leftover registry entries",
+  "GpuPage_BlockAutomaticReinstall": "Block automatic driver reinstall",
+  "GpuPage_RunRemoval": "제거 실행",
+  "GpuPage_RebootNow": "지금 다시 시작",
+  "GpuPage_RemovalLog": "제거 로그",
+  "GpuPage_DetectingGpus": "Detecting installed GPUs...",
+  "GpuPage_AmdDriversTitle": "AMD GPU Drivers",
+  "GpuPage_NvidiaDriversTitle": "NVIDIA GPU Drivers",
+  "GpuPage_GpuDriversTitle": "GPU Drivers",
+  "GpuPage_AmdDriversSubtitle": "Download, debloat, and remove AMD graphics drivers.",
+  "GpuPage_NvidiaDriversSubtitle": "Download, debloat, tune, and remove NVIDIA graphics drivers.",
+  "GpuPage_NoGpuSelected": "No GPU selected",
+  "GpuPage_UnsupportedVendor": "Unsupported vendor",
+  "GpuPage_InstalledDriverFormat": "Installed driver: {0}",
+  "GpuPage_PreparedPackageFormat": "Prepared {0} package at {1}",
+  "GpuPage_NoCleanupSteps": "No cleanup steps selected.",
+  "GpuPage_WillRunFormat": "실행 예정: {0}",
+  "GpuPage_NoGpuDetected": "No GPU could be detected.",
+  "GpuPage_DetectedFormat": "Detected: {0}",
+  "GpuPage_DebloatStripped": "Stripped",
+  "GpuPage_DebloatStock": "Stock",
+  "GpuPage_DebloatCustom": "Custom",
+  "GpuPage_ActionVendorUninstall": "vendor uninstall",
+  "GpuPage_ActionDriverStorePurge": "driver-store purge",
+  "GpuPage_ActionServiceRemoval": "service removal",
+  "GpuPage_ActionFileCleanup": "file cleanup",
+  "GpuPage_ActionRegistryCleanup": "registry cleanup",
+  "GpuPage_ActionAutoReinstallBlock": "auto-reinstall block",
+  "GpuPage_NoCompatibleGpu": "No compatible GPU is selected.",
+  "GpuPage_ChooseDriverFirst": "Choose a driver version first.",
+  "GpuPage_ExtractingPackage": "Extracting driver package...",
+  "GpuPage_DownloadingPackageFormat": "Downloading driver package: {0}%",
+  "GpuPage_PrepareBeforeInstall": "Prepare a driver package before installing.",
+  "GpuPage_InstallerLaunched": "Installer launched successfully.",
+  "GpuPage_PackageRefreshed": "Prepared package refreshed.",
+  "GpuPage_NoGpuForRemoval": "No GPU is selected for removal.",
+  "GpuPage_RemovalCancelled": "Driver removal was cancelled.",
+  "GpuPage_Unknown": "Unknown",
+  "GpuPage_RebootDialogTitle": "Reboot to finish GPU cleanup?",
+  "GpuPage_RebootDialogContent": "The removal workflow finished. Reboot Windows now to complete GPU driver cleanup.",
+  "GpuPage_RebootDialogLater": "Later",
+  "GpuPage_ApplyProfilesDialogTitle": "Apply profiles to the NVIDIA driver?",
+  "GpuPage_ApplyProfilesDialogContent": "This writes the profiles above directly to your NVIDIA driver settings, creating any profiles that do not already exist.",
+  "GpuPage_ApplyProfilesDialogPrimary": "Apply",
+  "GpuPage_ApplyProfilesDialogClose": "Cancel",
+  "GpuPage_NotSet": "설정되지 않음",
+  "GpuPage_Checking": "Checking...",
+  "GpuPage_Unavailable": "Unavailable",
+  "GpuPage_AppliedTweakFormat": "Applied {0}. Restart Windows to finish applying changes.",
+  "GpuPage_RemovedTweakFormat": "Removed {0}. Restart Windows to finish applying changes.",
+  "GpuPage_LoadNipBeforeExport": "Load a .nip profile before exporting loaded profiles.",
+  "GpuPage_ExportedLoadedFormat": "Exported {0} setting(s) across {1} loaded profile(s) to {2}.",
+  "GpuPage_EnterProfileName": "Enter a profile name before exporting a new profile.",
+  "GpuPage_AddSettingBeforeExport": "Add at least one setting before exporting a new profile. To export an imported file, use 'Export loaded to .nip'.",
+  "GpuPage_ExportedNewFormat": "Exported '{0}' to {1}.",
+  "GpuPage_AppliedProfilesFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created).",
+  "GpuPage_AppliedProfilesSkippedFormat": "Applied {0} setting(s) across {1} profile(s) ({2} newly created). {3} setting(s) were skipped - see the log for details."
 }

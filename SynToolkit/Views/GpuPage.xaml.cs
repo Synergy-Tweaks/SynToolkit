@@ -59,6 +59,8 @@ namespace SynToolkit.Views
                 _isViewModelPropertyChangedSubscribed = true;
             }
 
+            BundledProfilesComboBox.PlaceholderText = App.GetValueFromItemList("GpuPage_NoBundledProfiles");
+
             await _viewModel.LoadGpuDevicesAsync();
             UpdateVendorPanelVisibility();
             RefreshDebloatLists();
@@ -204,10 +206,10 @@ namespace SynToolkit.Views
             {
                 XamlRoot = XamlRoot,
                 Style = Microsoft.UI.Xaml.Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-                Title = "Reboot to finish GPU cleanup?",
-                Content = "The removal workflow finished. Reboot Windows now to complete GPU driver cleanup.",
-                PrimaryButtonText = "Reboot now",
-                CloseButtonText = "Later",
+                Title = App.GetValueFromItemList("GpuPage_RebootDialogTitle"),
+                Content = App.GetValueFromItemList("GpuPage_RebootDialogContent"),
+                PrimaryButtonText = App.GetValueFromItemList("GpuPage_RebootNow"),
+                CloseButtonText = App.GetValueFromItemList("GpuPage_RebootDialogLater"),
                 DefaultButton = ContentDialogButton.Primary
             };
 
@@ -315,8 +317,8 @@ namespace SynToolkit.Views
                 else
                 {
                     _viewModel.StatusMessage = isRemoving
-                        ? $"Removed {operationName}. Restart Windows to finish applying changes."
-                        : $"Applied {operationName}. Restart Windows to finish applying changes.";
+                        ? string.Format(System.Globalization.CultureInfo.CurrentCulture, App.GetValueFromItemList("GpuPage_RemovedTweakFormat"), operationName)
+                        : string.Format(System.Globalization.CultureInfo.CurrentCulture, App.GetValueFromItemList("GpuPage_AppliedTweakFormat"), operationName);
                 }
 
                 if (refreshItemId is null)
@@ -385,7 +387,7 @@ namespace SynToolkit.Views
                 TextBox valueBox = new()
                 {
                     Tag = definition.Id,
-                    PlaceholderText = "Not set",
+                    PlaceholderText = App.GetValueFromItemList("GpuPage_NotSet"),
                     FontSize = 13,
                     VerticalAlignment = VerticalAlignment.Center,
                     IsReadOnly = !definition.SupportsCustomValue
@@ -429,7 +431,7 @@ namespace SynToolkit.Views
             foreach (NvidiaTweakRowView row in _nvidiaTweakRows.Values)
             {
                 row.ValueBox.IsEnabled = false;
-                row.ValueBox.PlaceholderText = "Checking...";
+                row.ValueBox.PlaceholderText = App.GetValueFromItemList("GpuPage_Checking");
             }
 
             NvidiaTweakCheckResult result = await NvidiaPerformanceTweaksService.CheckAsync(device);
@@ -451,7 +453,7 @@ namespace SynToolkit.Views
                     {
                         row.ValueBox.Text = string.Empty;
                         row.LoadedValueText = string.Empty;
-                        row.ValueBox.PlaceholderText = "Unavailable";
+                        row.ValueBox.PlaceholderText = App.GetValueFromItemList("GpuPage_Unavailable");
                     }
                 }
                 finally
@@ -473,7 +475,7 @@ namespace SynToolkit.Views
                     string displayedValue = value.State == NvidiaTweakValueState.NotSet ? string.Empty : value.CurrentValueText;
                     row.ValueBox.Text = displayedValue;
                     row.LoadedValueText = displayedValue;
-                    row.ValueBox.PlaceholderText = "Not set";
+                    row.ValueBox.PlaceholderText = App.GetValueFromItemList("GpuPage_NotSet");
                 }
             }
             _updatingNvidiaTweakRows = false;
@@ -489,7 +491,7 @@ namespace SynToolkit.Views
             }
 
             row.ValueBox.IsEnabled = false;
-            row.ValueBox.PlaceholderText = "Checking...";
+            row.ValueBox.PlaceholderText = App.GetValueFromItemList("GpuPage_Checking");
 
             var result = await NvidiaPerformanceTweaksService.CheckItemAsync(device, id);
             if (requestVersion != _nvidiaTweakCheckVersion ||
@@ -501,7 +503,7 @@ namespace SynToolkit.Views
 
             if (!result.Success || result.Value is null)
             {
-                row.ValueBox.PlaceholderText = "Unavailable";
+                row.ValueBox.PlaceholderText = App.GetValueFromItemList("GpuPage_Unavailable");
                 UpdateNvidiaTweakActionAvailability();
                 return;
             }
@@ -517,7 +519,7 @@ namespace SynToolkit.Views
             {
                 row.ValueBox.Text = displayedValue;
                 row.LoadedValueText = displayedValue;
-                row.ValueBox.PlaceholderText = "Not set";
+                row.ValueBox.PlaceholderText = App.GetValueFromItemList("GpuPage_NotSet");
             }
             finally
             {
@@ -591,10 +593,10 @@ namespace SynToolkit.Views
             {
                 XamlRoot = XamlRoot,
                 Style = Microsoft.UI.Xaml.Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-                Title = "Apply profiles to the NVIDIA driver?",
-                Content = "This writes the profiles above directly to your NVIDIA driver settings, creating any profiles that do not already exist.",
-                PrimaryButtonText = "Apply",
-                CloseButtonText = "Cancel",
+                Title = App.GetValueFromItemList("GpuPage_ApplyProfilesDialogTitle"),
+                Content = App.GetValueFromItemList("GpuPage_ApplyProfilesDialogContent"),
+                PrimaryButtonText = App.GetValueFromItemList("GpuPage_ApplyProfilesDialogPrimary"),
+                CloseButtonText = App.GetValueFromItemList("GpuPage_ApplyProfilesDialogClose"),
                 DefaultButton = ContentDialogButton.Close
             };
 
