@@ -13,6 +13,8 @@ namespace SynToolkit.Services
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private DiscordRpcClient _client;
         private RichPresence _presence;
+        private bool _isPlayingGame;
+        private string _lastNavigationState = "Configuring Windows";
 
         public bool TryStart(string applicationId, string largeImageKey)
         {
@@ -84,12 +86,72 @@ namespace SynToolkit.Services
             }
             try
             {
-                _presence.State = state;
-                _client.SetPresence(_presence);
+                if (!_isPlayingGame)
+                {
+                    _presence.Details = "Using the best Toolkit";
+                    _presence.State = state;
+                    _client.SetPresence(_presence);
+                }
+                else
+                {
+                    _lastNavigationState = state;
+                }
             }
             catch (Exception exception)
             {
                 Logger.Debug(exception, "Discord Rich Presence state update failed.");
+            }
+        }
+
+        /// <summary>
+        /// Shows that the user launched a game through SynToolkit. Fails silently if Discord is unavailable.
+        /// </summary>
+        public void SetPlayingGame(string gameName)
+        {
+            if (_client is null || _presence is null || string.IsNullOrWhiteSpace(gameName))
+            {
+                return;
+            }
+
+            try
+            {
+                if (!_isPlayingGame)
+                {
+                    _lastNavigationState = _presence.State;
+                }
+
+                _isPlayingGame = true;
+                _presence.Details = $"Playing {gameName}";
+                _presence.State = "via SynToolkit";
+                _presence.Timestamps = Timestamps.Now;
+                _client.SetPresence(_presence);
+            }
+            catch (Exception exception)
+            {
+                Logger.Debug(exception, "Discord Rich Presence playing update failed.");
+            }
+        }
+
+        public void ClearPlayingGame()
+        {
+            if (_client is null || _presence is null || !_isPlayingGame)
+            {
+                return;
+            }
+
+            try
+            {
+                _isPlayingGame = false;
+                _presence.Details = "Using the best Toolkit";
+                _presence.State = string.IsNullOrWhiteSpace(_lastNavigationState)
+                    ? "Configuring Windows"
+                    : _lastNavigationState;
+                _presence.Timestamps = Timestamps.Now;
+                _client.SetPresence(_presence);
+            }
+            catch (Exception exception)
+            {
+                Logger.Debug(exception, "Discord Rich Presence clear-playing update failed.");
             }
         }
 
@@ -107,6 +169,7 @@ namespace SynToolkit.Services
             {
                 _client = null;
                 _presence = null;
+                _isPlayingGame = false;
             }
         }
     }

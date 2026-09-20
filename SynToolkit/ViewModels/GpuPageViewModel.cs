@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,6 +60,9 @@ namespace SynToolkit.ViewModels
 
         [ObservableProperty]
         public partial GpuPreparedPackage? PreparedPackage { get; set; }
+
+        [ObservableProperty]
+        public partial string PreparedPackageNote { get; set; } = string.Empty;
 
         [ObservableProperty]
         public partial string SelectedDebloatModeText { get; set; } = L("GpuPage_DebloatStripped");
@@ -139,11 +143,26 @@ namespace SynToolkit.ViewModels
                 : SelectedGpuDevice.IsAmd
                     ? "AMD"
                     : L("GpuPage_UnsupportedVendor");
-        public string SelectedGpuDriverVersionText => SelectedGpuDevice?.DriverVersion ?? L("GpuPage_Unknown");
-        public string SelectedGpuDriverSummaryText => Lf("GpuPage_InstalledDriverFormat", SelectedGpuDriverVersionText);
-        public string PreparedPackageSummary => PreparedPackage is null
-            ? string.Empty
-            : Lf("GpuPage_PreparedPackageFormat", PreparedPackage.Vendor, PreparedPackage.ExtractedPath);
+        public string PreparedPackageSummary
+        {
+            get
+            {
+                if (PreparedPackage is null)
+                    return string.Empty;
+
+                string baseSummary = PreparedPackage.IsManualImport
+                    ? Lf(
+                        "GpuPage_PreparedManualPackageFormat",
+                        string.IsNullOrWhiteSpace(PreparedPackage.DriverVersion) ? L("GpuPage_Unknown") : PreparedPackage.DriverVersion,
+                        PreparedPackage.SourceLabel,
+                        PreparedPackage.ExtractedPath)
+                    : Lf("GpuPage_PreparedPackageFormat", PreparedPackage.Vendor, PreparedPackage.ExtractedPath);
+
+                return string.IsNullOrWhiteSpace(PreparedPackageNote)
+                    ? baseSummary
+                    : $"{baseSummary} {PreparedPackageNote}";
+            }
+        }
         public string RemovalActionSummary => string.Join(
             ", ",
             GetEnabledRemovalActions());
@@ -208,8 +227,6 @@ namespace SynToolkit.ViewModels
         {
             OnPropertyChanged(nameof(SelectedGpuDisplayName));
             OnPropertyChanged(nameof(SelectedGpuVendorName));
-            OnPropertyChanged(nameof(SelectedGpuDriverVersionText));
-            OnPropertyChanged(nameof(SelectedGpuDriverSummaryText));
         }
 
         partial void OnRunVendorUninstallerChanged(bool value) => OnRemovalOptionsChanged();
@@ -224,6 +241,8 @@ namespace SynToolkit.ViewModels
             OnPropertyChanged(nameof(HasPreparedPackage));
             OnPropertyChanged(nameof(PreparedPackageSummary));
         }
+
+        partial void OnPreparedPackageNoteChanged(string value) => OnPropertyChanged(nameof(PreparedPackageSummary));
 
         partial void OnSelectedDebloatModeTextChanged(string value)
         {
@@ -284,7 +303,7 @@ namespace SynToolkit.ViewModels
             try
             {
                 GpuDriverLookupResult result = await _gpuDriverCatalogService.GetDriversAsync(SelectedGpuDevice);
-                foreach (GpuDriverOption driver in result.Drivers)
+                foreach (GpuDriverOption driver in SortDriversNewestFirst(result.Drivers))
                 {
                     AvailableDrivers.Add(driver);
                 }
@@ -325,6 +344,7 @@ namespace SynToolkit.ViewModels
                 });
 
                 PreparedPackage = await _gpuDriverPackageService.PreparePackageAsync(SelectedDriver, progress);
+                PreparedPackageNote = string.Empty;
                 SelectedDebloatModeText = L("GpuPage_DebloatStripped");
                 RefreshDebloatComponentsForSelectedMode();
                 StatusMessage = PreparedPackageSummary;
@@ -376,6 +396,218 @@ namespace SynToolkit.ViewModels
             finally
             {
                 IsBusy = false;
+            }
+        }
+
+        public async Task ImportAmdInstallerAsync(string installerPath)
+        {
+            HasError = false;
+            IsBusy = true;
+            try
+            {
+                Progress<double> progress = new(value =>
+                {
+                    int percent = Math.Clamp((int)Math.Round(value * 100), 0, 100);
+                    StatusMessage = percent >= 90
+                        ? L("GpuPage_ValidatingImportedPackage")
+                        : Lf("GpuPage_ImportingPackageFormat", percent);
+                });
+
+                PreparedPackage = await _gpuDriverPackageService.ImportAmdInstallerAsync(installerPath, progress);
+                ApplyImportedPackageUiState();
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[GPU] Manual AMD installer import failed.");
+                StatusMessage = exception.Message;
+                HasError = true;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        public async Task ImportAmdExtractedFolderAsync(string folderPath)
+        {
+            HasError = false;
+            IsBusy = true;
+            try
+            {
+                Progress<double> progress = new(value =>
+                {
+                    int percent = Math.Clamp((int)Math.Round(value * 100), 0, 100);
+                    StatusMessage = percent >= 90
+                        ? L("GpuPage_ValidatingImportedPackage")
+                        : Lf("GpuPage_ImportingPackageFormat", percent);
+                });
+
+                PreparedPackage = await _gpuDriverPackageService.ImportAmdExtractedFolderAsync(folderPath, progress);
+                ApplyImportedPackageUiState();
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[GPU] Manual AMD folder import failed.");
+                StatusMessage = exception.Message;
+                HasError = true;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        public GpuPageUiRestoreState CaptureUiState(int tabIndex)
+        {
+            return new GpuPageUiRestoreState
+            {
+                SelectedVendor = SelectedVendor switch
+                {
+                    GpuVendorSelection.AMD => GpuVendorSelectionSnapshot.AMD,
+                    GpuVendorSelection.NVIDIA => GpuVendorSelectionSnapshot.NVIDIA,
+                    _ => GpuVendorSelectionSnapshot.None,
+                },
+                TabIndex = tabIndex,
+                SelectedGpuPnpDeviceId = SelectedGpuDevice?.PnpDeviceId,
+                SelectedGpuDisplayName = SelectedGpuDevice?.DisplayName,
+                SelectedDriverVersion = SelectedDriver?.Version,
+                SelectedDriverDownloadUrl = SelectedDriver?.DownloadUrl,
+                SelectedDebloatModeText = SelectedDebloatModeText,
+                StatusMessage = StatusMessage,
+                PreparedPackageNote = PreparedPackageNote,
+                HasError = HasError,
+                PreparedPackage = PreparedPackage is null
+                    ? null
+                    : new GpuPreparedPackageSnapshot
+                    {
+                        Vendor = PreparedPackage.Vendor,
+                        InstallerPath = PreparedPackage.InstallerPath,
+                        ExtractedPath = PreparedPackage.ExtractedPath,
+                        SourceFolderPath = PreparedPackage.SourceFolderPath,
+                        DriverVersion = PreparedPackage.DriverVersion,
+                        SourceLabel = PreparedPackage.SourceLabel,
+                        IsManualImport = PreparedPackage.IsManualImport,
+                    },
+                DebloatSelections = DebloatComponents
+                    .Select(component => new GpuComponentSelectionSnapshot
+                    {
+                        Kind = component.Kind,
+                        Name = component.Name,
+                        FullPath = component.FullPath,
+                        IsSelected = component.IsSelected,
+                    })
+                    .ToList(),
+            };
+        }
+
+        public async Task RestoreUiStateAsync(GpuPageUiRestoreState state)
+        {
+            SelectedVendor = state.SelectedVendor switch
+            {
+                GpuVendorSelectionSnapshot.AMD => GpuVendorSelection.AMD,
+                GpuVendorSelectionSnapshot.NVIDIA => GpuVendorSelection.NVIDIA,
+                _ => GpuVendorSelection.None,
+            };
+
+            if (SelectedVendor != GpuVendorSelection.None)
+            {
+                GpuDeviceInfo? device = null;
+                if (!string.IsNullOrWhiteSpace(state.SelectedGpuPnpDeviceId))
+                {
+                    device = GpuDevices.FirstOrDefault(candidate =>
+                        string.Equals(candidate.PnpDeviceId, state.SelectedGpuPnpDeviceId, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (device is null && !string.IsNullOrWhiteSpace(state.SelectedGpuDisplayName))
+                {
+                    device = GpuDevices.FirstOrDefault(candidate =>
+                        string.Equals(candidate.DisplayName, state.SelectedGpuDisplayName, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (device is not null)
+                    SelectedGpuDevice = device;
+
+                await LoadDriversAsync();
+
+                if (!string.IsNullOrWhiteSpace(state.SelectedDriverVersion) ||
+                    !string.IsNullOrWhiteSpace(state.SelectedDriverDownloadUrl))
+                {
+                    SelectedDriver = AvailableDrivers.FirstOrDefault(driver =>
+                        (!string.IsNullOrWhiteSpace(state.SelectedDriverDownloadUrl) &&
+                         string.Equals(driver.DownloadUrl, state.SelectedDriverDownloadUrl, StringComparison.OrdinalIgnoreCase)) ||
+                        string.Equals(driver.Version, state.SelectedDriverVersion, StringComparison.OrdinalIgnoreCase))
+                        ?? SelectedDriver;
+                }
+            }
+
+            if (state.PreparedPackage is not null &&
+                !string.IsNullOrWhiteSpace(state.PreparedPackage.ExtractedPath) &&
+                Directory.Exists(state.PreparedPackage.ExtractedPath))
+            {
+                PreparedPackage = new GpuPreparedPackage
+                {
+                    Vendor = state.PreparedPackage.Vendor,
+                    InstallerPath = state.PreparedPackage.InstallerPath,
+                    ExtractedPath = state.PreparedPackage.ExtractedPath,
+                    SourceFolderPath = state.PreparedPackage.SourceFolderPath,
+                    DriverVersion = state.PreparedPackage.DriverVersion,
+                    SourceLabel = state.PreparedPackage.SourceLabel,
+                    IsManualImport = state.PreparedPackage.IsManualImport,
+                    Components = [],
+                };
+
+                if (!string.IsNullOrWhiteSpace(state.SelectedDebloatModeText))
+                    SelectedDebloatModeText = state.SelectedDebloatModeText;
+
+                PreparedPackageNote = state.PreparedPackageNote ?? string.Empty;
+                RefreshDebloatComponentsForSelectedMode();
+                ApplyDebloatSelectionSnapshot(state.DebloatSelections);
+            }
+
+            StatusMessage = string.IsNullOrWhiteSpace(state.StatusMessage)
+                ? PreparedPackageSummary
+                : state.StatusMessage;
+            HasError = state.HasError;
+        }
+
+        private void ApplyImportedPackageUiState()
+        {
+            AmdPackageMatchSummary match = _gpuDriverPackageService.EvaluateAmdPackageMatch(
+                PreparedPackage?.Components ?? Array.Empty<GpuPackageComponent>());
+
+            if (match.Quality == AmdPackageMatchQuality.FullMatch)
+            {
+                SelectedDebloatModeText = L("GpuPage_DebloatStripped");
+                PreparedPackageNote = L("GpuPage_ImportMatchFull");
+            }
+            else if (match.Quality == AmdPackageMatchQuality.PartialMatch)
+            {
+                SelectedDebloatModeText = L("GpuPage_DebloatCustom");
+                PreparedPackageNote = L("GpuPage_ImportMatchPartial");
+            }
+            else
+            {
+                SelectedDebloatModeText = L("GpuPage_DebloatCustom");
+                PreparedPackageNote = L("GpuPage_ImportMatchNone");
+            }
+
+            RefreshDebloatComponentsForSelectedMode();
+            StatusMessage = PreparedPackageSummary;
+        }
+
+        private void ApplyDebloatSelectionSnapshot(IReadOnlyList<GpuComponentSelectionSnapshot> selections)
+        {
+            if (selections.Count == 0 || SelectedDebloatMode != GpuDebloatMode.Custom)
+                return;
+
+            foreach (GpuPackageComponent component in DebloatComponents)
+            {
+                GpuComponentSelectionSnapshot? match = selections.FirstOrDefault(selection =>
+                    selection.Kind == component.Kind &&
+                    (string.Equals(selection.FullPath, component.FullPath, StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(selection.Name, component.Name, StringComparison.OrdinalIgnoreCase)));
+                if (match is not null)
+                    component.IsSelected = match.IsSelected;
             }
         }
 
@@ -643,6 +875,25 @@ namespace SynToolkit.ViewModels
             OnPropertyChanged(nameof(RemovalActionSummary));
             OnPropertyChanged(nameof(RemovalActionSummaryText));
         }
+
+        private static IEnumerable<GpuDriverOption> SortDriversNewestFirst(IEnumerable<GpuDriverOption> drivers) =>
+            drivers
+                .OrderByDescending(ParseDriverVersion)
+                .ThenByDescending(ParseDriverReleaseDate)
+                .ThenByDescending(driver =>
+                    driver.Name.Contains("Game Ready", StringComparison.OrdinalIgnoreCase) ? 1 : 0);
+
+        private static Version ParseDriverVersion(GpuDriverOption driver) =>
+            Version.TryParse(driver.Version, out Version? parsed) ? parsed : new Version();
+
+        private static DateTime ParseDriverReleaseDate(GpuDriverOption driver) =>
+            DateTime.TryParse(
+                driver.ReleaseDate,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal,
+                out DateTime parsed)
+                ? parsed
+                : DateTime.MinValue;
 
         private static string L(string key) => App.GetValueFromItemList(key);
 

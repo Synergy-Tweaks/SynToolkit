@@ -216,6 +216,60 @@
                         <FontIcon
                             FontSize="16"
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE7F3;" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock FontWeight="SemiBold" Text="AMD driver install UI recovery" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Fixed the GPU page displaying incorrectly after installing an AMD driver. SynToolkit now rebuilds the page automatically when the graphics driver restarts."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE8B7;" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock FontWeight="SemiBold" Text="Import your own AMD driver" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="You can now import your own AMD driver package (installer or extracted folder) and still use the same Debloat / slim workflow as catalog downloads."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE7FC;" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock FontWeight="SemiBold" Text="Games tab" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Scan installed Steam, Epic, and GOG games, add titles manually, and launch them from SynToolkit. Detection is powered by Playnite's open-source library plugins. Discord Rich Presence shows when you launch a game (toggle in Settings)."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                             Glyph="&#xE896;" />
                         <StackPanel Grid.Column="1" Spacing="2">
                             <TextBlock FontWeight="SemiBold" Text="Installers page" />

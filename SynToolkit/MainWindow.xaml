@@ -210,6 +210,27 @@
                         </Border>
                     </StackPanel>
                 </NavigationViewItem>
+                <NavigationViewItem x:Name="Games" Tag="SynToolkit.Views.GamesPage">
+                    <NavigationViewItem.Icon>
+                        <ImageIcon Source="ms-appx:///assets/Icons/Games.png" />
+                    </NavigationViewItem.Icon>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock x:Name="GamesText" VerticalAlignment="Center" />
+                        <Border
+                            x:Name="GamesNewBadgeBorder"
+                            Padding="6,2"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource SystemAccentColorLight2}"
+                            CornerRadius="10"
+                            Visibility="Collapsed">
+                            <TextBlock
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Foreground="White"
+                                Text="NEW" />
+                        </Border>
+                    </StackPanel>
+                </NavigationViewItem>
                 <NavigationViewItem x:Name="Adjustments" Tag="SynToolkit.Views.AdjustmentsPage">
                     <NavigationViewItem.Icon>
                         <ImageIcon Source="ms-appx:///assets/Icons/UserAccountAdjustment.png" />

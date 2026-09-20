@@ -17,6 +17,18 @@ public interface IGpuDriverPackageService
         IProgress<double>? progress = null,
         CancellationToken cancellationToken = default);
 
+    Task<GpuPreparedPackage> ImportAmdInstallerAsync(
+        string installerPath,
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default);
+
+    Task<GpuPreparedPackage> ImportAmdExtractedFolderAsync(
+        string folderPath,
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default);
+
+    AmdPackageMatchSummary EvaluateAmdPackageMatch(IEnumerable<GpuPackageComponent> components);
+
     IReadOnlyList<GpuPackageComponent> GetPackageComponents(
         GpuDriverCatalogVendor vendor,
         string extractedPath,
@@ -53,6 +65,21 @@ public sealed class GpuDriverPackageService : IGpuDriverPackageService
         CancellationToken cancellationToken = default) =>
         GpuDriverService.PreparePackageAsync(driver, progress, cancellationToken);
 
+    public Task<GpuPreparedPackage> ImportAmdInstallerAsync(
+        string installerPath,
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default) =>
+        GpuDriverService.ImportAmdInstallerAsync(installerPath, progress, cancellationToken);
+
+    public Task<GpuPreparedPackage> ImportAmdExtractedFolderAsync(
+        string folderPath,
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default) =>
+        GpuDriverService.ImportAmdExtractedFolderAsync(folderPath, progress, cancellationToken);
+
+    public AmdPackageMatchSummary EvaluateAmdPackageMatch(IEnumerable<GpuPackageComponent> components) =>
+        GpuDriverService.EvaluateAmdPackageMatch(components);
+
     public IReadOnlyList<GpuPackageComponent> GetPackageComponents(
         GpuDriverCatalogVendor vendor,
         string extractedPath,
@@ -70,7 +97,7 @@ public sealed class GpuDriverPackageService : IGpuDriverPackageService
     {
         if (package.Vendor == GpuDriverCatalogVendor.Amd)
         {
-            await GpuDriverService.EnsureFreshAmdExtractAsync(package.InstallerPath, package.ExtractedPath, cancellationToken);
+            await GpuDriverService.RefreshAmdPreparedPackageAsync(package, cancellationToken);
             return;
         }
 

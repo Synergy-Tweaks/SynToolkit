@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using System;
 using SynToolkit.Services.Bcd;
 using SynToolkit.Services.GpuDrivers;
+using SynToolkit.Services.Games;
+using SynToolkit.Services.Games.Providers;
 
 namespace SynToolkit.HostBuilder
 {
@@ -31,6 +33,13 @@ namespace SynToolkit.HostBuilder
                 services.AddSingleton<AudioMixerHotkeyService>();
                 services.AddSingleton<IGpuDriverCatalogService, GpuDriverCatalogService>();
                 services.AddSingleton<IGpuDriverPackageService, GpuDriverPackageService>();
+                services.AddSingleton<GameLibraryStore>();
+                services.AddSingleton<IGameLibraryProvider, SteamGameLibraryProvider>();
+                services.AddSingleton<IGameLibraryProvider, EpicGameLibraryProvider>();
+                services.AddSingleton<IGameLibraryProvider, GogGameLibraryProvider>();
+                services.AddSingleton<IGameLibraryProvider, XboxGameLibraryProvider>();
+                services.AddSingleton<IGameLibraryService, GameLibraryService>();
+                services.AddSingleton<IGameLaunchService, GameLaunchService>();
             });
 
             host.AddConfigurationServices();

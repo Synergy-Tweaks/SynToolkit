@@ -54,6 +54,25 @@ namespace SynToolkit.Utils
                 : null;
         }
 
+        public static string? ShowFolderBrowserDialog(IntPtr ownerWindowHandle, string description)
+        {
+            using FolderBrowserDialog dialog = new()
+            {
+                Description = description,
+                UseDescriptionForTitle = true,
+                ShowNewFolderButton = false
+            };
+
+            DialogResult result = ownerWindowHandle == IntPtr.Zero
+                ? dialog.ShowDialog()
+                : dialog.ShowDialog(new Win32Window(ownerWindowHandle));
+
+            if (result != DialogResult.OK)
+                return null;
+
+            return string.IsNullOrWhiteSpace(dialog.SelectedPath) ? null : dialog.SelectedPath;
+        }
+
         private sealed class Win32Window : IWin32Window
         {
             public Win32Window(IntPtr handle) => Handle = handle;

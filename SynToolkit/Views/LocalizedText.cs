@@ -39,7 +39,9 @@ namespace SynToolkit.Views
 
         private static void ApplyText(DependencyObject sender, DependencyPropertyChangedEventArgs args)
         {
-            if (sender is TextBlock textBlock) textBlock.Text = Text(args);
+            string text = Text(args);
+            if (sender is TextBlock textBlock) textBlock.Text = text;
+            if (sender is MenuFlyoutItem menuItem) menuItem.Text = text;
         }
 
         private static void ApplyContent(DependencyObject sender, DependencyPropertyChangedEventArgs args)

@@ -7,6 +7,8 @@ using System.Globalization;
 
 namespace SynToolkit.Services.GpuDrivers;
 
+// Built and kept for a future advanced / power-user toggle.
+// Not currently exposed in the GPU page UI (Overview / Debloat / Removal only).
 internal enum NvidiaTweakGroup
 {
     NvidiaSettings,

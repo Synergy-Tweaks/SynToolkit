@@ -368,9 +368,17 @@ public static partial class GpuDriverService
         }
 
         return allDrivers
-            .OrderByDescending(driver =>
+            .OrderByDescending(driver => Version.TryParse(driver.Version, out var version) ? version : new Version())
+            .ThenByDescending(driver =>
+                DateTime.TryParse(
+                    driver.ReleaseDate,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal,
+                    out var releaseDate)
+                    ? releaseDate
+                    : DateTime.MinValue)
+            .ThenByDescending(driver =>
                 driver.Name.Contains("Game Ready", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
-            .ThenByDescending(driver => Version.TryParse(driver.Version, out var version) ? version : new Version())
             .ToList();
     }
 

@@ -301,6 +301,22 @@ namespace SynToolkit
             }
         }
 
+        internal static void SetDiscordPlayingPresence(string gameName)
+        {
+            if (Current is App app)
+            {
+                app._discordPresenceService?.SetPlayingGame(gameName);
+            }
+        }
+
+        internal static void ClearDiscordPlayingPresence()
+        {
+            if (Current is App app)
+            {
+                app._discordPresenceService?.ClearPlayingGame();
+            }
+        }
+
         private void OnProcessExit(object sender, EventArgs eventArgs)
         {
             DisposeResources();

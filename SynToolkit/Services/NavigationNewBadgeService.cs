@@ -31,6 +31,7 @@ namespace SynToolkit.Services
                 ["Installer"] = "SynToolkit.Views.AppFetchPage",
                 ["Customizations"] = "SynToolkit.Views.AdjustmentsPage",
                 ["PowerPlans"] = "SynToolkit.Views.PowerPlansPage",
+                ["Games"] = "SynToolkit.Views.GamesPage",
                 ["AdvancedConfigurations"] = "Advanced",
             };
 

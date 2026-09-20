@@ -257,6 +257,7 @@ namespace SynToolkit
             AudioMixer.Content = App.GetValueFromItemList("AudioMixer");
             InstallerText.Text = App.GetValueFromItemList("Installer");
             PowerPlansText.Text = App.GetValueFromItemList("PowerPlans");
+            GamesText.Text = App.GetValueFromItemList("Games");
             AdjustmentsText.Text = App.GetValueFromItemList("Adjustments");
             Gpu.Content = App.GetValueFromItemList("Gpu");
             Specs.Content = App.GetValueFromItemList("Specs");
@@ -284,6 +285,7 @@ namespace SynToolkit
         {
             SetNewBadgeVisibility(InstallerNewBadgeBorder, "Installer");
             SetNewBadgeVisibility(PowerPlansNewBadgeBorder, "PowerPlans");
+            SetNewBadgeVisibility(GamesNewBadgeBorder, "Games");
             SetNewBadgeVisibility(AdjustmentsNewBadgeBorder, "Customizations");
             SetNewBadgeVisibility(AdvancedNewBadgeBorder, "AdvancedConfigurations");
         }
@@ -409,6 +411,7 @@ namespace SynToolkit
                 "SynToolkit.Views.AudioMixerPage" => typeof(AudioMixerPage),
                 "SynToolkit.Views.AppFetchPage" => typeof(AppFetchPage),
                 "SynToolkit.Views.PowerPlansPage" => typeof(PowerPlansPage),
+                "SynToolkit.Views.GamesPage" => typeof(GamesPage),
                 "SynToolkit.Views.AdjustmentsPage" => typeof(AdjustmentsPage),
                 "SynToolkit.Views.GpuPage" => typeof(GpuPage),
                 "SynToolkit.Views.SpecsPage" => typeof(SpecsPage),
@@ -488,13 +491,46 @@ namespace SynToolkit
             }
         }
 
+        /// <summary>
+        /// Forces a fresh GpuPage instance after display-driver install surface loss,
+        /// restoring the prior vendor workspace state.
+        /// </summary>
+        public void ForceRebuildGpuPage(Models.GpuDrivers.GpuPageUiRestoreState state)
+        {
+            if (state is null || ContentFrame is null)
+            {
+                return;
+            }
+
+            App.CurrentCategory = "SynToolkit.Views.GpuPage";
+            try
+            {
+                _isNavigating = true;
+                ContentFrame.Navigate(
+                    typeof(GpuPage),
+                    state,
+                    new SuppressNavigationTransitionInfo());
+                TrimMainFrameHistory();
+                NavigateTo();
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "Forced GPU page rebuild failed.");
+            }
+            finally
+            {
+                _isNavigating = false;
+            }
+        }
+
         private void TrimMainFrameHistory()
         {
             for (int index = 0; index < ContentFrame.BackStack.Count; index++)
             {
                 Type pageType = ContentFrame.BackStack[index].SourcePageType;
-                if (pageType != typeof(AppFetchPage) &&
+                if (                    pageType != typeof(AppFetchPage) &&
                     pageType != typeof(PowerPlansPage) &&
+                    pageType != typeof(GamesPage) &&
                     pageType != typeof(AdjustmentsPage))
                 {
                     continue;
@@ -575,6 +611,7 @@ namespace SynToolkit
                 "SynToolkit.Views.AudioMixerPage" => "Audio Mixer",
                 "SynToolkit.Views.AppFetchPage" => "Installer",
                 "SynToolkit.Views.PowerPlansPage" => "Power Plans",
+                "SynToolkit.Views.GamesPage" => "Games",
                 "SynToolkit.Views.AdjustmentsPage" => "Adjustments",
                 "SynToolkit.Views.GpuPage" => "GPU",
                 "SynToolkit.Views.SpecsPage" => "Specs",

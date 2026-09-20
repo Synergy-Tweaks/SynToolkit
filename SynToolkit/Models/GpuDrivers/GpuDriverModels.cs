@@ -185,5 +185,28 @@ public sealed class GpuPreparedPackage
     public GpuDriverCatalogVendor Vendor { get; init; }
     public string InstallerPath { get; init; } = string.Empty;
     public string ExtractedPath { get; init; } = string.Empty;
+    /// <summary>Original user-selected folder for manual folder imports (used to refresh).</summary>
+    public string SourceFolderPath { get; init; } = string.Empty;
+    public string DriverVersion { get; init; } = string.Empty;
+    public string SourceLabel { get; init; } = string.Empty;
+    public bool IsManualImport { get; init; }
     public IReadOnlyList<GpuPackageComponent> Components { get; init; } = [];
+}
+
+public enum AmdPackageMatchQuality
+{
+    FullMatch,
+    PartialMatch,
+    NoMatch,
+}
+
+public sealed class AmdPackageMatchSummary
+{
+    public AmdPackageMatchQuality Quality { get; init; } = AmdPackageMatchQuality.NoMatch;
+    public bool HasDisplayDriverPackage { get; init; }
+    public bool HasSettingsPackage { get; init; }
+    public int PackageCount { get; init; }
+    public int ScheduledTaskCount { get; init; }
+    public int DisplayComponentCount { get; init; }
+    public int MatchedDisplayKeepCount { get; init; }
 }

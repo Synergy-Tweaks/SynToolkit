@@ -110,13 +110,225 @@ public static partial class GpuDriverService
 
         await EnsureFreshAmdExtractAsync(installerPath, extractedPath, cancellationToken);
 
+        var version = TryReadAmdPackageVersion(extractedPath) ?? driver.Version;
         return new GpuPreparedPackage
         {
             Vendor = GpuDriverCatalogVendor.Amd,
             InstallerPath = installerPath,
             ExtractedPath = extractedPath,
+            DriverVersion = version,
+            SourceLabel = "Catalog",
+            IsManualImport = false,
             Components = GetAmdPackageComponents(extractedPath, selectPreset: true)
         };
+    }
+
+    public static async Task<GpuPreparedPackage> ImportAmdInstallerAsync(
+        string installerPath,
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(installerPath) || !File.Exists(installerPath))
+            throw new FileNotFoundException(
+                "Choose an AMD Adrenalin installer (.exe).",
+                installerPath);
+
+        if (!installerPath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Choose an AMD Adrenalin installer executable (.exe).");
+
+        progress?.Report(0.05);
+
+        var versionHint = ExtractAmdVersionFromUrl(installerPath);
+        if (string.IsNullOrWhiteSpace(versionHint))
+            versionHint = ExtractAmdVersionFromFileName(Path.GetFileName(installerPath));
+        if (string.IsNullOrWhiteSpace(versionHint))
+            versionHint = "manual";
+
+        var identitySource = installerPath;
+        var identity = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identitySource)))[..12]
+            .ToLowerInvariant();
+        var cacheDirectory = Path.Combine(Path.GetTempPath(), "SynToolkit", "GpuDrivers");
+        Directory.CreateDirectory(cacheDirectory);
+        var cachedInstallerPath = Path.Combine(cacheDirectory, $"amd-manual-{SanitizePathPart(versionHint)}-{identity}.exe");
+
+        if (!string.Equals(Path.GetFullPath(installerPath), Path.GetFullPath(cachedInstallerPath), StringComparison.OrdinalIgnoreCase))
+            File.Copy(installerPath, cachedInstallerPath, overwrite: true);
+
+        var driver = new GpuDriverOption
+        {
+            Vendor = GpuDriverCatalogVendor.Amd,
+            Name = "Manual AMD Driver",
+            Version = versionHint,
+            DownloadUrl = cachedInstallerPath,
+            Type = "Manual"
+        };
+        var extractedPath = GetAmdExtractedPackagePath(driver);
+
+        try
+        {
+            progress?.Report(0.15);
+            await EnsureFreshAmdExtractAsync(cachedInstallerPath, extractedPath, cancellationToken);
+            progress?.Report(0.9);
+            ValidateAmdExtractedPackage(extractedPath);
+
+            var version = TryReadAmdPackageVersion(extractedPath) ?? versionHint;
+            progress?.Report(1.0);
+            return new GpuPreparedPackage
+            {
+                Vendor = GpuDriverCatalogVendor.Amd,
+                InstallerPath = cachedInstallerPath,
+                ExtractedPath = extractedPath,
+                DriverVersion = version,
+                SourceLabel = "Manual",
+                IsManualImport = true,
+                Components = GetAmdPackageComponents(extractedPath, selectPreset: true)
+            };
+        }
+        catch
+        {
+            TryDeleteDirectory(extractedPath);
+            throw;
+        }
+    }
+
+    public static async Task<GpuPreparedPackage> ImportAmdExtractedFolderAsync(
+        string folderPath,
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
+            throw new DirectoryNotFoundException("Choose an already-extracted AMD driver folder.");
+
+        progress?.Report(0.1);
+        ValidateAmdExtractedPackage(folderPath);
+
+        var version = TryReadAmdPackageVersion(folderPath) ?? "manual";
+        var identity = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Path.GetFullPath(folderPath))))[..12]
+            .ToLowerInvariant();
+        var driver = new GpuDriverOption
+        {
+            Vendor = GpuDriverCatalogVendor.Amd,
+            Name = "Manual AMD Driver",
+            Version = version,
+            DownloadUrl = Path.GetFullPath(folderPath),
+            Type = "Manual"
+        };
+        var extractedPath = GetAmdExtractedPackagePath(driver);
+
+        try
+        {
+            progress?.Report(0.25);
+            if (Directory.Exists(extractedPath))
+                Directory.Delete(extractedPath, recursive: true);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(extractedPath)!);
+            await Task.Run(
+                () => CopyDirectory(folderPath, extractedPath),
+                cancellationToken);
+            progress?.Report(0.9);
+
+            ValidateAmdExtractedPackage(extractedPath);
+            progress?.Report(1.0);
+            return new GpuPreparedPackage
+            {
+                Vendor = GpuDriverCatalogVendor.Amd,
+                InstallerPath = string.Empty,
+                ExtractedPath = extractedPath,
+                SourceFolderPath = Path.GetFullPath(folderPath),
+                DriverVersion = version,
+                SourceLabel = "Manual",
+                IsManualImport = true,
+                Components = GetAmdPackageComponents(extractedPath, selectPreset: true)
+            };
+        }
+        catch
+        {
+            TryDeleteDirectory(extractedPath);
+            throw;
+        }
+    }
+
+    public static AmdPackageMatchSummary EvaluateAmdPackageMatch(IEnumerable<GpuPackageComponent> components)
+    {
+        var list = components.ToList();
+        var packages = list.Where(component => component.Kind == GpuPackageComponentKind.Package).ToList();
+        var tasks = list.Where(component => component.Kind == GpuPackageComponentKind.ScheduledTask).ToList();
+        var display = list.Where(component => component.Kind == GpuPackageComponentKind.DisplayDriver).ToList();
+
+        var hasDisplay = packages.Any(component =>
+            AmdStrippedPresetPolicy.IsCoreDisplayPackage(component.Name, component.Description));
+        var hasSettings = packages.Any(component =>
+            AmdStrippedPresetPolicy.IsSettingsPackage(component.Name, component.Description));
+        var matchedDisplayKeep = display.Count(component =>
+            AmdStrippedPresetPolicy.ShouldKeepDisplayComponent(
+                Path.GetFileName(component.FullPath),
+                string.Empty,
+                component.Description));
+
+        var quality = (hasDisplay, hasSettings, packages.Count > 0 || display.Count > 0) switch
+        {
+            (true, true, _) => AmdPackageMatchQuality.FullMatch,
+            (false, false, false) => AmdPackageMatchQuality.NoMatch,
+            (false, false, true) => AmdPackageMatchQuality.NoMatch,
+            _ => AmdPackageMatchQuality.PartialMatch
+        };
+
+        if (quality == AmdPackageMatchQuality.FullMatch && display.Count > 0 && matchedDisplayKeep == 0)
+            quality = AmdPackageMatchQuality.PartialMatch;
+
+        return new AmdPackageMatchSummary
+        {
+            Quality = quality,
+            HasDisplayDriverPackage = hasDisplay,
+            HasSettingsPackage = hasSettings,
+            PackageCount = packages.Count,
+            ScheduledTaskCount = tasks.Count,
+            DisplayComponentCount = display.Count,
+            MatchedDisplayKeepCount = matchedDisplayKeep
+        };
+    }
+
+    public static void ValidateAmdExtractedPackage(string extractedPath)
+    {
+        if (!Directory.Exists(extractedPath))
+            throw new InvalidOperationException("That folder does not look like an AMD driver package.");
+
+        var setupPath = Path.Combine(extractedPath, "Setup.exe");
+        var bin64 = Path.Combine(extractedPath, "Bin64");
+        var config = Path.Combine(extractedPath, "Config");
+        var hasManifest = AmdManifestFiles.Any(relative => File.Exists(Path.Combine(extractedPath, relative)));
+
+        if (!File.Exists(setupPath) || !Directory.Exists(bin64) || !Directory.Exists(config) || !hasManifest)
+        {
+            throw new InvalidOperationException(
+                "That doesn't look like an AMD Radeon Software package. Expected Setup.exe, Bin64, Config, and an installer manifest (Bin64\\cccmanifest_64.json or Config\\InstallManifest.json).");
+        }
+    }
+
+    public static async Task RefreshAmdPreparedPackageAsync(
+        GpuPreparedPackage package,
+        CancellationToken cancellationToken = default)
+    {
+        if (!string.IsNullOrWhiteSpace(package.InstallerPath) && File.Exists(package.InstallerPath))
+        {
+            await EnsureFreshAmdExtractAsync(package.InstallerPath, package.ExtractedPath, cancellationToken);
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(package.SourceFolderPath) && Directory.Exists(package.SourceFolderPath))
+        {
+            if (Directory.Exists(package.ExtractedPath))
+                Directory.Delete(package.ExtractedPath, recursive: true);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(package.ExtractedPath)!);
+            await Task.Run(
+                () => CopyDirectory(package.SourceFolderPath, package.ExtractedPath),
+                cancellationToken);
+            ValidateAmdExtractedPackage(package.ExtractedPath);
+            return;
+        }
+
+        throw new InvalidOperationException("The prepared AMD package has no installer or source folder to refresh from.");
     }
 
     public static IReadOnlyList<GpuPackageComponent> GetAmdPackageComponents(string extractedPath, bool selectPreset)
@@ -888,6 +1100,107 @@ public static partial class GpuDriverService
         }
 
         return Path.GetFileNameWithoutExtension(infPath);
+    }
+
+    private static string? TryReadAmdPackageVersion(string extractedPath)
+    {
+        foreach (var relativePath in AmdManifestFiles)
+        {
+            var manifestPath = Path.Combine(extractedPath, relativePath);
+            if (!File.Exists(manifestPath))
+                continue;
+
+            try
+            {
+                var root = JsonNode.Parse(File.ReadAllText(manifestPath));
+                foreach (var candidate in EnumerateAmdVersionCandidates(root))
+                {
+                    var normalized = NormalizeAmdCatalogVersion(candidate);
+                    if (!string.IsNullOrWhiteSpace(normalized) &&
+                        Regex.IsMatch(normalized, @"^\d+(\.\d+){1,3}$"))
+                    {
+                        return normalized;
+                    }
+                }
+            }
+            catch (JsonException)
+            {
+                // Try the next manifest.
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> EnumerateAmdVersionCandidates(JsonNode? root)
+    {
+        if (root is null)
+            yield break;
+
+        foreach (var key in new[] { "version", "Version", "driverVersion", "DriverVersion", "packageVersion" })
+        {
+            var value = root[key]?.GetValue<string>();
+            if (!string.IsNullOrWhiteSpace(value))
+                yield return value;
+        }
+
+        var info = root["Info"] ?? root["info"];
+        if (info is not null)
+        {
+            foreach (var key in new[] { "version", "Version", "driverVersion", "packageVersion" })
+            {
+                var value = info[key]?.GetValue<string>();
+                if (!string.IsNullOrWhiteSpace(value))
+                    yield return value;
+            }
+        }
+
+        if (root["Packages"]?["Package"] is JsonArray packages)
+        {
+            foreach (var package in packages)
+            {
+                var packageInfo = package?["Info"];
+                var value = packageInfo?["version"]?.GetValue<string>()
+                            ?? packageInfo?["Version"]?.GetValue<string>();
+                if (!string.IsNullOrWhiteSpace(value))
+                    yield return value;
+            }
+        }
+    }
+
+    private static string ExtractAmdVersionFromFileName(string fileName)
+    {
+        var match = Regex.Match(fileName, @"(\d+\.\d+(?:\.\d+){0,2})");
+        return match.Success ? match.Groups[1].Value : string.Empty;
+    }
+
+    private static void CopyDirectory(string sourceDir, string destinationDir)
+    {
+        Directory.CreateDirectory(destinationDir);
+        foreach (var file in Directory.EnumerateFiles(sourceDir))
+        {
+            var destFile = Path.Combine(destinationDir, Path.GetFileName(file));
+            File.Copy(file, destFile, overwrite: true);
+        }
+
+        foreach (var directory in Directory.EnumerateDirectories(sourceDir))
+        {
+            var destSubDir = Path.Combine(destinationDir, Path.GetFileName(directory));
+            CopyDirectory(directory, destSubDir);
+        }
+    }
+
+    private static void TryDeleteDirectory(string path)
+    {
+        try
+        {
+            if (Directory.Exists(path))
+                Directory.Delete(path, recursive: true);
+        }
+        catch
+        {
+            // Best-effort cleanup after a failed import.
+        }
     }
 
     private const string AmdHttpUserAgent =
