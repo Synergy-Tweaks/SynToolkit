@@ -27,6 +27,8 @@ namespace SynToolkit.Services.Games
             CancellationToken cancellationToken = default);
         Task RemoveGameAsync(string gameId, CancellationToken cancellationToken = default);
         Task UpdateGameAsync(GameEntry entry, CancellationToken cancellationToken = default);
+        GamesLibraryViewMode GetViewMode();
+        void SetViewMode(GamesLibraryViewMode mode);
     }
 
     public interface IGameLaunchService

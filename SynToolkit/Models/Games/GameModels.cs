@@ -38,8 +38,18 @@ namespace SynToolkit.Models.Games
         public string? LaunchArgs { get; set; }
         public string? WorkingDirectory { get; set; }
         public string? IconPath { get; set; }
+        /// <summary>Local path to cached or user-provided cover art (portrait preferred).</summary>
+        public string? ArtworkPath { get; set; }
+        /// <summary>When true, <see cref="ArtworkPath"/> is user-chosen and must not be overwritten by auto-fetch.</summary>
+        public bool IsCustomArtwork { get; set; }
         public DateTimeOffset? LastPlayed { get; set; }
         public int? PlaytimeMinutes { get; set; }
         public bool IsManual { get; set; }
+    }
+
+    public enum GamesLibraryViewMode
+    {
+        List = 0,
+        Grid = 1
     }
 }

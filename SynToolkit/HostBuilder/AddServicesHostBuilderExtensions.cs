@@ -40,6 +40,7 @@ namespace SynToolkit.HostBuilder
                 services.AddSingleton<IGameLibraryProvider, XboxGameLibraryProvider>();
                 services.AddSingleton<IGameLibraryService, GameLibraryService>();
                 services.AddSingleton<IGameLaunchService, GameLaunchService>();
+                services.AddSingleton<IGameArtworkService, GameArtworkService>();
             });
 
             host.AddConfigurationServices();

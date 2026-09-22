@@ -43,6 +43,17 @@
                         </controls:SettingsCard.HeaderIcon>
                         <ToggleSwitch x:Name="DiscordRpcToggle" />
                     </controls:SettingsCard>
+                    <!--  SteamGridDB API key (optional; used by Games cover art)  -->
+                    <controls:SettingsCard x:Name="SteamGridDbCard" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        <controls:SettingsCard.HeaderIcon>
+                            <FontIcon Glyph="&#xE7FC;" />
+                        </controls:SettingsCard.HeaderIcon>
+                        <TextBox
+                            x:Name="SteamGridDbApiKeyBox"
+                            Width="280"
+                            LostFocus="SteamGridDbApiKeyBox_LostFocus"
+                            PlaceholderText="Optional API key" />
+                    </controls:SettingsCard>
                     <!--  Language settings  -->
                     <controls:SettingsCard x:Name="LanguageHeader" Style="{StaticResource ConfigurationSettingsCardTemplate}">
                         <controls:SettingsCard.HeaderIcon>

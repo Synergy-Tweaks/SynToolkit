@@ -43,6 +43,31 @@ namespace SynToolkit.Services.Games
             }
         }
 
+        public GamesLibraryViewMode GetViewMode()
+        {
+            lock (_lock)
+            {
+                return string.Equals(_document.ViewMode, "grid", StringComparison.OrdinalIgnoreCase)
+                    ? GamesLibraryViewMode.Grid
+                    : GamesLibraryViewMode.List;
+            }
+        }
+
+        public void SetViewMode(GamesLibraryViewMode mode)
+        {
+            lock (_lock)
+            {
+                string serialized = mode == GamesLibraryViewMode.Grid ? "grid" : "list";
+                if (string.Equals(_document.ViewMode, serialized, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                _document.ViewMode = serialized;
+                SaveUnlocked();
+            }
+        }
+
         public void SaveGames(IEnumerable<GameEntry> games)
         {
             lock (_lock)
@@ -104,6 +129,8 @@ namespace SynToolkit.Services.Games
             LaunchArgs = entry.LaunchArgs,
             WorkingDirectory = entry.WorkingDirectory,
             IconPath = entry.IconPath,
+            ArtworkPath = entry.ArtworkPath,
+            IsCustomArtwork = entry.IsCustomArtwork,
             LastPlayed = entry.LastPlayed,
             PlaytimeMinutes = entry.PlaytimeMinutes,
             IsManual = entry.IsManual
@@ -111,6 +138,7 @@ namespace SynToolkit.Services.Games
 
         private sealed class GameLibraryDocument
         {
+            public string ViewMode { get; set; } = "list";
             public List<GameEntry> Games { get; set; } = new();
         }
     }
@@ -238,6 +266,10 @@ namespace SynToolkit.Services.Games
             _store.SaveGames(games);
             return Task.FromResult(entry);
         }
+
+        public GamesLibraryViewMode GetViewMode() => _store.GetViewMode();
+
+        public void SetViewMode(GamesLibraryViewMode mode) => _store.SetViewMode(mode);
 
         public Task RemoveGameAsync(string gameId, CancellationToken cancellationToken = default)
         {

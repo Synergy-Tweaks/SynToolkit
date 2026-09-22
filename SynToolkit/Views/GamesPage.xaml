@@ -11,6 +11,117 @@
     <Page.Resources>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <local:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
+        <local:NullableStringToImageSourceConverter x:Key="NullableStringToImageSourceConverter" />
+        <local:GameHeaderIconConverter x:Key="GameHeaderIconConverter" />
+
+        <DataTemplate x:Key="GameListItemTemplate" x:DataType="vm:GameLibraryItemViewModel">
+            <controls:SettingsCard
+                Description="{x:Bind PathSummary, Mode=OneWay}"
+                Header="{x:Bind Name, Mode=OneWay}"
+                HeaderIcon="{x:Bind ListIconPath, Mode=OneWay, Converter={StaticResource GameHeaderIconConverter}}"
+                Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Border
+                        Padding="8,2"
+                        VerticalAlignment="Center"
+                        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                        CornerRadius="4">
+                        <TextBlock FontSize="11" Text="{x:Bind SourceLabel, Mode=OneWay}" />
+                    </Border>
+                    <Button
+                        Command="{x:Bind PlayCommand}"
+                        CommandParameter="{x:Bind}"
+                        Content="Play"
+                        Style="{StaticResource AccentButtonStyle}" />
+                    <Button
+                        Command="{x:Bind RemoveCommand}"
+                        CommandParameter="{x:Bind}"
+                        Content="Remove" />
+                </StackPanel>
+            </controls:SettingsCard>
+        </DataTemplate>
+
+        <DataTemplate x:Key="GameGridItemTemplate" x:DataType="vm:GameLibraryItemViewModel">
+            <Grid
+                Width="168"
+                Margin="0,0,16,20"
+                PointerEntered="GameTile_PointerEntered"
+                PointerExited="GameTile_PointerExited">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="252" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Border
+                    Grid.Row="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="#0DFFFFFF"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                    <Grid>
+                        <FontIcon
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="36"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xE7FC;"
+                            Visibility="{x:Bind HasCoverArt, Mode=OneWay, Converter={StaticResource BoolToVisibilityInverseConverter}}" />
+
+                        <Image
+                            Source="{x:Bind CoverArtPath, Mode=OneWay, Converter={StaticResource NullableStringToImageSourceConverter}}"
+                            Stretch="UniformToFill"
+                            Visibility="{x:Bind HasCoverArt, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                        <Border
+                            x:Name="PlayOverlay"
+                            Background="#99000000"
+                            Opacity="0">
+                            <Button
+                                Width="48"
+                                Height="48"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Command="{x:Bind PlayCommand}"
+                                CommandParameter="{x:Bind}"
+                                Style="{StaticResource AccentButtonStyle}"
+                                ToolTipService.ToolTip="Play">
+                                <FontIcon FontSize="18" Glyph="&#xE768;" />
+                            </Button>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="1" Margin="2,8,2,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Text="{x:Bind Name, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap"
+                            ToolTipService.ToolTip="{x:Bind Name, Mode=OneWay}" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind SourceLabel, Mode=OneWay}" />
+                    </StackPanel>
+                    <Button
+                        Grid.Column="1"
+                        Padding="6,2"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{x:Bind RemoveCommand}"
+                        CommandParameter="{x:Bind}"
+                        ToolTipService.ToolTip="Remove">
+                        <FontIcon FontSize="12" Glyph="&#xE712;" />
+                    </Button>
+                </Grid>
+            </Grid>
+        </DataTemplate>
     </Page.Resources>
 
     <ScrollViewer>
@@ -82,13 +193,43 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBox
                     PlaceholderText="Search games"
                     Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     local:LocalizedText.PlaceholderTextKey="GamesPage_SearchPlaceholder" />
-                <ProgressRing
+                <Border
+                    x:Name="ViewModeToggle"
                     Grid.Column="1"
+                    Margin="12,0,0,0"
+                    Padding="2"
+                    VerticalAlignment="Center"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                    CornerRadius="6">
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <Button
+                            x:Name="ListViewButton"
+                            Width="36"
+                            Height="32"
+                            Padding="0"
+                            Click="ListViewButton_Click"
+                            ToolTipService.ToolTip="List view">
+                            <FontIcon FontSize="14" Glyph="&#xE762;" />
+                        </Button>
+                        <Button
+                            x:Name="GridViewButton"
+                            Width="36"
+                            Height="32"
+                            Padding="0"
+                            Click="GridViewButton_Click"
+                            ToolTipService.ToolTip="Grid view">
+                            <FontIcon FontSize="14" Glyph="&#xE80A;" />
+                        </Button>
+                    </StackPanel>
+                </Border>
+                <ProgressRing
+                    Grid.Column="2"
                     Width="20"
                     Height="20"
                     Margin="12,0,0,0"
@@ -119,42 +260,29 @@
                     local:LocalizedText.TextKey="GamesPage_EmptyBody" />
             </StackPanel>
 
-            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Games, Mode=OneWay}">
+            <ItemsRepeater
+                ItemTemplate="{StaticResource GameListItemTemplate}"
+                ItemsSource="{x:Bind ViewModel.Games, Mode=OneWay}"
+                Visibility="{x:Bind ViewModel.IsListView, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                 <ItemsRepeater.Layout>
                     <StackLayout Spacing="0" />
                 </ItemsRepeater.Layout>
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate x:DataType="vm:GameLibraryItemViewModel">
-                        <controls:SettingsCard
-                            Description="{x:Bind PathSummary, Mode=OneWay}"
-                            Header="{x:Bind Name, Mode=OneWay}"
-                            Style="{StaticResource ConfigurationSettingsCardTemplate}">
-                            <controls:SettingsCard.HeaderIcon>
-                                <FontIcon Glyph="&#xE7FC;" />
-                            </controls:SettingsCard.HeaderIcon>
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Border
-                                    Padding="8,2"
-                                    VerticalAlignment="Center"
-                                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                                    CornerRadius="4">
-                                    <TextBlock
-                                        FontSize="11"
-                                        Text="{x:Bind SourceLabel, Mode=OneWay}" />
-                                </Border>
-                                <Button
-                                    Command="{x:Bind PlayCommand}"
-                                    CommandParameter="{x:Bind}"
-                                    Content="Play"
-                                    Style="{StaticResource AccentButtonStyle}" />
-                                <Button
-                                    Command="{x:Bind RemoveCommand}"
-                                    CommandParameter="{x:Bind}"
-                                    Content="Remove" />
-                            </StackPanel>
-                        </controls:SettingsCard>
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+
+            <ItemsRepeater
+                Margin="0,8,20,0"
+                ItemTemplate="{StaticResource GameGridItemTemplate}"
+                ItemsSource="{x:Bind ViewModel.Games, Mode=OneWay}"
+                Visibility="{x:Bind ViewModel.IsGridView, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout
+                        ItemsJustification="Start"
+                        ItemsStretch="None"
+                        MinColumnSpacing="4"
+                        MinItemHeight="310"
+                        MinItemWidth="168"
+                        MinRowSpacing="4" />
+                </ItemsRepeater.Layout>
             </ItemsRepeater>
         </StackPanel>
     </ScrollViewer>

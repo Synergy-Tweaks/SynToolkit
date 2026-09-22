@@ -84,10 +84,96 @@ namespace SynToolkit.Views
         {
             if (value is string path && !string.IsNullOrWhiteSpace(path))
             {
-                return ImageSourceCache.Get(path);
+                return ImageSourceCache.Get(NormalizePath(path));
             }
 
             return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static string NormalizePath(string path)
+        {
+            if (path.StartsWith("ms-appx:", StringComparison.OrdinalIgnoreCase) ||
+                path.Contains("://", StringComparison.Ordinal))
+            {
+                return path;
+            }
+
+            try
+            {
+                return new Uri(path).AbsoluteUri;
+            }
+            catch
+            {
+                return path;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Like <see cref="ImageSourceConverter"/> but returns null for missing/unreadable files
+    /// so the UI can fall back to a generic glyph instead of a broken image.
+    /// </summary>
+    internal class NullableStringToImageSourceConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is not string path || string.IsNullOrWhiteSpace(path) || !System.IO.File.Exists(path))
+            {
+                return null;
+            }
+
+            try
+            {
+                return ImageSourceCache.Get(ImageSourceConverter.NormalizePath(path));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Builds a SettingsCard HeaderIcon from a local image path, falling back to the Games glyph.
+    /// </summary>
+    internal class GameHeaderIconConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is string path &&
+                !string.IsNullOrWhiteSpace(path) &&
+                System.IO.File.Exists(path))
+            {
+                try
+                {
+                    ImageSource source = ImageSourceCache.Get(ImageSourceConverter.NormalizePath(path));
+                    if (source is not null)
+                    {
+                        return new ImageIcon
+                        {
+                            Source = source,
+                            Width = 36,
+                            Height = 36
+                        };
+                    }
+                }
+                catch
+                {
+                    // Fall through to glyph.
+                }
+            }
+
+            return new FontIcon { Glyph = "\uE7FC", FontSize = 18 };
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

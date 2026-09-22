@@ -69,6 +69,16 @@ namespace SynToolkit.Views
 
             DiscordRpcToggle.IsOn = DiscordRpc_State;
             DiscordRpcToggle.Toggled += DiscordRpc_Toggled;
+
+            try
+            {
+                SteamGridDbApiKeyBox.Text = Services.Games.GameArtworkService.GetConfiguredApiKey() ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                App.logger.Error($"Failed to load SteamGridDB API key: {ex.Message}");
+                SteamGridDbApiKeyBox.Text = string.Empty;
+            }
             
             try
             {
@@ -113,6 +123,9 @@ namespace SynToolkit.Views
                 BackgroundDescription.Header = App.GetValueFromItemList("Settings_BackgroundDesc");
                 DiscordRpcCard.Header = App.GetValueFromItemList("Settings_DiscordRpc");
                 DiscordRpcCard.Description = App.GetValueFromItemList("Settings_DiscordRpcDesc");
+                SteamGridDbCard.Header = App.GetValueFromItemList("Settings_SteamGridDb");
+                SteamGridDbCard.Description = App.GetValueFromItemList("Settings_SteamGridDbDesc");
+                SteamGridDbApiKeyBox.PlaceholderText = App.GetValueFromItemList("Settings_SteamGridDbPlaceholder");
                 AboutHeader.Text = App.GetValueFromItemList("About");
                 toCloneRepoCard.Header = App.GetValueFromItemList("CloneRepoCard");
                 bugRequestCard.Header = App.GetValueFromItemList("BugReportCard");
@@ -202,6 +215,18 @@ namespace SynToolkit.Views
             catch (Exception ex)
             {
                 App.logger.Error($"Failed to save Discord RPC state: {ex.Message}");
+            }
+        }
+
+        private void SteamGridDbApiKeyBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Services.Games.GameArtworkService.SetConfiguredApiKey(SteamGridDbApiKeyBox.Text);
+            }
+            catch (Exception ex)
+            {
+                App.logger.Error($"Failed to save SteamGridDB API key: {ex.Message}");
             }
         }
 

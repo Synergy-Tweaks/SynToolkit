@@ -1,11 +1,14 @@
 #nullable enable
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using SynToolkit.Utils;
 using SynToolkit.ViewModels;
 using WinRT.Interop;
@@ -15,6 +18,8 @@ namespace SynToolkit.Views
     public sealed partial class GamesPage : Page
     {
         private const string ExeFileFilter = "Executables (*.exe)|*.exe|Shortcuts (*.lnk)|*.lnk|All files (*.*)|*.*";
+        private const string ImageFileFilter =
+            "Images (*.png;*.jpg;*.jpeg;*.webp;*.bmp)|*.png;*.jpg;*.jpeg;*.webp;*.bmp|All files (*.*)|*.*";
 
         public GamesPageViewModel ViewModel { get; }
 
@@ -23,12 +28,36 @@ namespace SynToolkit.Views
             InitializeComponent();
             ViewModel = App._host.Services.GetRequiredService<GamesPageViewModel>();
             DataContext = ViewModel;
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            UpdateViewModeToggleChrome();
         }
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             await ViewModel.LoadAsync();
+            UpdateViewModeToggleChrome();
         }
+
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(GamesPageViewModel.IsGridView) or nameof(GamesPageViewModel.IsListView))
+            {
+                UpdateViewModeToggleChrome();
+            }
+        }
+
+        private void UpdateViewModeToggleChrome()
+        {
+            Brush accent = (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
+            Brush transparent = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+
+            ListViewButton.Background = ViewModel.IsListView ? accent : transparent;
+            GridViewButton.Background = ViewModel.IsGridView ? accent : transparent;
+        }
+
+        private void ListViewButton_Click(object sender, RoutedEventArgs e) => ViewModel.IsGridView = false;
+
+        private void GridViewButton_Click(object sender, RoutedEventArgs e) => ViewModel.IsGridView = true;
 
         private async void ScanButton_Click(object sender, RoutedEventArgs e)
         {
@@ -38,20 +67,25 @@ namespace SynToolkit.Views
             }
         }
 
+        private void GameTile_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is FrameworkElement root && root.FindName("PlayOverlay") is UIElement overlay)
+            {
+                overlay.Opacity = 1;
+            }
+        }
+
+        private void GameTile_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is FrameworkElement root && root.FindName("PlayOverlay") is UIElement overlay)
+            {
+                overlay.Opacity = 0;
+            }
+        }
+
         private async void AddManualButton_Click(object sender, RoutedEventArgs e)
         {
-            IntPtr hwnd = IntPtr.Zero;
-            try
-            {
-                if (App.m_window is not null)
-                {
-                    hwnd = WindowNative.GetWindowHandle(App.m_window);
-                }
-            }
-            catch
-            {
-                hwnd = IntPtr.Zero;
-            }
+            IntPtr hwnd = TryGetWindowHandle();
 
             string? path = NativeFileDialogHelper.ShowOpenFileDialog(hwnd, ExeFileFilter);
             if (string.IsNullOrWhiteSpace(path))
@@ -79,10 +113,39 @@ namespace SynToolkit.Views
                 PlaceholderText = App.GetValueFromItemList("GamesPage_NamePlaceholder")
             };
 
+            var coverPathBox = new TextBox
+            {
+                IsReadOnly = true,
+                PlaceholderText = App.GetValueFromItemList("GamesPage_CoverOptionalPlaceholder")
+            };
+
+            var pickCoverButton = new Button
+            {
+                Content = App.GetValueFromItemList("GamesPage_PickCover"),
+                Margin = new Thickness(0, 8, 0, 0)
+            };
+            string? selectedCoverPath = null;
+            pickCoverButton.Click += (_, _) =>
+            {
+                string? cover = NativeFileDialogHelper.ShowOpenFileDialog(TryGetWindowHandle(), ImageFileFilter);
+                if (string.IsNullOrWhiteSpace(cover))
+                {
+                    return;
+                }
+
+                selectedCoverPath = cover;
+                coverPathBox.Text = cover;
+            };
+
+            var panel = new StackPanel { Spacing = 8 };
+            panel.Children.Add(nameBox);
+            panel.Children.Add(coverPathBox);
+            panel.Children.Add(pickCoverButton);
+
             var dialog = new ContentDialog
             {
                 Title = App.GetValueFromItemList("GamesPage_AddManual"),
-                Content = nameBox,
+                Content = panel,
                 PrimaryButtonText = App.GetValueFromItemList("GamesPage_Add"),
                 CloseButtonText = App.GetValueFromItemList("Cancel"),
                 DefaultButton = ContentDialogButton.Primary,
@@ -97,7 +160,24 @@ namespace SynToolkit.Views
 
             string name = string.IsNullOrWhiteSpace(nameBox.Text) ? defaultName : nameBox.Text.Trim();
             string? iconPath = TryCacheExeIcon(path);
-            await ViewModel.AddManualAsync(name, path, iconPath ?? path);
+            await ViewModel.AddManualAsync(name, path, iconPath ?? path, selectedCoverPath);
+        }
+
+        private static IntPtr TryGetWindowHandle()
+        {
+            try
+            {
+                if (App.m_window is not null)
+                {
+                    return WindowNative.GetWindowHandle(App.m_window);
+                }
+            }
+            catch
+            {
+                // Ignore and fall through.
+            }
+
+            return IntPtr.Zero;
         }
 
         private static string? TryResolveShortcut(string shortcutPath)
