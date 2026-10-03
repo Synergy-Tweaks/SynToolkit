@@ -187,6 +187,12 @@
       "activeSchemeNameHints": ["LLG-CΞRT1F1ΞD-FOR-PARKING+E-CORES-FIX", "PARKING", "E-CORES"]
     },
     {
+      "fileName": "Lumin Pro Powerplan.pow",
+      "displayName": "Lumin Pro Powerplan",
+      "description": "LuminOS performance plan for high performance and low latency.",
+      "activeSchemeNameHints": ["Lumin Pro Powerplan"]
+    },
+    {
       "fileName": "MaxOS Low Latency Powerplan v1.pow",
       "displayName": "MaxOS Low Latency v1",
       "description": "MaxOS v1 low-latency plan aimed at lower DPC latency for gaming.",

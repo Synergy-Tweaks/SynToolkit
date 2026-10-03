@@ -70,7 +70,7 @@
                 Margin="0,0,36,18"
                 IsClosable="False"
                 IsOpen="True"
-                Message="The supplied SOS.pow settings are preserved exactly. SynToolkit imports and activates it only when you choose Import and activate, and records your current plan for recovery." local:LocalizedText.MessageKey="PowerPlansPageMessage43FB7E05A3A7"
+                Message="The supplied SOS.pow settings are preserved exactly. SynToolkit imports and activates it only when you choose Activate, and records your current plan for recovery." local:LocalizedText.MessageKey="PowerPlansPageMessage43FB7E05A3A7"
                 Severity="Informational"
                 Title="Safe, explicit import" local:LocalizedText.TitleKey="PowerPlansPageTitleBC4F98976E4B" />
 
@@ -188,11 +188,18 @@
                     <controls:SettingsCard
                         Header="Import and activate" local:LocalizedText.HeaderKey="PowerPlansPageHeader96571F9BC38E"
                         Description="Imports a fresh copy of SOS.pow and makes it the active Windows plan." local:LocalizedText.DescriptionKey="PowerPlansPageDescriptionC1BD75967247">
-                        <Button
-                            x:Name="ImportBuiltInButton"
-                            Click="ImportBuiltInButton_Click"
-                            Content="Import and activate" local:LocalizedText.ContentKey="PowerPlansPageContentD405C33784A6"
-                            Style="{StaticResource AccentButtonStyle}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button
+                                x:Name="ImportBuiltInButton"
+                                Click="ImportBuiltInButton_Click"
+                                Content="Activate" local:LocalizedText.ContentKey="PowerPlansPageContentD405C33784A6"
+                                Style="{StaticResource AccentButtonStyle}" />
+                            <Button
+                                x:Name="ExploreBuiltInButton"
+                                Click="ExploreBuiltInButton_Click"
+                                Content="Explore settings"
+                                ToolTipService.ToolTip="Inspect SOS.pow without installing it" />
+                        </StackPanel>
                     </controls:SettingsCard>
                     <controls:SettingsCard
                         Header="Activate existing plan" local:LocalizedText.HeaderKey="PowerPlansPageHeaderBBFA1C9D07DB"
@@ -242,12 +249,17 @@
                         Text="Pre-packaged power plans from the community. Select one to import and activate it." local:LocalizedText.TextKey="PowerPlansPageText8B0EFF361274"
                         TextWrapping="Wrap" />
                 </StackPanel>
-                <Button
-                    x:Name="RefreshBundledPlansButton"
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Click="RefreshBundledPlansButton_Click"
-                    Content="Refresh" local:LocalizedText.ContentKey="PowerPlansPageContent7AEA1A0ACF33" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" Spacing="8">
+                    <Button
+                        x:Name="ComparePlansButton"
+                        Click="ComparePlansButton_Click"
+                        Content="Compare plans"
+                        ToolTipService.ToolTip="Compare the current Windows power plan with a .pow file" />
+                    <Button
+                        x:Name="RefreshBundledPlansButton"
+                        Click="RefreshBundledPlansButton_Click"
+                        Content="Refresh" local:LocalizedText.ContentKey="PowerPlansPageContent7AEA1A0ACF33" />
+                </StackPanel>
             </Grid>
 
             <AutoSuggestBox
@@ -307,6 +319,11 @@
                                         IsEnabled="{Binding IsApplyButtonEnabled}"
                                         Tag="{Binding}"
                                         Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibilityInverseConverter}}" />
+                                    <Button
+                                        Click="ExploreBundledPlanButton_Click"
+                                        Content="Explore settings"
+                                        Tag="{Binding}"
+                                        ToolTipService.ToolTip="Inspect this .pow file without activating it" />
                                     <ProgressRing
                                         Width="16"
                                         Height="16"

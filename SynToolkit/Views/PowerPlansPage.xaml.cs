@@ -32,7 +32,7 @@ namespace SynToolkit.Views
 
         public string ApplyButtonLabel => IsApplying
             ? "Activating…"
-            : "Import and activate";
+            : "Activate";
     }
 
     public sealed partial class PowerPlansPage : Page
@@ -183,6 +183,55 @@ namespace SynToolkit.Views
         private void RefreshBundledPlansButton_Click(object sender, RoutedEventArgs e)
         {
             LoadBundledPlans();
+        }
+
+        private async void ExploreBuiltInButton_Click(object sender, RoutedEventArgs e) =>
+            await ShowPowerPlanSettingsDialogAsync(initialBuiltIn: true);
+
+        private async void ExploreBundledPlanButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button { Tag: BundledPowerPlanItem item })
+            {
+                await ShowPowerPlanSettingsDialogAsync(initialFilePath: item.Plan.FilePath);
+            }
+        }
+
+        private async void ComparePlansButton_Click(object sender, RoutedEventArgs e) =>
+            await ShowPowerPlanSettingsDialogAsync(startComparing: true);
+
+        private async Task ShowPowerPlanSettingsDialogAsync(
+            string? initialFilePath = null,
+            bool initialBuiltIn = false,
+            bool startComparing = false)
+        {
+            if (!_isPageLoaded)
+            {
+                return;
+            }
+
+            PowerPlanSettingsDialog dialog = new(
+                _allBundledPlans,
+                _snapshot?.ActiveSchemeId,
+                _snapshot?.ActiveSchemeName ?? string.Empty,
+                initialFilePath,
+                initialBuiltIn,
+                startComparing)
+            {
+                XamlRoot = XamlRoot,
+                Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style
+            };
+            try
+            {
+                await dialog.ShowAsync();
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "Power settings viewer could not be opened.");
+                if (_isPageLoaded)
+                {
+                    ShowResult("Viewer unavailable", exception.Message, InfoBarSeverity.Error);
+                }
+            }
         }
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
@@ -651,6 +700,9 @@ namespace SynToolkit.Views
                 _powerPlanService.CanMutatePowerPlans;
             RefreshButton.IsEnabled = !_isBusy && !_isBundledPlanOperationInProgress;
             RefreshBundledPlansButton.IsEnabled = !_isBusy && !_isBundledPlanOperationInProgress;
+            ComparePlansButton.IsEnabled = !_isBusy &&
+                !_isBundledPlanOperationInProgress &&
+                _snapshot?.ActiveSchemeId is not null;
             ImportBuiltInButton.IsEnabled = canMutate && !hasConflict;
             ImportCustomButton.IsEnabled = canMutate;
             ActivateBuiltInButton.IsEnabled = canMutate && !hasConflict && _snapshot?.IsSynToolkitPlanInstalled == true && _snapshot.IsSynToolkitPlanActive == false;
