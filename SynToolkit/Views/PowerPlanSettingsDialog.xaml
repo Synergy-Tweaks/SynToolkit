@@ -3,7 +3,6 @@
     x:Class="SynToolkit.Views.PowerPlanSettingsDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    FullSizeDesired="True"
     Opened="Dialog_Opened"
     Closed="Dialog_Closed">
 
