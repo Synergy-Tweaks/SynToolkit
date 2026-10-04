@@ -129,6 +129,11 @@ namespace SynToolkit.Views
             _readCancellation?.Cancel();
         }
 
+        private void CloseViewerButton_Click(object sender, RoutedEventArgs e)
+        {
+            Hide();
+        }
+
         private async void PlanPicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isOpen)

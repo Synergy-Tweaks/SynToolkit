@@ -3,9 +3,6 @@
     x:Class="SynToolkit.Views.PowerPlanSettingsDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Power settings"
-    CloseButtonText="Close"
-    DefaultButton="Close"
     FullSizeDesired="True"
     Opened="Dialog_Opened"
     Closed="Dialog_Closed">
@@ -24,16 +21,38 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <Grid Grid.Row="0" Height="36">
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="20"
+                FontWeight="SemiBold"
+                Text="Power settings" />
+            <Button
+                Width="32"
+                Height="32"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="Close power settings"
+                Background="Transparent"
+                BorderThickness="0"
+                Click="CloseViewerButton_Click"
+                Padding="0"
+                ToolTipService.ToolTip="Close power settings">
+                <FontIcon FontSize="12" Glyph="&#xE8BB;" />
+            </Button>
+        </Grid>
+
         <TextBlock
-            Grid.Row="0"
+            Grid.Row="1"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             Text="Inspect every setting in a .pow file before activating it."
             TextWrapping="Wrap" />
 
-        <Grid Grid.Row="1" ColumnSpacing="8">
+        <Grid Grid.Row="2" ColumnSpacing="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -54,7 +73,7 @@
                 ToolTipService.ToolTip="Inspect a power plan stored elsewhere on your computer" />
         </Grid>
 
-        <Grid Grid.Row="2" ColumnSpacing="20">
+        <Grid Grid.Row="3" ColumnSpacing="20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
@@ -77,12 +96,12 @@
 
         <TextBox
             x:Name="SettingsSearchBox"
-            Grid.Row="3"
+            Grid.Row="4"
             AutomationProperties.Name="Search power settings"
             PlaceholderText="Search setting, category, description, or GUID"
             TextChanged="SettingsSearchBox_TextChanged" />
 
-        <Grid Grid.Row="4" ColumnSpacing="10">
+        <Grid Grid.Row="5" ColumnSpacing="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -102,7 +121,7 @@
                 Visibility="Collapsed" />
         </Grid>
 
-        <Grid Grid.Row="5">
+        <Grid Grid.Row="6">
             <InfoBar
                 x:Name="ReadErrorBar"
                 VerticalAlignment="Top"
