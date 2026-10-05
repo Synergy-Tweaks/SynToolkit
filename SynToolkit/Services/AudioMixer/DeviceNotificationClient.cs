@@ -16,9 +16,9 @@ namespace SynToolkit.Services.AudioMixer
 
         public void OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId)
         {
-            if (flow == DataFlow.Render && role == Role.Multimedia)
+            if (flow is DataFlow.Render or DataFlow.Capture)
             {
-                _service.HandleDefaultDeviceChanged(defaultDeviceId);
+                _service.HandleDefaultDeviceChanged(flow, defaultDeviceId);
             }
         }
 

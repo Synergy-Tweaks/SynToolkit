@@ -69,7 +69,7 @@
 
                         <Image
                             Source="{x:Bind CoverArtPath, Mode=OneWay, Converter={StaticResource NullableStringToImageSourceConverter}}"
-                            Stretch="UniformToFill"
+                            Stretch="Uniform"
                             Visibility="{x:Bind HasCoverArt, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                         <Border
@@ -119,7 +119,7 @@
                         Command="{x:Bind RemoveCommand}"
                         CommandParameter="{x:Bind}"
                         ToolTipService.ToolTip="Remove">
-                        <FontIcon FontSize="12" Glyph="&#xE712;" />
+                        <FontIcon FontSize="14" Glyph="&#xE74D;" />
                     </Button>
                 </Grid>
             </Grid>

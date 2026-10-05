@@ -1,6 +1,7 @@
 #nullable enable
 
 using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 using NAudio.CoreAudioApi;
 using NAudio.CoreAudioApi.Interfaces;
 
@@ -14,6 +15,7 @@ namespace SynToolkit.Services.AudioMixer
         public event Action<IReadOnlyList<AudioSessionInfo>>? SessionsChanged;
         public event Action<string, float>? SessionVolumeChanged;
         public event Action<string>? ErrorOccurred;
+        public event Action? DevicesChanged;
 
         private readonly VolumePolicy _policy;
         private readonly BlockingCollection<Action> _queue = new();
@@ -23,10 +25,13 @@ namespace SynToolkit.Services.AudioMixer
         private MMDeviceEnumerator? _enumerator;
         private DeviceNotificationClient? _notificationClient;
         private MMDevice? _currentDevice;
-        private AudioSessionManager? _sessionManager;
         private AudioEndpointVolume? _endpointVolume;
         private string? _currentDeviceId;
         private readonly Dictionary<string, TrackedSession> _sessions = new(StringComparer.Ordinal);
+
+        private readonly Dictionary<string, MonitoredEndpoint> _endpoints = new(StringComparer.Ordinal);
+        private IReadOnlyList<AudioDeviceInfo> _outputDevices = [];
+        private IReadOnlyList<AudioDeviceInfo> _inputDevices = [];
 
         private sealed record TrackedSession(
             AudioSessionControl Control,
@@ -35,6 +40,8 @@ namespace SynToolkit.Services.AudioMixer
             string Name,
             int ProcessId,
             string? ExecutablePath);
+
+        private sealed record MonitoredEndpoint(MMDevice Device, AudioSessionManager Manager);
 
         public AudioSessionMonitor(VolumePolicy policy)
         {
@@ -51,8 +58,35 @@ namespace SynToolkit.Services.AudioMixer
         {
             _thread.Start();
             Post(InitializeInternal);
-            _reconcileTimer = new Timer(_ => Post(RefreshSessionsInternal), null, ReconcileInterval, ReconcileInterval);
+            _reconcileTimer = new Timer(_ => Post(ReconcileInternal), null, ReconcileInterval, ReconcileInterval);
         }
+
+        public IReadOnlyList<AudioDeviceInfo> GetOutputDevices() => _outputDevices;
+
+        public IReadOnlyList<AudioDeviceInfo> GetInputDevices() => _inputDevices;
+
+        public void SetDefaultDevice(string deviceId, AudioDeviceDirection direction) => Post(() =>
+        {
+            try
+            {
+                PolicyConfigClient.SetDefaultEndpoint(deviceId);
+                if (direction == AudioDeviceDirection.Render)
+                {
+                    SelectDeviceInternal(deviceId);
+                }
+            }
+            catch (Exception exception)
+            {
+                App.logger.Warn(exception, "Audio mixer could not switch the default device.");
+                ErrorOccurred?.Invoke(string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    App.GetValueFromItemList("AudioMixerPage_DeviceSwitchFailed"),
+                    exception.Message));
+            }
+
+            RefreshDeviceListsInternal();
+            RefreshSessionsInternal();
+        });
 
         public void SetMasterVolume(float scalar) => Post(() =>
         {
@@ -74,7 +108,7 @@ namespace SynToolkit.Services.AudioMixer
             }
         });
 
-        public void RequestRefresh() => Post(RefreshSessionsInternal);
+        public void RequestRefresh() => Post(ReconcileInternal);
 
         public void HandleSessionVolumeChanged(string instanceId, float volume) => Post(() =>
         {
@@ -86,26 +120,35 @@ namespace SynToolkit.Services.AudioMixer
 
         public void HandleSessionExpired(string instanceId) => Post(() => RemoveSessionInternal(instanceId, true));
 
-        public void HandleDefaultDeviceChanged(string defaultDeviceId) => Post(() =>
+        public void HandleDefaultDeviceChanged(DataFlow flow, string defaultDeviceId) => Post(() =>
         {
-            if (!string.Equals(defaultDeviceId, _currentDeviceId, StringComparison.Ordinal))
+            if (flow == DataFlow.Render && !string.Equals(defaultDeviceId, _currentDeviceId, StringComparison.Ordinal))
             {
                 SelectDeviceInternal(defaultDeviceId);
             }
+
+            RefreshDeviceListsInternal();
         });
 
         public void HandleDeviceTopologyChanged() => Post(() =>
         {
-            string? defaultId = GetDefaultDeviceId();
+            RefreshEndpointsInternal();
+            string? defaultId = TryGetDefaultDeviceId(DataFlow.Render);
             if (defaultId is not null && !string.Equals(defaultId, _currentDeviceId, StringComparison.Ordinal))
             {
                 SelectDeviceInternal(defaultId);
             }
-            else
-            {
-                RefreshSessionsInternal();
-            }
+
+            RefreshDeviceListsInternal();
+            RefreshSessionsInternal();
         });
+
+        private void ReconcileInternal()
+        {
+            RefreshEndpointsInternal();
+            RefreshSessionsInternal();
+            RaiseSessionsSnapshot();
+        }
 
         private void InitializeInternal()
         {
@@ -113,21 +156,25 @@ namespace SynToolkit.Services.AudioMixer
             _notificationClient = new DeviceNotificationClient(this);
             _enumerator.RegisterEndpointNotificationCallback(_notificationClient);
 
-            string? defaultId = GetDefaultDeviceId();
+            RefreshEndpointsInternal();
+            RefreshDeviceListsInternal();
+
+            string? defaultId = TryGetDefaultDeviceId(DataFlow.Render);
             if (defaultId is null)
             {
-                ErrorOccurred?.Invoke("No active audio output device found.");
+                ErrorOccurred?.Invoke(App.GetValueFromItemList("AudioMixerPage_NoOutputDevice"));
                 return;
             }
 
             SelectDeviceInternal(defaultId);
+            RaiseSessionsSnapshot();
         }
 
-        private string? GetDefaultDeviceId()
+        private string? TryGetDefaultDeviceId(DataFlow flow)
         {
             try
             {
-                using MMDevice defaultDevice = _enumerator!.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                using MMDevice defaultDevice = _enumerator!.GetDefaultAudioEndpoint(flow, Role.Multimedia);
                 return defaultDevice.ID;
             }
             catch
@@ -138,66 +185,244 @@ namespace SynToolkit.Services.AudioMixer
 
         private void SelectDeviceInternal(string deviceId)
         {
-            if (_enumerator is null || string.Equals(deviceId, _currentDeviceId, StringComparison.Ordinal))
+            if (_enumerator is null)
             {
                 return;
             }
 
-            CleanupDeviceInternal();
+            if (string.Equals(deviceId, _currentDeviceId, StringComparison.Ordinal) && _currentDevice is not null)
+            {
+                return;
+            }
 
-            _currentDevice = _enumerator.GetDevice(deviceId);
-            _currentDeviceId = deviceId;
+            ReleaseMasterVolumeDevice();
 
-            _endpointVolume = _currentDevice.AudioEndpointVolume;
-            _endpointVolume.OnVolumeNotification += OnMasterVolumeNotification;
+            try
+            {
+                _currentDevice = _enumerator.GetDevice(deviceId);
+                _currentDeviceId = deviceId;
 
-            _sessionManager = _currentDevice.AudioSessionManager;
-            _sessionManager.OnSessionCreated += OnSessionCreatedCallback;
+                _endpointVolume = _currentDevice.AudioEndpointVolume;
+                _endpointVolume.OnVolumeNotification += OnMasterVolumeNotification;
+                MasterVolumeChanged?.Invoke(_endpointVolume.MasterVolumeLevelScalar);
+            }
+            catch (Exception exception)
+            {
+                App.logger.Debug(exception, "Audio mixer could not open the default output device.");
+                _currentDeviceId = null;
+                return;
+            }
 
             RefreshSessionsInternal();
-            MasterVolumeChanged?.Invoke(_endpointVolume.MasterVolumeLevelScalar);
+        }
+
+        private void RefreshEndpointsInternal()
+        {
+            if (_enumerator is null)
+            {
+                return;
+            }
+
+            HashSet<string> activeIds = new(StringComparer.Ordinal);
+            MMDeviceCollection? devices = null;
+
+            try
+            {
+                devices = _enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
+                foreach (MMDevice device in devices)
+                {
+                    try
+                    {
+                        activeIds.Add(device.ID);
+                    }
+                    finally
+                    {
+                        Try(device.Dispose);
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                App.logger.Debug(exception, "Audio mixer could not enumerate render endpoints.");
+            }
+
+            foreach (string id in activeIds)
+            {
+                if (_endpoints.ContainsKey(id))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    MMDevice device = _enumerator.GetDevice(id);
+                    AudioSessionManager manager = device.AudioSessionManager;
+                    manager.OnSessionCreated += OnSessionCreatedCallback;
+                    _endpoints[id] = new MonitoredEndpoint(device, manager);
+                }
+                catch (Exception exception)
+                {
+                    App.logger.Debug(exception, $"Audio mixer could not open endpoint {id}.");
+                }
+            }
+
+            foreach (string id in _endpoints.Keys.Where(id => !activeIds.Contains(id)).ToList())
+            {
+                ReleaseEndpoint(id);
+            }
+        }
+
+        private void RefreshDeviceListsInternal()
+        {
+            IReadOnlyList<AudioDeviceInfo> outputs = BuildDeviceList(DataFlow.Render, AudioDeviceDirection.Render);
+            IReadOnlyList<AudioDeviceInfo> inputs = BuildDeviceList(DataFlow.Capture, AudioDeviceDirection.Capture);
+
+            bool changed = !DeviceListsEqual(_outputDevices, outputs) || !DeviceListsEqual(_inputDevices, inputs);
+            _outputDevices = outputs;
+            _inputDevices = inputs;
+
+            if (changed)
+            {
+                DevicesChanged?.Invoke();
+            }
+        }
+
+        private List<AudioDeviceInfo> BuildDeviceList(DataFlow flow, AudioDeviceDirection direction)
+        {
+            var list = new List<AudioDeviceInfo>();
+            if (_enumerator is null)
+            {
+                return list;
+            }
+
+            string? defaultId = TryGetDefaultDeviceId(flow);
+            MMDeviceCollection? devices = null;
+
+            try
+            {
+                devices = _enumerator.EnumerateAudioEndPoints(flow, DeviceState.Active);
+                foreach (MMDevice device in devices)
+                {
+                    try
+                    {
+                        string id = device.ID;
+                        string name = Try(() => device.FriendlyName, string.Empty);
+                        if (string.IsNullOrWhiteSpace(name))
+                        {
+                            name = App.GetValueFromItemList("AudioMixerPage_UnknownDevice");
+                        }
+
+                        list.Add(new AudioDeviceInfo(
+                            id,
+                            name,
+                            direction,
+                            string.Equals(id, defaultId, StringComparison.Ordinal)));
+                    }
+                    finally
+                    {
+                        Try(device.Dispose);
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                App.logger.Debug(exception, "Audio mixer could not list audio devices.");
+            }
+
+            list.Sort((left, right) =>
+            {
+                if (left.IsDefault != right.IsDefault)
+                {
+                    return left.IsDefault ? -1 : 1;
+                }
+
+                return string.Compare(left.FriendlyName, right.FriendlyName, StringComparison.OrdinalIgnoreCase);
+            });
+
+            return list;
+        }
+
+        private static bool DeviceListsEqual(IReadOnlyList<AudioDeviceInfo> left, IReadOnlyList<AudioDeviceInfo> right)
+        {
+            if (left.Count != right.Count)
+            {
+                return false;
+            }
+
+            for (int index = 0; index < left.Count; index++)
+            {
+                if (!string.Equals(left[index].Id, right[index].Id, StringComparison.Ordinal) ||
+                    left[index].IsDefault != right[index].IsDefault ||
+                    !string.Equals(left[index].FriendlyName, right[index].FriendlyName, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private void RefreshSessionsInternal()
         {
-            if (_sessionManager is null)
+            if (_endpoints.Count == 0)
             {
-                SessionsChanged?.Invoke([]);
+                if (_sessions.Count > 0)
+                {
+                    foreach (string instanceId in _sessions.Keys.ToList())
+                    {
+                        RemoveSessionInternal(instanceId, false);
+                    }
+
+                    RaiseSessionsSnapshot();
+                }
+
                 return;
             }
 
-            _sessionManager.RefreshSessions();
-            SessionCollection sessions = _sessionManager.Sessions;
             HashSet<string> seen = new(StringComparer.Ordinal);
             bool changed = false;
 
-            for (int index = 0; index < sessions.Count; index++)
+            foreach (MonitoredEndpoint endpoint in _endpoints.Values)
             {
-                AudioSessionControl control;
+                SessionCollection sessions;
                 try
                 {
-                    control = sessions[index];
+                    endpoint.Manager.RefreshSessions();
+                    sessions = endpoint.Manager.Sessions;
                 }
                 catch
                 {
                     continue;
                 }
 
-                string? instanceId = Try(() => control.GetSessionInstanceIdentifier);
-                if (string.IsNullOrWhiteSpace(instanceId) || !seen.Add(instanceId) || IsExpired(control))
+                for (int index = 0; index < sessions.Count; index++)
                 {
-                    control.Dispose();
-                    continue;
-                }
+                    AudioSessionControl control;
+                    try
+                    {
+                        control = sessions[index];
+                    }
+                    catch
+                    {
+                        continue;
+                    }
 
-                if (_sessions.ContainsKey(instanceId))
-                {
-                    control.Dispose();
-                    continue;
-                }
+                    string? instanceId = Try(() => control.GetSessionInstanceIdentifier);
+                    if (string.IsNullOrWhiteSpace(instanceId) || !seen.Add(instanceId) || IsExpired(control))
+                    {
+                        control.Dispose();
+                        continue;
+                    }
 
-                TrackSessionInternal(control, instanceId);
-                changed = true;
+                    if (_sessions.ContainsKey(instanceId))
+                    {
+                        control.Dispose();
+                        continue;
+                    }
+
+                    TrackSessionInternal(control, instanceId);
+                    changed = true;
+                }
             }
 
             foreach (string staleId in _sessions.Keys.Where(id => !seen.Contains(id)).ToList())
@@ -264,36 +489,47 @@ namespace SynToolkit.Services.AudioMixer
         private void RaiseSessionsSnapshot()
         {
             List<AudioSessionInfo> snapshot = [];
+            HashSet<string> liveKeys = new(StringComparer.OrdinalIgnoreCase);
 
             foreach (TrackedSession session in _sessions.Values)
             {
                 float volume = Try(() => session.Control.SimpleAudioVolume.Volume, 0f);
+                liveKeys.Add(NormalizeAppKey(session.Name));
                 snapshot.Add(new AudioSessionInfo(
                     session.InstanceId,
                     session.Name,
                     volume,
                     string.Equals(session.Name, SessionNaming.SystemSoundsName, StringComparison.Ordinal),
                     session.ProcessId,
-                    session.ExecutablePath));
+                    session.ExecutablePath,
+                    true));
+            }
+
+            foreach (AudioAppProcessInfo app in OpenAppEnumerator.GetOpenApps())
+            {
+                if (liveKeys.Contains(NormalizeAppKey(app.Name)))
+                {
+                    continue;
+                }
+
+                snapshot.Add(new AudioSessionInfo(
+                    "process:" + app.ProcessId,
+                    app.Name,
+                    _policy.GetDesiredVolume(app.Name),
+                    false,
+                    app.ProcessId,
+                    app.ExecutablePath,
+                    false));
             }
 
             SessionsChanged?.Invoke(snapshot);
         }
 
-        private void CleanupDeviceInternal()
+        private static string NormalizeAppKey(string name) =>
+            name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? name[..^4] : name;
+
+        private void ReleaseMasterVolumeDevice()
         {
-            foreach (string instanceId in _sessions.Keys.ToList())
-            {
-                RemoveSessionInternal(instanceId, false);
-            }
-
-            if (_sessionManager is not null)
-            {
-                _sessionManager.OnSessionCreated -= OnSessionCreatedCallback;
-                Try(_sessionManager.Dispose);
-                _sessionManager = null;
-            }
-
             if (_endpointVolume is not null)
             {
                 _endpointVolume.OnVolumeNotification -= OnMasterVolumeNotification;
@@ -310,6 +546,37 @@ namespace SynToolkit.Services.AudioMixer
             _currentDeviceId = null;
         }
 
+        private void ReleaseEndpoint(string endpointId)
+        {
+            if (!_endpoints.Remove(endpointId, out MonitoredEndpoint? endpoint))
+            {
+                return;
+            }
+
+            Try(() => endpoint.Manager.OnSessionCreated -= OnSessionCreatedCallback);
+            Try(endpoint.Manager.Dispose);
+            Try(endpoint.Device.Dispose);
+        }
+
+        private void ReleaseEndpoints()
+        {
+            foreach (string instanceId in _sessions.Keys.ToList())
+            {
+                RemoveSessionInternal(instanceId, false);
+            }
+
+            foreach (string endpointId in _endpoints.Keys.ToList())
+            {
+                ReleaseEndpoint(endpointId);
+            }
+        }
+
+        private void CleanupAllInternal()
+        {
+            ReleaseEndpoints();
+            ReleaseMasterVolumeDevice();
+        }
+
         private void OnSessionCreatedCallback(object sender, IAudioSessionControl newSession) => Post(RefreshSessionsInternal);
 
         private void OnMasterVolumeNotification(AudioVolumeNotificationData data) =>
@@ -317,22 +584,37 @@ namespace SynToolkit.Services.AudioMixer
 
         private void WorkerLoop()
         {
-            foreach (Action action in _queue.GetConsumingEnumerable())
+            int comResult = CoInitializeEx(IntPtr.Zero, CoInitMultithreaded);
+
+            try
             {
-                try
+                foreach (Action action in _queue.GetConsumingEnumerable())
                 {
-                    action();
+                    try
+                    {
+                        action();
+                    }
+                    catch (Exception exception)
+                    {
+                        App.logger.Error(exception, "Audio mixer worker action failed.");
+                        ErrorOccurred?.Invoke(string.Format(
+                            System.Globalization.CultureInfo.CurrentCulture,
+                            App.GetValueFromItemList("AudioMixerPage_WorkerError"),
+                            exception.Message));
+                    }
                 }
-                catch (Exception exception)
+            }
+            finally
+            {
+                if (comResult >= 0)
                 {
-                    App.logger.Error(exception, "Audio mixer worker action failed.");
-                    ErrorOccurred?.Invoke("Audio mixer error: " + exception.Message);
+                    Try(CoUninitialize);
                 }
             }
 
             try
             {
-                CleanupDeviceInternal();
+                CleanupAllInternal();
 
                 if (_enumerator is not null)
                 {
@@ -364,6 +646,14 @@ namespace SynToolkit.Services.AudioMixer
             {
             }
         }
+
+        private const uint CoInitMultithreaded = 0x0;
+
+        [DllImport("ole32.dll")]
+        private static extern int CoInitializeEx(IntPtr pvReserved, uint dwCoInit);
+
+        [DllImport("ole32.dll")]
+        private static extern void CoUninitialize();
 
         private static void Try(Action action)
         {

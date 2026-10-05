@@ -111,7 +111,8 @@ namespace SynToolkit.Services.Games.Providers
                     InstallPath = installLocation,
                     ExecutablePath = executablePath,
                     LaunchUri = launchUri,
-                    LaunchArgs = string.IsNullOrWhiteSpace(manifest.LaunchCommand) ? null : manifest.LaunchCommand
+                    LaunchArgs = string.IsNullOrWhiteSpace(manifest.LaunchCommand) ? null : manifest.LaunchCommand,
+                    ExternalNamespace = manifest.CatalogNamespace
                 };
 
                 if (games.ContainsKey(detected.ExternalId))

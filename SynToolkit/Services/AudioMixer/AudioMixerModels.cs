@@ -21,9 +21,24 @@ namespace SynToolkit.Services.AudioMixer
         float ScalarVolume,
         bool IsSystemSounds,
         int ProcessId,
-        string? ExecutablePath);
+        string? ExecutablePath,
+        bool IsLive = true);
+
+    public sealed record AudioAppProcessInfo(string Name, int ProcessId, string? ExecutablePath);
 
     public sealed record SavedAudioSessionInfo(string Name, float ScalarVolume);
+
+    public enum AudioDeviceDirection
+    {
+        Render,
+        Capture
+    }
+
+    public sealed record AudioDeviceInfo(
+        string Id,
+        string FriendlyName,
+        AudioDeviceDirection Direction,
+        bool IsDefault);
 
     public sealed record AudioMixerSessionRow(
         string Name,

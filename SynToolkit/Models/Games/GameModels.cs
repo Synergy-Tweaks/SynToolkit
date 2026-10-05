@@ -24,6 +24,7 @@ namespace SynToolkit.Models.Games
         public string? LaunchArgs { get; init; }
         public string? IconPath { get; init; }
         public string? WorkingDirectory { get; init; }
+        public string? ExternalNamespace { get; init; }
     }
 
     public sealed class GameEntry
@@ -32,6 +33,7 @@ namespace SynToolkit.Models.Games
         public string Name { get; set; } = string.Empty;
         public GameSource Source { get; set; } = GameSource.Manual;
         public string? ExternalId { get; set; }
+        public string? ExternalNamespace { get; set; }
         public string? InstallPath { get; set; }
         public string? ExecutablePath { get; set; }
         public string? LaunchUri { get; set; }
@@ -42,6 +44,7 @@ namespace SynToolkit.Models.Games
         public string? ArtworkPath { get; set; }
         /// <summary>When true, <see cref="ArtworkPath"/> is user-chosen and must not be overwritten by auto-fetch.</summary>
         public bool IsCustomArtwork { get; set; }
+        public string? ArtworkNamespace { get; set; }
         public DateTimeOffset? LastPlayed { get; set; }
         public int? PlaytimeMinutes { get; set; }
         public bool IsManual { get; set; }

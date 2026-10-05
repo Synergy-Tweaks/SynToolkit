@@ -86,6 +86,11 @@ namespace SynToolkit.ViewModels
             OnPropertyChanged(nameof(HasCustomIcon));
         }
 
+        partial void OnExecutablePathChanged(string? value)
+        {
+            _ = LoadIconAsync();
+        }
+
         public void UpdateFromSnapshot(int volume, bool isActive, bool isSaved, string statusText, string? executablePath)
         {
             _suppressApply = true;

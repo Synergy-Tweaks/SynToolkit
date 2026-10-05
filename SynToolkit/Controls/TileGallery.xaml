@@ -235,7 +235,7 @@
                             Text="SynToolkit 1.7.0" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="A combined release with a refreshed Home tile row, Power Plans browsing and editing, wallpaper customization, clearer community links, installer improvements, system attention checks, recovery tools, and update reliability fixes."
+                            Text="A combined release with a refreshed Home tile row, Power Plans browsing and editing, wallpaper customization, clearer community links, installer improvements, dismissible Needs Attention checks, recovery tools, and update reliability fixes."
                             TextWrapping="Wrap" />
                     </StackPanel>
 
@@ -486,7 +486,7 @@
                             <TextBlock FontWeight="SemiBold" Text="Needs Attention" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Review disk space, restore points, time sync, app updates, critical drivers, and available SynToolkit updates in one place."
+                                Text="Review disk space, restore points, time sync, app updates, critical drivers, and available SynToolkit updates in one place. Use Ignore All to suppress whole check categories, Restore Ignored to bring them back, or Ignore on individual items when you want a shorter mute."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>

@@ -19,6 +19,7 @@ namespace SynToolkit.ViewModels
         private bool _isInitialized;
         private bool _suppressMasterApply;
         private bool _suppressHotkeyApply;
+        private bool _suppressDeviceApply;
 
         public AudioMixerPageViewModel(
             IAudioMixerService audioMixerService,
@@ -32,6 +33,8 @@ namespace SynToolkit.ViewModels
 
             Sessions = [];
             MediaSessions = [];
+            OutputDevices = [];
+            InputDevices = [];
             HotkeyKeys =
             [
                 "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
@@ -46,6 +49,21 @@ namespace SynToolkit.ViewModels
         public ObservableCollection<AudioMediaSessionViewModel> MediaSessions { get; }
 
         public IReadOnlyList<string> HotkeyKeys { get; }
+
+        public ObservableCollection<AudioDeviceOption> OutputDevices { get; }
+
+        public ObservableCollection<AudioDeviceOption> InputDevices { get; }
+
+        [ObservableProperty]
+        public partial AudioDeviceOption? SelectedOutputDevice { get; set; }
+
+        [ObservableProperty]
+        public partial AudioDeviceOption? SelectedInputDevice { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HotkeySummary))]
+        [NotifyPropertyChangedFor(nameof(IsHotkeyShortcutEnabled))]
+        public partial bool HotkeyEnabled { get; set; } = true;
 
         [ObservableProperty]
         public partial int MasterVolume { get; set; }
@@ -108,10 +126,21 @@ namespace SynToolkit.ViewModels
             GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing ? "\uE769" : "\uE768";
 
         public string PlayPauseText => SelectedMediaSession?.PlaybackStatus ==
-            GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing ? "Pause" : "Play";
+            GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing
+                ? App.GetValueFromItemList("AudioMixerPage_Pause")
+                : App.GetValueFromItemList("AudioMixerPage_Play");
+
+        public bool IsHotkeyShortcutEnabled => HotkeyEnabled;
+
+        public string HotkeySummary => HotkeyEnabled
+            ? HotkeyDisplayText
+            : App.GetValueFromItemList("AudioMixerPage_HotkeyDisabled");
 
         public string TipsMessage =>
-            $"Manage live per-app audio levels here. Press {HotkeyDisplayText} from anywhere to jump straight to this mixer.";
+            string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                App.GetValueFromItemList("AudioMixerPage_TipMessage"),
+                HotkeyDisplayText);
 
         public async Task ActivateAsync()
         {
@@ -125,6 +154,7 @@ namespace SynToolkit.ViewModels
             _audioMixerService.SessionsChanged += AudioMixerService_SessionsChanged;
             _audioMixerService.MasterVolumeChanged += AudioMixerService_MasterVolumeChanged;
             _audioMixerService.ErrorOccurred += AudioMixerService_ErrorOccurred;
+            _audioMixerService.DevicesChanged += AudioMixerService_DevicesChanged;
             _mediaSessionService.SessionsChanged += MediaSessionService_SessionsChanged;
             _mediaSessionService.ErrorOccurred += MediaSessionService_ErrorOccurred;
 
@@ -150,6 +180,7 @@ namespace SynToolkit.ViewModels
             _audioMixerService.SessionsChanged -= AudioMixerService_SessionsChanged;
             _audioMixerService.MasterVolumeChanged -= AudioMixerService_MasterVolumeChanged;
             _audioMixerService.ErrorOccurred -= AudioMixerService_ErrorOccurred;
+            _audioMixerService.DevicesChanged -= AudioMixerService_DevicesChanged;
             _mediaSessionService.SessionsChanged -= MediaSessionService_SessionsChanged;
             _mediaSessionService.ErrorOccurred -= MediaSessionService_ErrorOccurred;
             foreach (AudioMediaSessionViewModel session in MediaSessions)
@@ -189,6 +220,24 @@ namespace SynToolkit.ViewModels
             UpdateSelectedMediaSessionState();
         }
 
+        partial void OnHotkeyEnabledChanged(bool value) => _hotkeyService.SetEnabled(value);
+
+        partial void OnSelectedOutputDeviceChanged(AudioDeviceOption? value) =>
+            ApplyDeviceSelection(value, AudioDeviceDirection.Render);
+
+        partial void OnSelectedInputDeviceChanged(AudioDeviceOption? value) =>
+            ApplyDeviceSelection(value, AudioDeviceDirection.Capture);
+
+        private void ApplyDeviceSelection(AudioDeviceOption? option, AudioDeviceDirection direction)
+        {
+            if (_suppressDeviceApply || option is null)
+            {
+                return;
+            }
+
+            _audioMixerService.SetDefaultDevice(option.Id, direction);
+        }
+
         public void DismissTips()
         {
             IsTipsOpen = false;
@@ -200,8 +249,8 @@ namespace SynToolkit.ViewModels
             _audioMixerService.SetSessionVolume(session.Name, value / 100f);
             session.IsSaved = true;
             session.StatusText = session.IsActive
-                ? "Running now. This level will be remembered."
-                : "Saved level. It will be applied next time this app plays audio.";
+                ? App.GetValueFromItemList("AudioMixerPage_StatusRunningSaved")
+                : App.GetValueFromItemList("AudioMixerPage_StatusSaved");
         }
 
         public void ForgetSession(AudioMixerSessionViewModel session)
@@ -209,8 +258,8 @@ namespace SynToolkit.ViewModels
             _audioMixerService.RemoveSavedSession(session.Name);
             session.IsSaved = false;
             session.StatusText = session.IsActive
-                ? "Running now."
-                : "Not currently running.";
+                ? App.GetValueFromItemList("AudioMixerPage_StatusRunning")
+                : App.GetValueFromItemList("AudioMixerPage_StatusNotRunning");
 
             if (!session.IsActive)
             {
@@ -262,6 +311,8 @@ namespace SynToolkit.ViewModels
             IsTipsOpen = !_audioMixerService.GetTipsDismissed();
 
             ApplyHotkeySnapshot(_hotkeyService.CurrentHotkey);
+            HotkeyEnabled = _hotkeyService.Enabled;
+            RefreshDevices();
             RebuildSessions(_audioMixerService.GetCurrentSessions());
             _ = RebuildMediaSessionsAsync(_mediaSessionService.GetSessions());
         }
@@ -291,6 +342,9 @@ namespace SynToolkit.ViewModels
                 HasError = !string.IsNullOrWhiteSpace(message);
             });
 
+        private void AudioMixerService_DevicesChanged() =>
+            _dispatcherQueue.TryEnqueue(RefreshDevices);
+
         private void MediaSessionService_SessionsChanged(IReadOnlyList<MediaSessionInfo> sessions) =>
             _dispatcherQueue.TryEnqueue(async () => await RebuildMediaSessionsAsync(sessions));
 
@@ -299,7 +353,7 @@ namespace SynToolkit.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(message))
                 {
-                    if (string.Equals(ErrorMessage, "Unable to read active media sessions.", StringComparison.Ordinal))
+                    if (string.Equals(ErrorMessage, App.GetValueFromItemList("AudioMixerPage_MediaErrorRefresh"), StringComparison.Ordinal))
                     {
                         ErrorMessage = string.Empty;
                         HasError = false;
@@ -312,15 +366,69 @@ namespace SynToolkit.ViewModels
                 HasError = true;
             });
 
+        private void RefreshDevices()
+        {
+            _suppressDeviceApply = true;
+            try
+            {
+                string? selectedOutputId = SelectedOutputDevice?.Id;
+                string? selectedInputId = SelectedInputDevice?.Id;
+
+                OutputDevices.Clear();
+                foreach (AudioDeviceInfo device in _audioMixerService.GetOutputDevices())
+                {
+                    OutputDevices.Add(ToOption(device));
+                }
+
+                InputDevices.Clear();
+                foreach (AudioDeviceInfo device in _audioMixerService.GetInputDevices())
+                {
+                    InputDevices.Add(ToOption(device));
+                }
+
+                SelectedOutputDevice = MatchOption(OutputDevices, selectedOutputId)
+                    ?? OutputDevices.FirstOrDefault(option => option.IsDefault)
+                    ?? OutputDevices.FirstOrDefault();
+                SelectedInputDevice = MatchOption(InputDevices, selectedInputId)
+                    ?? InputDevices.FirstOrDefault(option => option.IsDefault)
+                    ?? InputDevices.FirstOrDefault();
+            }
+            finally
+            {
+                _suppressDeviceApply = false;
+            }
+        }
+
+        private static AudioDeviceOption ToOption(AudioDeviceInfo device) =>
+            new(
+                device.Id,
+                device.IsDefault
+                    ? device.FriendlyName + App.GetValueFromItemList("AudioMixerPage_DefaultSuffix")
+                    : device.FriendlyName,
+                device.IsDefault);
+
+        private static AudioDeviceOption? MatchOption(IEnumerable<AudioDeviceOption> options, string? id) =>
+            string.IsNullOrWhiteSpace(id)
+                ? null
+                : options.FirstOrDefault(option => string.Equals(option.Id, id, StringComparison.Ordinal));
+
         private void RebuildSessions(IReadOnlyList<AudioSessionInfo> snapshot)
         {
             Dictionary<string, float> savedSessions = _audioMixerService.GetSavedSessions()
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
             Dictionary<string, AudioSessionInfo> activeByName = new(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, AudioSessionInfo> openByName = new(StringComparer.OrdinalIgnoreCase);
 
             foreach (AudioSessionInfo info in snapshot)
             {
-                activeByName.TryAdd(info.Name, info);
+                if (info.IsLive)
+                {
+                    activeByName.TryAdd(info.Name, info);
+                }
+                else
+                {
+                    openByName.TryAdd(info.Name, info);
+                }
             }
 
             Dictionary<string, AudioMixerSessionViewModel> existing = Sessions.ToDictionary(session => session.Name, StringComparer.OrdinalIgnoreCase);
@@ -336,13 +444,15 @@ namespace SynToolkit.ViewModels
                     isSaved,
                     info.IsSystemSounds,
                     (int)Math.Round(Math.Clamp(info.ScalarVolume, 0f, 1f) * 100f),
-                    isSaved ? "Running now. This level will be remembered." : "Running now.",
+                    isSaved
+                        ? App.GetValueFromItemList("AudioMixerPage_StatusRunningSaved")
+                        : App.GetValueFromItemList("AudioMixerPage_StatusRunning"),
                     info.ExecutablePath));
             }
 
             foreach ((string name, float scalar) in savedSessions)
             {
-                if (activeByName.ContainsKey(name))
+                if (activeByName.ContainsKey(name) || openByName.ContainsKey(name))
                 {
                     continue;
                 }
@@ -354,8 +464,31 @@ namespace SynToolkit.ViewModels
                     true,
                     string.Equals(name, SessionNaming.SystemSoundsName, StringComparison.Ordinal),
                     (int)Math.Round(Math.Clamp(scalar, 0f, 1f) * 100f),
-                    "Saved level. It will be applied next time this app plays audio.",
+                    App.GetValueFromItemList("AudioMixerPage_StatusSaved"),
                     null));
+            }
+
+            // Apps that are open but silent: no session exists yet, so surface them with the level
+            // that will be applied when they next play audio.
+            foreach ((string name, AudioSessionInfo info) in openByName)
+            {
+                if (activeByName.ContainsKey(name))
+                {
+                    continue;
+                }
+
+                bool isSaved = savedSessions.ContainsKey(name);
+                rows.Add(new AudioMixerSessionRow(
+                    name,
+                    SessionNaming.GetDisplayName(name),
+                    false,
+                    isSaved,
+                    false,
+                    (int)Math.Round(Math.Clamp(info.ScalarVolume, 0f, 1f) * 100f),
+                    isSaved
+                        ? App.GetValueFromItemList("AudioMixerPage_StatusSaved")
+                        : App.GetValueFromItemList("AudioMixerPage_StatusOpenNotPlaying"),
+                    info.ExecutablePath));
             }
 
             rows.Sort((left, right) =>
@@ -500,7 +633,7 @@ namespace SynToolkit.ViewModels
             AudioMixerHotkey hotkey = BuildHotkey();
             if (!_hotkeyService.TryUpdateHotkey(hotkey))
             {
-                ErrorMessage = "That hotkey could not be registered. It may already be in use by another app.";
+                ErrorMessage = App.GetValueFromItemList("AudioMixerPage_HotkeyFailed");
                 HasError = true;
                 return;
             }
@@ -509,6 +642,7 @@ namespace SynToolkit.ViewModels
             ErrorMessage = string.Empty;
             HotkeyDisplayText = AudioMixerHotkeyService.Describe(hotkey);
             OnPropertyChanged(nameof(TipsMessage));
+            OnPropertyChanged(nameof(HotkeySummary));
         }
 
         private void ApplyHotkeySnapshot(AudioMixerHotkey hotkey)
@@ -522,6 +656,7 @@ namespace SynToolkit.ViewModels
             HotkeyDisplayText = AudioMixerHotkeyService.Describe(hotkey);
             _suppressHotkeyApply = false;
             OnPropertyChanged(nameof(TipsMessage));
+            OnPropertyChanged(nameof(HotkeySummary));
         }
 
         private AudioMixerHotkey BuildHotkey()
@@ -570,4 +705,6 @@ namespace SynToolkit.ViewModels
                 _ => AudioMixerHotkey.Default.VirtualKey
             };
     }
+
+    public sealed record AudioDeviceOption(string Id, string DisplayName, bool IsDefault);
 }

@@ -15,6 +15,7 @@ namespace SynToolkit.Services.AudioMixer
         public event Action<IReadOnlyList<AudioSessionInfo>>? SessionsChanged;
         public event Action<float>? MasterVolumeChanged;
         public event Action<string>? ErrorOccurred;
+        public event Action? DevicesChanged;
 
         public WindowsAudioMixerService(AudioMixerSettingsStore settingsStore)
         {
@@ -42,6 +43,7 @@ namespace SynToolkit.Services.AudioMixer
                 _monitor.SessionsChanged += HandleSessionsChanged;
                 _monitor.MasterVolumeChanged += HandleMasterVolumeChanged;
                 _monitor.ErrorOccurred += message => ErrorOccurred?.Invoke(message);
+                _monitor.DevicesChanged += () => DevicesChanged?.Invoke();
                 _monitor.Start();
                 _started = true;
             }
@@ -58,6 +60,15 @@ namespace SynToolkit.Services.AudioMixer
         }
 
         public IReadOnlyDictionary<string, float> GetSavedSessions() => _settingsStore.GetSavedVolumes();
+
+        public IReadOnlyList<AudioDeviceInfo> GetOutputDevices() =>
+            _monitor?.GetOutputDevices() ?? [];
+
+        public IReadOnlyList<AudioDeviceInfo> GetInputDevices() =>
+            _monitor?.GetInputDevices() ?? [];
+
+        public void SetDefaultDevice(string deviceId, AudioDeviceDirection direction) =>
+            _monitor?.SetDefaultDevice(deviceId, direction);
 
         public float GetMasterVolume()
         {

@@ -17,7 +17,8 @@ namespace SynToolkit.Services.Games
     /// <summary>
     /// Fetches and caches game cover art under %LocalAppData%\SynToolkit\GameArtwork
     /// (sibling of the existing GameIcons cache). Steam uses the public CDN by appid;
-    /// Epic/GOG/Xbox/Manual use SteamGridDB when an API key is configured.
+    /// Epic falls back to the public, key-free store-content endpoint;
+    /// GOG/Xbox/Manual use SteamGridDB when an API key is configured.
     /// </summary>
     public sealed class GameArtworkService : IGameArtworkService
     {
@@ -26,6 +27,7 @@ namespace SynToolkit.Services.Games
         private const string SteamCdnPortrait = "https://cdn.akamai.steamstatic.com/steam/apps/{0}/library_600x900.jpg";
         private const string SteamCdnHeader = "https://cdn.akamai.steamstatic.com/steam/apps/{0}/header.jpg";
         private const string SteamGridDbBase = "https://www.steamgriddb.com/api/v2";
+        private const string EpicStoreContentBase = "https://store-content.ak.epicgames.com/api/en-US/content/products";
 
         private static readonly HttpClient Http = CreateHttpClient();
         private static readonly JsonSerializerOptions JsonOptions = new()
@@ -127,23 +129,32 @@ namespace SynToolkit.Services.Games
                 }
 
                 string? apiKey = GetConfiguredApiKey();
-                if (string.IsNullOrWhiteSpace(apiKey))
+                if (!string.IsNullOrWhiteSpace(apiKey))
+                {
+                    string? downloaded = await TryDownloadSteamGridDbAsync(
+                        entry.Name,
+                        apiKey,
+                        entry.Id,
+                        cancellationToken).ConfigureAwait(false);
+
+                    if (!string.IsNullOrWhiteSpace(downloaded) && IsUsableImage(downloaded))
+                    {
+                        entry.ArtworkPath = downloaded;
+                        entry.IsCustomArtwork = false;
+                        return true;
+                    }
+                }
+
+                string? epicArtwork = entry.Source == GameSource.Epic
+                    ? await TryDownloadEpicArtworkAsync(entry.Name, entry.Id, cancellationToken).ConfigureAwait(false)
+                    : null;
+
+                if (string.IsNullOrWhiteSpace(epicArtwork) || !IsUsableImage(epicArtwork))
                 {
                     return false;
                 }
 
-                string? downloaded = await TryDownloadSteamGridDbAsync(
-                    entry.Name,
-                    apiKey,
-                    entry.Id,
-                    cancellationToken).ConfigureAwait(false);
-
-                if (string.IsNullOrWhiteSpace(downloaded) || !IsUsableImage(downloaded))
-                {
-                    return false;
-                }
-
-                entry.ArtworkPath = downloaded;
+                entry.ArtworkPath = epicArtwork;
                 entry.IsCustomArtwork = false;
                 return true;
             }
@@ -315,6 +326,156 @@ namespace SynToolkit.Services.Games
             }
 
             return destination;
+        }
+
+        /// <summary>
+        /// Looks up cover art on Epic's public store-content endpoint using slug variants of the
+        /// display name. Returns the cached file path, or null when no artwork is available.
+        /// </summary>
+        private async Task<string?> TryDownloadEpicArtworkAsync(
+            string gameName,
+            string gameId,
+            CancellationToken cancellationToken)
+        {
+            foreach (string slug in EpicArtworkSlug.BuildCandidates(gameName))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                string? imageUrl = await TryFindEpicArtworkUrlAsync(slug, cancellationToken).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(imageUrl))
+                {
+                    continue;
+                }
+
+                string extension = imageUrl.Contains(".png", StringComparison.OrdinalIgnoreCase) ? ".png" : ".jpg";
+                string destination = GetCachePath(gameId, extension);
+                if (await TryDownloadUrlAsync(imageUrl, destination, cancellationToken).ConfigureAwait(false))
+                {
+                    return destination;
+                }
+            }
+
+            return null;
+        }
+
+        private async Task<string?> TryFindEpicArtworkUrlAsync(string slug, CancellationToken cancellationToken)
+        {
+            try
+            {
+                using HttpResponseMessage response = await Http
+                    .GetAsync($"{EpicStoreContentBase}/{slug}", cancellationToken)
+                    .ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                await using Stream stream = await response.Content
+                    .ReadAsStreamAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                using JsonDocument document = await JsonDocument
+                    .ParseAsync(stream, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+                var images = new List<string>();
+                CollectEpicImageUrls(document.RootElement, images);
+                return SelectEpicArtworkImage(images);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                App.logger.Debug(exception, $"Failed to read Epic store content for '{slug}'.");
+                return null;
+            }
+        }
+
+        private static void CollectEpicImageUrls(JsonElement element, List<string> output)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    foreach (JsonProperty property in element.EnumerateObject())
+                    {
+                        if (string.Equals(property.Name, "src", StringComparison.OrdinalIgnoreCase) &&
+                            property.Value.ValueKind == JsonValueKind.String)
+                        {
+                            string? value = property.Value.GetString();
+                            if (!string.IsNullOrWhiteSpace(value) && !output.Contains(value))
+                            {
+                                output.Add(value);
+                            }
+                        }
+                        else
+                        {
+                            CollectEpicImageUrls(property.Value, output);
+                        }
+                    }
+
+                    break;
+                case JsonValueKind.Array:
+                    foreach (JsonElement item in element.EnumerateArray())
+                    {
+                        if (item.ValueKind == JsonValueKind.String)
+                        {
+                            string? value = item.GetString();
+                            if (IsImageUrlCandidate(value) && !output.Contains(value!))
+                            {
+                                output.Add(value!);
+                            }
+                        }
+                        else
+                        {
+                            CollectEpicImageUrls(item, output);
+                        }
+                    }
+
+                    break;
+            }
+        }
+
+        private static bool IsImageUrlCandidate(string? value) =>
+            !string.IsNullOrWhiteSpace(value) &&
+            value.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
+            (value.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+             value.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+             value.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+             value.EndsWith(".webp", StringComparison.OrdinalIgnoreCase));
+
+        private static string? SelectEpicArtworkImage(List<string> images)
+        {
+            string[] preferredTokens = { "1200x1600", "600x900", "2560x1440" };
+
+            foreach (string token in preferredTokens)
+            {
+                string? match = images.FirstOrDefault(url =>
+                    url.Contains(token, StringComparison.OrdinalIgnoreCase) &&
+                    !IsSecondaryProductImage(url));
+                if (match is not null)
+                {
+                    return match;
+                }
+            }
+
+            foreach (string token in preferredTokens)
+            {
+                string? match = images.FirstOrDefault(url =>
+                    url.Contains(token, StringComparison.OrdinalIgnoreCase));
+                if (match is not null)
+                {
+                    return match;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsSecondaryProductImage(string url)
+        {
+            string[] secondaryTokens = { "bundle", "deluxe", "ultimate", "dlc", "addon", "add-on", "upgrade", "expansion" };
+            return secondaryTokens.Any(token => url.Contains(token, StringComparison.OrdinalIgnoreCase));
         }
 
         private static async Task<bool> TryDownloadUrlAsync(

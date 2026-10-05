@@ -31,6 +31,8 @@
     <Compile Include="..\SynToolkit\Services\NvidiaProfileInspector\NvidiaProfilePreviewService.cs" Link="Services\NvidiaProfileInspector\NvidiaProfilePreviewService.cs" />
     <Compile Include="..\SynToolkit\Services\RadeonSlimmer\RadeonSelectionModels.cs" Link="Services\RadeonSlimmer\RadeonSelectionModels.cs" />
     <Compile Include="..\SynToolkit\Services\SystemInformationService.cs" Link="Services\SystemInformationService.cs" />
+    <Compile Include="..\SynToolkit\Services\Games\EpicArtworkSlug.cs" Link="Services\Games\EpicArtworkSlug.cs" />
+    <Compile Include="..\SynToolkit\Services\NeedsAttentionIgnorePolicy.cs" Link="Services\NeedsAttentionIgnorePolicy.cs" />
     <Compile Include="..\SynToolkit\Utils\CommandPromptHelper.cs" Link="Utils\CommandPromptHelper.cs" />
   </ItemGroup>
 </Project>

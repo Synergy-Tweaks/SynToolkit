@@ -103,6 +103,28 @@ namespace SynToolkit.Services.AudioMixer
             }
         }
 
+        public bool GetHotkeyEnabled()
+        {
+            lock (_lock)
+            {
+                return _document.HotkeyEnabled;
+            }
+        }
+
+        public void SetHotkeyEnabled(bool enabled)
+        {
+            lock (_lock)
+            {
+                if (_document.HotkeyEnabled == enabled)
+                {
+                    return;
+                }
+
+                _document.HotkeyEnabled = enabled;
+                SaveUnlocked();
+            }
+        }
+
         public void SetHotkey(AudioMixerHotkey hotkey)
         {
             lock (_lock)
@@ -173,6 +195,8 @@ namespace SynToolkit.Services.AudioMixer
             public float DefaultVolumeScalar { get; set; } = 1f;
 
             public bool TipsDismissed { get; set; }
+
+            public bool HotkeyEnabled { get; set; } = true;
 
             public AudioMixerHotkeyDocument Hotkey { get; set; } = new();
 

@@ -11,6 +11,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
@@ -309,6 +310,30 @@ namespace SynToolkit
             NeedsAttentionBadgeBorder.Visibility = boundedCount > 0
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+            UpdateNeedsAttentionIcon(boundedCount > 0);
+        }
+
+        /// <summary>
+        /// The tab doubles as a status light: a yellow warning triangle while anything needs
+        /// reviewing, and a green checkmark once the list is clear.
+        /// </summary>
+        private void UpdateNeedsAttentionIcon(bool hasWarnings)
+        {
+            if (hasWarnings)
+            {
+                NeedsAttention.Icon = new FontIcon
+                {
+                    Glyph = "\uE7BA",
+                    Foreground = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(0xFF, 0xF4, 0xB4, 0x00))
+                };
+            }
+            else
+            {
+                NeedsAttention.Icon = new ImageIcon
+                {
+                    Source = ImageSourceCache.Get("ms-appx:///assets/Icons/AttentionCheckmark.png")
+                };
+            }
         }
 
         public void UpdateInstallerUpdateBadge(int count)

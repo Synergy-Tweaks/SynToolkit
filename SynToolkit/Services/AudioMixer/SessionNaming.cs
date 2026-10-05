@@ -56,11 +56,13 @@ namespace SynToolkit.Services.AudioMixer
                 }
             }
 
-            return "Unknown Session";
+            return App.GetValueFromItemList("AudioMixerPage_UnknownSession");
         }
 
         public static string GetDisplayName(string name) =>
-            string.Equals(name, SystemSoundsName, StringComparison.Ordinal) ? "System Sounds" : name;
+            string.Equals(name, SystemSoundsName, StringComparison.Ordinal)
+                ? App.GetValueFromItemList("AudioMixerPage_SystemSounds")
+                : name;
 
         private static T? TryGet<T>(Func<T> getter)
         {

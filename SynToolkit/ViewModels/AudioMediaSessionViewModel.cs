@@ -64,8 +64,8 @@ namespace SynToolkit.ViewModels
             !string.IsNullOrWhiteSpace(Title)
                 ? Title
                 : PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing
-                    ? "Playing"
-                    : "Ready";
+                    ? App.GetValueFromItemList("AudioMixerPage_Playing")
+                    : App.GetValueFromItemList("AudioMixerPage_Ready");
 
         partial void OnThumbnailSourceChanged(ImageSource? value) => OnPropertyChanged(nameof(HasThumbnail));
 
@@ -85,7 +85,9 @@ namespace SynToolkit.ViewModels
         public async Task UpdateFromInfoAsync(MediaSessionInfo info)
         {
             SourceAppName = info.SourceAppName;
-            Title = string.IsNullOrWhiteSpace(info.Title) ? "Unknown title" : info.Title;
+            Title = string.IsNullOrWhiteSpace(info.Title)
+                ? App.GetValueFromItemList("AudioMixerPage_UnknownTitle")
+                : info.Title;
             Subtitle = info.Subtitle;
             IsCurrent = info.IsCurrent;
             PlaybackStatus = info.PlaybackStatus;

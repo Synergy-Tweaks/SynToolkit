@@ -32,6 +32,8 @@ namespace SynToolkit.Services.AudioMixer
 
         public AudioMixerHotkey CurrentHotkey { get; private set; } = AudioMixerHotkey.Default;
 
+        public bool Enabled { get; private set; } = true;
+
         public void Initialize(Window window)
         {
             if (_disposed)
@@ -57,7 +59,31 @@ namespace SynToolkit.Services.AudioMixer
             }
 
             AudioMixerHotkey savedHotkey = _settingsStore.GetHotkey();
-            if (!TryApplyHotkey(savedHotkey))
+            CurrentHotkey = savedHotkey;
+            Enabled = _settingsStore.GetHotkeyEnabled();
+            if (Enabled && !TryApplyHotkey(savedHotkey))
+            {
+                TryApplyHotkey(AudioMixerHotkey.Default);
+            }
+        }
+
+        public void SetEnabled(bool enabled)
+        {
+            if (_disposed || Enabled == enabled)
+            {
+                return;
+            }
+
+            Enabled = enabled;
+            _settingsStore.SetHotkeyEnabled(enabled);
+
+            if (!enabled)
+            {
+                Unregister();
+                return;
+            }
+
+            if (_windowHandle != IntPtr.Zero && !TryApplyHotkey(CurrentHotkey))
             {
                 TryApplyHotkey(AudioMixerHotkey.Default);
             }
@@ -75,11 +101,12 @@ namespace SynToolkit.Services.AudioMixer
                 return false;
             }
 
-            if (!TryApplyHotkey(hotkey))
+            if (Enabled && !TryApplyHotkey(hotkey))
             {
                 return false;
             }
 
+            CurrentHotkey = hotkey;
             _settingsStore.SetHotkey(hotkey);
             return true;
         }

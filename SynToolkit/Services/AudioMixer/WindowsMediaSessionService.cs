@@ -99,7 +99,7 @@ namespace SynToolkit.Services.AudioMixer
             catch (Exception exception)
             {
                 App.logger.Debug(exception, "Media session toggle failed for {SessionId}.", sessionId);
-                ErrorOccurred?.Invoke("Unable to control the current media session.");
+                ErrorOccurred?.Invoke(App.GetValueFromItemList("AudioMixerPage_MediaErrorToggle"));
                 return false;
             }
         }
@@ -127,7 +127,7 @@ namespace SynToolkit.Services.AudioMixer
             catch (Exception exception)
             {
                 App.logger.Debug(exception, "Media session control failed for {SessionId}.", sessionId);
-                ErrorOccurred?.Invoke("Unable to control the selected media session.");
+                ErrorOccurred?.Invoke(App.GetValueFromItemList("AudioMixerPage_MediaErrorControl"));
                 return false;
             }
         }
@@ -223,7 +223,7 @@ namespace SynToolkit.Services.AudioMixer
             catch (Exception exception)
             {
                 App.logger.Warn(exception, "Unable to refresh media transport sessions.");
-                ErrorOccurred?.Invoke("Unable to read active media sessions.");
+                ErrorOccurred?.Invoke(App.GetValueFromItemList("AudioMixerPage_MediaErrorRefresh"));
             }
             finally
             {
@@ -339,7 +339,7 @@ namespace SynToolkit.Services.AudioMixer
                 return mediaProperties.AlbumTitle;
             }
 
-            return "Media session active";
+            return App.GetValueFromItemList("AudioMixerPage_MediaSessionActive");
         }
 
         private static async Task<ResolvedSourceApp> ResolveSourceAppAsync(string sourceAppId)
@@ -419,14 +419,14 @@ namespace SynToolkit.Services.AudioMixer
                 return ResolveFallbackSourceAppName(sourceAppId);
             }
 
-            return "Unknown player";
+            return App.GetValueFromItemList("AudioMixerPage_UnknownPlayer");
         }
 
         private static string ResolveFallbackSourceAppName(string sourceAppId)
         {
             if (string.IsNullOrWhiteSpace(sourceAppId))
             {
-                return "Unknown player";
+                return App.GetValueFromItemList("AudioMixerPage_UnknownPlayer");
             }
 
             string compactId = sourceAppId.Contains('!')
@@ -437,11 +437,11 @@ namespace SynToolkit.Services.AudioMixer
                 compactId.Contains('/'))
             {
                 string fileName = Path.GetFileNameWithoutExtension(compactId);
-                return string.IsNullOrWhiteSpace(fileName) ? "Unknown player" : fileName;
+                return string.IsNullOrWhiteSpace(fileName) ? App.GetValueFromItemList("AudioMixerPage_UnknownPlayer") : fileName;
             }
 
             return compactId.Split('.').FirstOrDefault(segment => !string.IsNullOrWhiteSpace(segment))
-                ?? "Unknown player";
+                ?? App.GetValueFromItemList("AudioMixerPage_UnknownPlayer");
         }
 
         [SupportedOSPlatform("windows10.0.19041.0")]

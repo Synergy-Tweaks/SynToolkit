@@ -26,12 +26,14 @@
             <TextBlock
                 Margin="0,24,36,8"
                 Style="{StaticResource TitleTextBlockStyle}"
-                Text="Audio Mixer" />
+                Text="Audio Mixer"
+                local:LocalizedText.TextKey="AudioMixerPage_Title" />
             <TextBlock
                 Margin="0,0,36,18"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="Adjust the master output level, choose a default level for new audio apps, and fine-tune individual app volumes while they are running."
-                TextWrapping="Wrap" />
+                TextWrapping="Wrap"
+                local:LocalizedText.TextKey="AudioMixerPage_Description" />
 
             <InfoBar
                 x:Name="TipsInfoBar"
@@ -41,7 +43,8 @@
                 Closed="TipsInfoBar_Closed"
                 Message="{Binding TipsMessage, Mode=OneWay}"
                 Severity="Informational"
-                Title="Quick tip" />
+                Title="Quick tip"
+                local:LocalizedText.TitleKey="AudioMixerPage_QuickTip" />
 
             <InfoBar
                 Margin="0,0,36,18"
@@ -49,9 +52,13 @@
                 IsOpen="{Binding HasError, Mode=OneWay}"
                 Message="{Binding ErrorMessage, Mode=OneWay}"
                 Severity="Error"
-                Title="Audio Mixer" />
+                Title="Audio Mixer"
+                local:LocalizedText.TitleKey="AudioMixerPage_Title" />
 
-            <TextBlock Style="{StaticResource SectionTitle}" Text="Now Playing" />
+            <TextBlock
+                Style="{StaticResource SectionTitle}"
+                Text="Now Playing"
+                local:LocalizedText.TextKey="AudioMixerPage_NowPlaying" />
 
             <Border
                 Margin="0,0,36,18"
@@ -137,6 +144,7 @@
 
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <Button
+                                    x:Name="PreviousTrackButton"
                                     Command="{Binding SkipPreviousCommand}"
                                     IsEnabled="{Binding CanSkipPrevious, Mode=OneWay}"
                                     ToolTipService.ToolTip="Previous track">
@@ -149,6 +157,7 @@
                                     <FontIcon FontSize="16" Glyph="{Binding PlayPauseGlyph, Mode=OneWay}" />
                                 </Button>
                                 <Button
+                                    x:Name="NextTrackButton"
                                     Command="{Binding SkipNextCommand}"
                                     IsEnabled="{Binding CanSkipNext, Mode=OneWay}"
                                     ToolTipService.ToolTip="Next track">
@@ -163,26 +172,47 @@
                         Spacing="4"
                         VerticalAlignment="Top"
                         Visibility="{Binding HasMediaSession, Converter={StaticResource BoolToVisibilityInverseConverter}}">
-                        <TextBlock FontSize="15" FontWeight="SemiBold" Text="Nothing playing right now" />
+                        <TextBlock
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Text="Nothing playing right now"
+                            local:LocalizedText.TextKey="AudioMixerPage_NothingPlayingTitle" />
                         <TextBlock
                             FontSize="13"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Text="Start playback in any media app and the controls will appear here automatically."
-                            TextWrapping="WrapWholeWords" />
+                            TextWrapping="WrapWholeWords"
+                            local:LocalizedText.TextKey="AudioMixerPage_NothingPlayingDescription" />
                     </StackPanel>
                 </StackPanel>
             </Border>
 
-            <TextBlock Style="{StaticResource SectionTitle}" Text="Controls" />
+            <TextBlock
+                Style="{StaticResource SectionTitle}"
+                Text="Controls"
+                local:LocalizedText.TextKey="AudioMixerPage_Controls" />
 
             <controls:SettingsCard
                 Margin="0,0,36,10"
                 Description="Changes the current default playback device volume immediately."
                 Header="Master volume"
-                Style="{StaticResource ConfigurationSettingsCardTemplate}">
-                <StackPanel Width="320" Spacing="6">
-                    <Slider Maximum="100" Minimum="0" Value="{Binding MasterVolume, Mode=TwoWay}" />
-                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding MasterVolumeText, Mode=OneWay}" />
+                Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                local:LocalizedText.HeaderKey="AudioMixerPage_MasterVolume"
+                local:LocalizedText.DescriptionKey="AudioMixerPage_MasterVolumeDescription">
+                <StackPanel
+                    Orientation="Horizontal"
+                    Spacing="12"
+                    VerticalAlignment="Center">
+                    <Slider
+                        Width="260"
+                        Maximum="100"
+                        Minimum="0"
+                        Value="{Binding MasterVolume, Mode=TwoWay}" />
+                    <TextBlock
+                        MinWidth="44"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{Binding MasterVolumeText, Mode=OneWay}" />
                 </StackPanel>
             </controls:SettingsCard>
 
@@ -190,53 +220,130 @@
                 Margin="0,0,36,10"
                 Description="Applied automatically to apps the first time they create an audio session."
                 Header="Default volume for new apps"
-                Style="{StaticResource ConfigurationSettingsCardTemplate}">
-                <StackPanel Width="320" Spacing="6">
-                    <Slider Maximum="100" Minimum="0" Value="{Binding DefaultVolume, Mode=TwoWay}" />
-                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding DefaultVolumeText, Mode=OneWay}" />
+                Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                local:LocalizedText.HeaderKey="AudioMixerPage_DefaultVolume"
+                local:LocalizedText.DescriptionKey="AudioMixerPage_DefaultVolumeDescription">
+                <StackPanel
+                    Orientation="Horizontal"
+                    Spacing="12"
+                    VerticalAlignment="Center">
+                    <Slider
+                        Width="260"
+                        Maximum="100"
+                        Minimum="0"
+                        Value="{Binding DefaultVolume, Mode=TwoWay}" />
+                    <TextBlock
+                        MinWidth="44"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{Binding DefaultVolumeText, Mode=OneWay}" />
                 </StackPanel>
+            </controls:SettingsCard>
+
+            <TextBlock
+                Style="{StaticResource SectionTitle}"
+                Text="Devices"
+                local:LocalizedText.TextKey="AudioMixerPage_Devices" />
+
+            <controls:SettingsCard
+                Margin="0,0,36,10"
+                Description="Plays audio through the selected device."
+                Header="Output device"
+                Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                local:LocalizedText.HeaderKey="AudioMixerPage_OutputDevice"
+                local:LocalizedText.DescriptionKey="AudioMixerPage_OutputDeviceDescription">
+                <controls:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE7F5;" />
+                </controls:SettingsCard.HeaderIcon>
+                <ComboBox
+                    Width="280"
+                    DisplayMemberPath="DisplayName"
+                    ItemsSource="{Binding OutputDevices}"
+                    SelectedItem="{Binding SelectedOutputDevice, Mode=TwoWay}" />
+            </controls:SettingsCard>
+
+            <controls:SettingsCard
+                Margin="0,0,36,10"
+                Description="Records audio from the selected device."
+                Header="Input device"
+                Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                local:LocalizedText.HeaderKey="AudioMixerPage_InputDevice"
+                local:LocalizedText.DescriptionKey="AudioMixerPage_InputDeviceDescription">
+                <controls:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE720;" />
+                </controls:SettingsCard.HeaderIcon>
+                <ComboBox
+                    Width="280"
+                    DisplayMemberPath="DisplayName"
+                    ItemsSource="{Binding InputDevices}"
+                    SelectedItem="{Binding SelectedInputDevice, Mode=TwoWay}" />
             </controls:SettingsCard>
 
             <controls:SettingsExpander
                 Margin="0,0,36,18"
-                Description="{Binding HotkeyDisplayText, Mode=OneWay}"
+                Description="{Binding HotkeySummary, Mode=OneWay}"
                 Header="Open Audio Mixer hotkey"
-                Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
+                Style="{StaticResource ConfigurationSettingsExpanderTemplate}"
+                local:LocalizedText.HeaderKey="AudioMixerPage_HotkeyHeader">
                 <controls:SettingsExpander.HeaderIcon>
                     <FontIcon Glyph="&#xE765;" />
                 </controls:SettingsExpander.HeaderIcon>
                 <controls:SettingsExpander.Items>
                     <controls:SettingsCard
-                        Description="Choose at least one modifier plus a key. The default is Ctrl + Shift + V."
-                        Header="Shortcut"
-                        Style="{StaticResource ConfigurationSettingsCardTemplate}">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <CheckBox Content="Ctrl" IsChecked="{Binding HotkeyCtrl, Mode=TwoWay}" />
-                            <CheckBox Content="Shift" IsChecked="{Binding HotkeyShift, Mode=TwoWay}" />
-                            <CheckBox Content="Alt" IsChecked="{Binding HotkeyAlt, Mode=TwoWay}" />
-                            <CheckBox Content="Win" IsChecked="{Binding HotkeyWin, Mode=TwoWay}" />
-                            <ComboBox
-                                Width="100"
-                                ItemsSource="{Binding HotkeyKeys}"
-                                SelectedItem="{Binding SelectedHotkeyKey, Mode=TwoWay}" />
-                        </StackPanel>
+                        Description="When off, the shortcut does not open the mixer."
+                        Header="Enable global hotkey"
+                        local:LocalizedText.HeaderKey="AudioMixerPage_HotkeyEnabled"
+                        local:LocalizedText.DescriptionKey="AudioMixerPage_HotkeyEnabledDescription">
+                        <ToggleSwitch IsOn="{Binding HotkeyEnabled, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard IsEnabled="{Binding IsHotkeyShortcutEnabled, Mode=OneWay}">
+                        <controls:SettingsCard.Header>
+                            <StackPanel Spacing="8">
+                                <StackPanel Spacing="2">
+                                    <TextBlock
+                                        FontWeight="SemiBold"
+                                        Text="Shortcut"
+                                        local:LocalizedText.TextKey="AudioMixerPage_Shortcut" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="Choose at least one modifier plus a key. The default is Ctrl + Shift + V."
+                                        TextWrapping="WrapWholeWords"
+                                        local:LocalizedText.TextKey="AudioMixerPage_ShortcutDescription" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <CheckBox Content="Ctrl" IsChecked="{Binding HotkeyCtrl, Mode=TwoWay}" />
+                                    <CheckBox Content="Shift" IsChecked="{Binding HotkeyShift, Mode=TwoWay}" />
+                                    <CheckBox Content="Alt" IsChecked="{Binding HotkeyAlt, Mode=TwoWay}" />
+                                    <CheckBox Content="Win" IsChecked="{Binding HotkeyWin, Mode=TwoWay}" />
+                                    <ComboBox
+                                        Width="84"
+                                        ItemsSource="{Binding HotkeyKeys}"
+                                        SelectedItem="{Binding SelectedHotkeyKey, Mode=TwoWay}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </controls:SettingsCard.Header>
                     </controls:SettingsCard>
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>
 
-            <TextBlock Style="{StaticResource SectionTitle}" Text="Apps" />
+            <TextBlock
+                Style="{StaticResource SectionTitle}"
+                Text="Apps"
+                local:LocalizedText.TextKey="AudioMixerPage_Apps" />
 
             <TextBlock
                 Margin="0,0,36,18"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="Move a slider to update the app instantly. Adjusted apps are remembered automatically and restored the next time they play audio."
-                TextWrapping="Wrap" />
+                TextWrapping="Wrap"
+                local:LocalizedText.TextKey="AudioMixerPage_AppsDescription" />
 
             <TextBlock
                 Margin="0,0,36,18"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="No active or remembered audio sessions yet. Start playback in an app, then return here."
-                Visibility="{Binding HasSessions, Converter={StaticResource BoolToVisibilityInverseConverter}}" />
+                Visibility="{Binding HasSessions, Converter={StaticResource BoolToVisibilityInverseConverter}}"
+                local:LocalizedText.TextKey="AudioMixerPage_NoSessions" />
 
             <ItemsControl ItemsSource="{Binding Sessions}">
                 <ItemsControl.ItemTemplate>
@@ -273,21 +380,25 @@
                                     </StackPanel>
                                 </StackPanel>
                             </controls:SettingsCard.Header>
-                            <StackPanel Width="320" Spacing="6" VerticalAlignment="Center">
-                                <Slider Maximum="100" Minimum="0" Value="{Binding Volume, Mode=TwoWay}" />
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding VolumeText}" />
-                                    <Button
-                                        Grid.Column="1"
-                                        Command="{Binding ForgetCommand}"
-                                        Content="Forget"
-                                        HorizontalAlignment="Right"
-                                        Visibility="{Binding IsSaved, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                </Grid>
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="12"
+                                VerticalAlignment="Center">
+                                <Slider
+                                    Width="240"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{Binding Volume, Mode=TwoWay}" />
+                                <TextBlock
+                                    MinWidth="44"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{Binding VolumeText}" />
+                                <Button
+                                    Command="{Binding ForgetCommand}"
+                                    Content="Forget"
+                                    Visibility="{Binding IsSaved, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    local:LocalizedText.ContentKey="AudioMixerPage_Forget" />
                             </StackPanel>
                         </controls:SettingsCard>
                     </DataTemplate>

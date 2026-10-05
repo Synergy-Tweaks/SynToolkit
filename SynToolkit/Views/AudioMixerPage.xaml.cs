@@ -17,8 +17,15 @@ namespace SynToolkit.Views
             InitializeComponent();
             _viewModel = App._host.Services.GetRequiredService<AudioMixerPageViewModel>();
             DataContext = _viewModel;
+            ApplyLocalizedTooltips();
             Loaded += AudioMixerPage_Loaded;
             Unloaded += AudioMixerPage_Unloaded;
+        }
+
+        private void ApplyLocalizedTooltips()
+        {
+            ToolTipService.SetToolTip(PreviousTrackButton, App.GetValueFromItemList("AudioMixerPage_PreviousTrack"));
+            ToolTipService.SetToolTip(NextTrackButton, App.GetValueFromItemList("AudioMixerPage_NextTrack"));
         }
 
         private async void AudioMixerPage_Loaded(object sender, RoutedEventArgs e)

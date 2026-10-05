@@ -34,15 +34,18 @@ internal sealed record NeedsAttentionItem(
     string ActionText,
     NeedsAttentionAction Action,
     string? ActionTarget = null,
-    string? IgnoreKey = null)
+    string? IgnoreKey = null,
+    string CheckId = "")
 {
-    public bool CanIgnore => !string.IsNullOrWhiteSpace(IgnoreKey);
+    public bool CanIgnore =>
+        !string.IsNullOrWhiteSpace(IgnoreKey) || !string.IsNullOrWhiteSpace(CheckId);
 }
 
 internal sealed record NeedsAttentionSnapshot(
     IReadOnlyList<NeedsAttentionItem> Items,
     DateTimeOffset CheckedAt,
-    bool IncludesOnlineChecks);
+    bool IncludesOnlineChecks,
+    int IgnoredCheckCount = 0);
 
 internal sealed record NeedsAttentionIgnoreRecord(
     DateTimeOffset IgnoredAtUtc,
@@ -60,7 +63,7 @@ internal sealed class NeedsAttentionService
     private const int ClockDifferenceThresholdMilliseconds = 3_000;
     private static readonly TimeSpan LocalCacheDuration = TimeSpan.FromMinutes(2);
     private static readonly TimeSpan OnlineCacheDuration = TimeSpan.FromMinutes(15);
-    private static readonly TimeSpan IgnoreDuration = TimeSpan.FromDays(90);
+    private const string CheckIgnoreKeyPrefix = "check:";
     private static readonly string IgnoreStatePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "SynToolkit",
@@ -100,7 +103,7 @@ internal sealed class NeedsAttentionService
         TimeSpan cacheDuration = includeOnlineChecks ? OnlineCacheDuration : LocalCacheDuration;
         if (!forceRefresh && cached is not null && DateTimeOffset.UtcNow - cached.CheckedAt < cacheDuration)
         {
-            return cached;
+            return WithIgnoredCheckCount(cached);
         }
 
         await _refreshGate.WaitAsync(cancellationToken);
@@ -109,23 +112,34 @@ internal sealed class NeedsAttentionService
             cached = includeOnlineChecks ? _onlineSnapshot : _localSnapshot;
             if (!forceRefresh && cached is not null && DateTimeOffset.UtcNow - cached.CheckedAt < cacheDuration)
             {
-                return cached;
+                return WithIgnoredCheckCount(cached);
             }
 
             List<NeedsAttentionItem> items = await Task.Run(CollectLocalItems, cancellationToken);
 
-            if (includeToolkitUpdate)
+            if (includeToolkitUpdate && !IsCheckIgnored(NeedsAttentionCheckIds.SynToolkitVersion))
             {
                 await AddToolkitUpdateItemAsync(items, forceRefresh, cancellationToken);
             }
 
             if (includeOnlineChecks)
             {
-                await AddClockItemAsync(items, cancellationToken);
-                await AddInstallerUpdateItemsAsync(items, cancellationToken);
+                if (!IsCheckIgnored(NeedsAttentionCheckIds.WindowsTime))
+                {
+                    await AddClockItemAsync(items, cancellationToken);
+                }
+
+                if (!IsCheckIgnored(NeedsAttentionCheckIds.Apps))
+                {
+                    await AddInstallerUpdateItemsAsync(items, cancellationToken);
+                }
             }
 
-            NeedsAttentionSnapshot snapshot = new(items, DateTimeOffset.UtcNow, includeOnlineChecks);
+            NeedsAttentionSnapshot snapshot = new(
+                items,
+                DateTimeOffset.UtcNow,
+                includeOnlineChecks,
+                GetIgnoredCheckCount());
             if (includeOnlineChecks)
             {
                 _onlineSnapshot = snapshot;
@@ -144,7 +158,10 @@ internal sealed class NeedsAttentionService
         }
     }
 
-    public async Task IgnoreItemAsync(NeedsAttentionItem item, CancellationToken cancellationToken = default)
+    public async Task IgnoreItemAsync(
+        NeedsAttentionItem item,
+        NeedsAttentionIgnoreDuration duration = NeedsAttentionIgnoreDuration.ThreeMonths,
+        CancellationToken cancellationToken = default)
     {
         if (!item.CanIgnore || string.IsNullOrWhiteSpace(item.IgnoreKey))
         {
@@ -153,23 +170,134 @@ internal sealed class NeedsAttentionService
 
         await EnsureIgnoreStateLoadedAsync(cancellationToken);
         DateTimeOffset now = DateTimeOffset.UtcNow;
+        DateTimeOffset expiresAt = NeedsAttentionIgnorePolicy.ResolveExpiry(duration, now);
         lock (_ignoredItemsLock)
         {
-            _ignoredItems[item.IgnoreKey] = new NeedsAttentionIgnoreRecord(now, now.Add(IgnoreDuration));
+            _ignoredItems[item.IgnoreKey] = new NeedsAttentionIgnoreRecord(now, expiresAt);
         }
 
         await PersistIgnoreStateAsync(cancellationToken);
         RemoveIgnoredItemFromCaches(item.IgnoreKey);
-        App.logger.Info("[NeedsAttention] Ignored warning {IgnoreKey} until {ExpiresAt}.", item.IgnoreKey, now.Add(IgnoreDuration));
+        App.logger.Info("[NeedsAttention] Ignored warning {IgnoreKey} until {ExpiresAt}.", item.IgnoreKey, expiresAt);
     }
+
+    public async Task IgnoreCheckAsync(string checkId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(checkId))
+        {
+            return;
+        }
+
+        await EnsureIgnoreStateLoadedAsync(cancellationToken);
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        DateTimeOffset expiresAt = NeedsAttentionIgnorePolicy.ResolveExpiry(NeedsAttentionIgnoreDuration.Forever, now);
+        lock (_ignoredItemsLock)
+        {
+            _ignoredItems[ToCheckIgnoreKey(checkId)] = new NeedsAttentionIgnoreRecord(now, expiresAt);
+        }
+
+        await PersistIgnoreStateAsync(cancellationToken);
+        RemoveIgnoredCheckFromCaches(checkId);
+        App.logger.Info("[NeedsAttention] Ignored check category {CheckId}.", checkId);
+    }
+
+    public async Task IgnoreAllChecksAsync(CancellationToken cancellationToken = default)
+    {
+        await EnsureIgnoreStateLoadedAsync(cancellationToken);
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        DateTimeOffset expiresAt = NeedsAttentionIgnorePolicy.ResolveExpiry(NeedsAttentionIgnoreDuration.Forever, now);
+        lock (_ignoredItemsLock)
+        {
+            foreach (string checkId in NeedsAttentionCheckIds.All)
+            {
+                _ignoredItems[ToCheckIgnoreKey(checkId)] = new NeedsAttentionIgnoreRecord(now, expiresAt);
+            }
+        }
+
+        await PersistIgnoreStateAsync(cancellationToken);
+        RemoveAllIgnoredChecksFromCaches();
+        App.logger.Info("[NeedsAttention] Ignored all Needs Attention check categories.");
+    }
+
+    public async Task RestoreIgnoredChecksAsync(CancellationToken cancellationToken = default)
+    {
+        await EnsureIgnoreStateLoadedAsync(cancellationToken);
+        lock (_ignoredItemsLock)
+        {
+            List<string> checkKeys = _ignoredItems.Keys
+                .Where(key => key.StartsWith(CheckIgnoreKeyPrefix, StringComparison.Ordinal))
+                .ToList();
+            foreach (string key in checkKeys)
+            {
+                _ignoredItems.Remove(key);
+            }
+        }
+
+        await PersistIgnoreStateAsync(cancellationToken);
+        // Drop caches so Refresh / next open re-runs the restored checks.
+        _localSnapshot = null;
+        _onlineSnapshot = null;
+        App.logger.Info("[NeedsAttention] Restored ignored Needs Attention check categories.");
+    }
+
+    public int GetIgnoredCheckCount()
+    {
+        lock (_ignoredItemsLock)
+        {
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            int count = 0;
+            List<string>? expiredKeys = null;
+            foreach ((string key, NeedsAttentionIgnoreRecord record) in _ignoredItems)
+            {
+                if (!key.StartsWith(CheckIgnoreKeyPrefix, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (record.ExpiresAtUtc > now)
+                {
+                    count++;
+                }
+                else
+                {
+                    expiredKeys ??= new List<string>();
+                    expiredKeys.Add(key);
+                }
+            }
+
+            if (expiredKeys is not null)
+            {
+                foreach (string key in expiredKeys)
+                {
+                    _ignoredItems.Remove(key);
+                }
+            }
+
+            return count;
+        }
+    }
+
+    public bool HasIgnoredChecks => GetIgnoredCheckCount() > 0;
 
     private List<NeedsAttentionItem> CollectLocalItems()
     {
         List<NeedsAttentionItem> items = new();
-        AddLowDiskSpaceItem(items);
-        AddRestorePointItem(items);
-        AddGraphicsDriverItems(items);
-        AddRequiredPlatformDeviceItems(items);
+        if (!IsCheckIgnored(NeedsAttentionCheckIds.LowDisk))
+        {
+            AddLowDiskSpaceItem(items);
+        }
+
+        if (!IsCheckIgnored(NeedsAttentionCheckIds.RestorePoint))
+        {
+            AddRestorePointItem(items);
+        }
+
+        if (!IsCheckIgnored(NeedsAttentionCheckIds.Drivers))
+        {
+            AddGraphicsDriverItems(items);
+            AddRequiredPlatformDeviceItems(items);
+        }
+
         return items;
     }
 
@@ -195,7 +323,8 @@ internal sealed class NeedsAttentionService
                     FormatText("NeedsAttention_LowDiskTitle", drive.Name.TrimEnd('\\')),
                     FormatText("NeedsAttention_LowDiskDescription", FormatGiB(drive.AvailableFreeSpace), drive.Name),
                     Text("NeedsAttention_OpenDiskCleanup"),
-                    NeedsAttentionAction.OpenDiskCleanup));
+                    NeedsAttentionAction.OpenDiskCleanup,
+                    CheckId: NeedsAttentionCheckIds.LowDisk));
             }
             catch (Exception exception)
             {
@@ -219,7 +348,8 @@ internal sealed class NeedsAttentionService
                 Text("NeedsAttention_NoRestoreTitle"),
                 Text("NeedsAttention_NoRestoreDescription"),
                 Text("NeedsAttention_CreateRestore"),
-                NeedsAttentionAction.CreateRestorePoint));
+                NeedsAttentionAction.CreateRestorePoint,
+                CheckId: NeedsAttentionCheckIds.RestorePoint));
         }
         catch (Exception exception)
         {
@@ -266,7 +396,8 @@ internal sealed class NeedsAttentionService
                                 : FormatText("NeedsAttention_GraphicsMissingUnknownDescription", name),
                             vendorIsKnown ? Text("NeedsAttention_GetGraphicsDriver") : Text("NeedsAttention_OpenDeviceManager"),
                             vendorIsKnown ? NeedsAttentionAction.OpenGraphicsDriverPage : NeedsAttentionAction.OpenDeviceManager,
-                            vendorIsKnown ? driverPage : null));
+                            vendorIsKnown ? driverPage : null,
+                            CheckId: NeedsAttentionCheckIds.Drivers));
                         continue;
                     }
 
@@ -276,7 +407,8 @@ internal sealed class NeedsAttentionService
                             Text("NeedsAttention_GraphicsErrorTitle"),
                             FormatText("NeedsAttention_DeviceProblemDescription", name, GetDeviceManagerProblemText(deviceManagerErrorCode.Value)),
                             Text("NeedsAttention_OpenDeviceManager"),
-                            NeedsAttentionAction.OpenDeviceManager));
+                            NeedsAttentionAction.OpenDeviceManager,
+                            CheckId: NeedsAttentionCheckIds.Drivers));
                     }
                 }
             }
@@ -320,7 +452,8 @@ internal sealed class NeedsAttentionService
                         FormatText("NeedsAttention_DeviceProblemDescription", name, GetDeviceManagerProblemText(deviceManagerErrorCode.Value)),
                         Text("NeedsAttention_OpenDeviceManager"),
                         NeedsAttentionAction.OpenDeviceManager,
-                        IgnoreKey: ignoreKey));
+                        IgnoreKey: ignoreKey,
+                        CheckId: NeedsAttentionCheckIds.Drivers));
                 }
             }
         }
@@ -350,7 +483,8 @@ internal sealed class NeedsAttentionService
                     status.AvailableVersion?.ToString() ?? string.Empty,
                     status.CurrentVersion?.ToString() ?? string.Empty),
                 Text("NeedsAttention_OpenUpdateSettings"),
-                NeedsAttentionAction.OpenSettings));
+                NeedsAttentionAction.OpenSettings,
+                CheckId: NeedsAttentionCheckIds.SynToolkitVersion));
         }
         catch (OperationCanceledException)
         {
@@ -376,7 +510,8 @@ internal sealed class NeedsAttentionService
                 Text("NeedsAttention_ClockTitle"),
                 FormatText("NeedsAttention_ClockDescription", Math.Abs(difference.Value.TotalSeconds).ToString("0.0", CultureInfo.CurrentCulture)),
                 Text("NeedsAttention_SyncClock"),
-                NeedsAttentionAction.SyncWindowsClock));
+                NeedsAttentionAction.SyncWindowsClock,
+                CheckId: NeedsAttentionCheckIds.WindowsTime));
         }
         catch (OperationCanceledException)
         {
@@ -435,7 +570,8 @@ internal sealed class NeedsAttentionService
                     Text("NeedsAttention_OpenInstaller"),
                     NeedsAttentionAction.OpenInstaller,
                     installer.Name,
-                    ignoreKey));
+                    ignoreKey,
+                    NeedsAttentionCheckIds.Apps));
             }
         }
         catch (OperationCanceledException)
@@ -618,13 +754,37 @@ internal sealed class NeedsAttentionService
         }
     }
 
+    private bool IsCheckIgnored(string checkId) =>
+        !string.IsNullOrWhiteSpace(checkId) && IsIgnored(ToCheckIgnoreKey(checkId));
+
+    private static string ToCheckIgnoreKey(string checkId) => CheckIgnoreKeyPrefix + checkId;
+
+    private NeedsAttentionSnapshot WithIgnoredCheckCount(NeedsAttentionSnapshot snapshot) =>
+        snapshot.IgnoredCheckCount == GetIgnoredCheckCount()
+            ? snapshot
+            : snapshot with { IgnoredCheckCount = GetIgnoredCheckCount() };
+
     private void RemoveIgnoredItemFromCaches(string ignoreKey)
     {
         _localSnapshot = RemoveIgnoredItem(_localSnapshot, ignoreKey);
         _onlineSnapshot = RemoveIgnoredItem(_onlineSnapshot, ignoreKey);
     }
 
-    private static NeedsAttentionSnapshot? RemoveIgnoredItem(NeedsAttentionSnapshot? snapshot, string ignoreKey)
+    private void RemoveIgnoredCheckFromCaches(string checkId)
+    {
+        _localSnapshot = RemoveIgnoredCheck(_localSnapshot, checkId);
+        _onlineSnapshot = RemoveIgnoredCheck(_onlineSnapshot, checkId);
+    }
+
+    private void RemoveAllIgnoredChecksFromCaches()
+    {
+        foreach (string checkId in NeedsAttentionCheckIds.All)
+        {
+            RemoveIgnoredCheckFromCaches(checkId);
+        }
+    }
+
+    private NeedsAttentionSnapshot? RemoveIgnoredItem(NeedsAttentionSnapshot? snapshot, string ignoreKey)
     {
         if (snapshot is null)
         {
@@ -635,8 +795,31 @@ internal sealed class NeedsAttentionService
             .Where(item => !string.Equals(item.IgnoreKey, ignoreKey, StringComparison.Ordinal))
             .ToList();
         return remainingItems.Count == snapshot.Items.Count
-            ? snapshot
-            : new NeedsAttentionSnapshot(remainingItems, snapshot.CheckedAt, snapshot.IncludesOnlineChecks);
+            ? WithIgnoredCheckCount(snapshot)
+            : new NeedsAttentionSnapshot(
+                remainingItems,
+                snapshot.CheckedAt,
+                snapshot.IncludesOnlineChecks,
+                GetIgnoredCheckCount());
+    }
+
+    private NeedsAttentionSnapshot? RemoveIgnoredCheck(NeedsAttentionSnapshot? snapshot, string checkId)
+    {
+        if (snapshot is null)
+        {
+            return null;
+        }
+
+        List<NeedsAttentionItem> remainingItems = snapshot.Items
+            .Where(item => !string.Equals(item.CheckId, checkId, StringComparison.Ordinal))
+            .ToList();
+        return remainingItems.Count == snapshot.Items.Count
+            ? WithIgnoredCheckCount(snapshot)
+            : new NeedsAttentionSnapshot(
+                remainingItems,
+                snapshot.CheckedAt,
+                snapshot.IncludesOnlineChecks,
+                GetIgnoredCheckCount());
     }
 
     private static string GetInstallerUpdateIgnoreKey(string packageIdentifier, string availableVersion) =>

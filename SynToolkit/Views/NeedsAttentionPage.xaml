@@ -44,14 +44,30 @@
                         Text="Checks for out-of-date/missing drivers and apps, old SynToolkit version, no restore point, and out-of-sync Windows time."
                         TextWrapping="Wrap"
                         local:LocalizedText.TextKey="NeedsAttention_Subtitle" />
+                    <TextBlock
+                        x:Name="IgnoredChecksText"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Opacity="0.85"
+                        Visibility="Collapsed" />
                 </StackPanel>
-                <Button
-                    x:Name="RefreshButton"
+                <StackPanel
                     Grid.Column="2"
                     VerticalAlignment="Center"
-                    Click="RefreshButton_Click"
-                    Content="Refresh"
-                    local:LocalizedText.ContentKey="NeedsAttention_Refresh" />
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <Button
+                        x:Name="IgnoreOrRestoreButton"
+                        Opacity="0.72"
+                        Click="IgnoreOrRestoreButton_Click"
+                        Content="Ignore All"
+                        local:LocalizedText.ContentKey="NeedsAttention_IgnoreAll" />
+                    <Button
+                        x:Name="RefreshButton"
+                        Click="RefreshButton_Click"
+                        Content="Refresh"
+                        local:LocalizedText.ContentKey="NeedsAttention_Refresh" />
+                </StackPanel>
             </Grid>
 
             <ProgressRing
@@ -115,10 +131,10 @@
                                     Tag="{Binding}" />
                                 <Button
                                     Click="IgnoreAttentionItemButton_Click"
-                                    Content="Ignore for 3 months"
+                                    Content="Ignore"
                                     Tag="{Binding}"
                                     Visibility="{Binding CanIgnore, Converter={StaticResource BoolToVisibilityConverter}}"
-                                    local:LocalizedText.ContentKey="NeedsAttention_IgnoreForThreeMonths" />
+                                    local:LocalizedText.ContentKey="NeedsAttention_Ignore" />
                             </StackPanel>
                         </controls:SettingsCard>
                     </DataTemplate>

@@ -55,6 +55,24 @@
       "activeSchemeNameHints": ["BLITZOSv1.1", "BlitzOS"]
     },
     {
+      "fileName": "CactusOS_AMD.pow",
+      "displayName": "CactusOS AMD",
+      "description": "Optimized for any single-CCD AMD processor.",
+      "activeSchemeNameHints": ["CactusOS AMD"]
+    },
+    {
+      "fileName": "CactusOS_Intel_ECores.pow",
+      "displayName": "CactusOS Intel (E-Cores)",
+      "description": "Optimized for Intel processors that have E-Cores enabled.",
+      "activeSchemeNameHints": ["CactusOS Intel (E-Cores)"]
+    },
+    {
+      "fileName": "CactusOS_Intel_No_ECores.pow",
+      "displayName": "CactusOS Intel (No E-Cores)",
+      "description": "Optimized for Intel processors that either have E-Cores disabled or lack E-Cores entirely.",
+      "activeSchemeNameHints": ["CactusOS Intel (No E-Cores)"]
+    },
+    {
       "fileName": "Calypto.pow",
       "displayName": "Calypto",
       "description": "Calypto's low-latency plan that disables power-saving features.",
@@ -119,6 +137,12 @@
       "displayName": "IIIEXOIII Low Latency",
       "description": "IIIEXOIII dedicated low-latency power plan.",
       "activeSchemeNameHints": ["IIIEXOIII LOW LATENCY"]
+    },
+    {
+      "fileName": "Intel Core Ultimate Performance Win11.pow",
+      "displayName": "Intel Core Ultimate Performance Win11",
+      "description": "Ultimate performance plan optimized for Intel Core 11/12/13th gen on higher-end PCs.",
+      "activeSchemeNameHints": ["Intel Core", "Ultimate Performance Win11", "Ultimate Performance Win11 v1"]
     },
     {
       "fileName": "IrisOS.pow",
