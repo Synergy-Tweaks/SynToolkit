@@ -58,7 +58,7 @@
 
             <DataTemplate x:Key="MultiOptionTemplate" x:DataType="viewmodel:MultiOptionConfigurationItemViewModel">
                 <controls:SettingsCard
-                    Description="{Binding ErrorMessage}"
+                    Description="{Binding DisplayDescription}"
                     Header="{Binding Name}"
                     HeaderIcon="{Binding Icon, Converter={StaticResource FontIconConverter}}"
                     Style="{StaticResource ConfigurationSettingsCardTemplate}">

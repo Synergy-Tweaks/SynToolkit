@@ -72,6 +72,13 @@ internal static class Program
         Run("Metadata cache handles concurrent readers and null values", MetadataCacheHandlesConcurrency);
         Run("Epic store artwork slugs are derived from display names", EpicArtworkSlugsAreDerivedFromNames);
         Run("Ignore durations resolve to future expiries", IgnoreDurationsResolveToFutureExpiries);
+        Run("Win32PrioritySeparation preset values are unique", Win32PrioritySeparationTests.PresetValuesAreUnique);
+        Run("Win32PrioritySeparation preset mapping", Win32PrioritySeparationTests.PresetMappingIncludesDefaultAndNoBoost);
+        Run("Win32PrioritySeparation dropdown order", Win32PrioritySeparationTests.DropdownOrderMatchesSpecification);
+        Run("Win32PrioritySeparation detection rules", Win32PrioritySeparationTests.DetectionRules);
+        Run("Win32PrioritySeparation custom validation", Win32PrioritySeparationTests.CustomValidation);
+        Run("Win32PrioritySeparation helper text uses allowed values", Win32PrioritySeparationTests.HelperTextUsesAllowedValues);
+        Run("Win32PrioritySeparation custom dialog prefill", Win32PrioritySeparationTests.PrefillUsesAllowedRawOrFallsBackTo36);
 
         Console.WriteLine(_failures == 0
             ? "All SynToolkit service tests passed."

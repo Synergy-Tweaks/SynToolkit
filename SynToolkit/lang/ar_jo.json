@@ -820,7 +820,7 @@
   "AmdCrashDefender": "Disable AMD Crash Defender",
   "AmdCrashDefenderDescription": "Disable AMD Crash Defender and related logging services (amdfendr/amdlog). Restart required.",
   "MemoryCompression": "Memory Compression",
-  "ProgramPriority": "Foreground Program Priority",
+  "ProgramPriority": "Foreground App Boost",
   "MmcssOptimization": "Multimedia System Responsiveness",
   "SvcHostSplit": "Service Host Splitting",
   "NtfsOptimization": "NTFS I/O Optimizations",

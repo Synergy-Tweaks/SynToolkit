@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using SynToolkit.Services.ConfigurationServices;
 using SynToolkit.Stores;
-using SynToolkit.Utils;
 using SynToolkit.ViewModels;
 
 namespace SynToolkit.Commands
@@ -25,11 +21,10 @@ namespace SynToolkit.Commands
             _configurationStore = configurationStore;
             _configurationService = configurationService;
         }
+
         /// <summary>
         /// Saves the state of a MultiOptionConfigurationService
         /// </summary>
-        /// <param name="parameter"></param>
-        /// <returns></returns>
         protected override async Task ExecuteAsync(object parameter)
         {
             int currentSetting = _configurationItemViewModel.Options.IndexOf(_configurationStore.CurrentSetting);
@@ -39,16 +34,41 @@ namespace SynToolkit.Commands
 
             try
             {
-                await Task.Run(() => _configurationService.ChangeStatus(currentSetting));
+                if (_configurationService is IPromptingMultiOptionConfigurationService prompting
+                    && prompting.IsCustomPromptOption(currentSetting))
+                {
+                    int? customValue = await prompting.PromptCustomValueAsync();
+                    if (customValue is null)
+                    {
+                        _configurationItemViewModel.ErrorMessage = string.Empty;
+                        _configurationItemViewModel.RefreshCurrentSetting();
+                        _configurationItemViewModel.ApplyStatusWarning(prompting.GetStatusWarning());
+                        return;
+                    }
+
+                    await Task.Run(() => prompting.ApplyRawValue(customValue.Value));
+                }
+                else
+                {
+                    await Task.Run(() => _configurationService.ChangeStatus(currentSetting));
+                }
 
                 _configurationItemViewModel.ErrorMessage = string.Empty;
                 _configurationItemViewModel.RefreshCurrentSetting();
+                if (_configurationService is IPromptingMultiOptionConfigurationService promptingAfter)
+                {
+                    _configurationItemViewModel.ApplyStatusWarning(promptingAfter.GetStatusWarning());
+                }
             }
             catch (Exception exception)
             {
                 App.logger.Error(exception, $"Unable to apply {_configurationItemViewModel.Key} option {currentSetting}.");
                 _configurationItemViewModel.ErrorMessage = exception.Message;
                 _configurationItemViewModel.RefreshCurrentSetting();
+                if (_configurationService is IPromptingMultiOptionConfigurationService promptingError)
+                {
+                    _configurationItemViewModel.ApplyStatusWarning(promptingError.GetStatusWarning());
+                }
             }
             finally
             {

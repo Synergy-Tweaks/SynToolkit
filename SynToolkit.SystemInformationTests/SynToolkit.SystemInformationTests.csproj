@@ -34,5 +34,6 @@
     <Compile Include="..\SynToolkit\Services\Games\EpicArtworkSlug.cs" Link="Services\Games\EpicArtworkSlug.cs" />
     <Compile Include="..\SynToolkit\Services\NeedsAttentionIgnorePolicy.cs" Link="Services\NeedsAttentionIgnorePolicy.cs" />
     <Compile Include="..\SynToolkit\Utils\CommandPromptHelper.cs" Link="Utils\CommandPromptHelper.cs" />
+    <Compile Include="..\SynToolkit\Services\Win32Priority\Win32PrioritySeparationValues.cs" Link="Services\Win32Priority\Win32PrioritySeparationValues.cs" />
   </ItemGroup>
 </Project>

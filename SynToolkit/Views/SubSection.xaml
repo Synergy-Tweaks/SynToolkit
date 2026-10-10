@@ -68,7 +68,11 @@
                 <ItemsControl x:Name="MultiOptionItemsControl">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <controls:SettingsCard Header="{Binding Name}" Style="{StaticResource ConfigurationSettingsCardTemplate}" HeaderIcon="{Binding Icon, Converter={StaticResource FontIconConverter}}">
+                            <controls:SettingsCard
+                                Description="{Binding DisplayDescription}"
+                                Header="{Binding Name}"
+                                HeaderIcon="{Binding Icon, Converter={StaticResource FontIconConverter}}"
+                                Style="{StaticResource ConfigurationSettingsCardTemplate}">
                                 <controls:SettingsCard.ContextFlyout>
                                     <MenuFlyout>
                                         <MenuFlyoutItem
@@ -79,7 +83,7 @@
                                 </controls:SettingsCard.ContextFlyout>
                                 <ComboBox
                                     x:Name="ConfigSwitch"
-                                    Width="200"
+                                    Width="220"
                                     IsEnabled="{Binding CanInteract}"
                                     ItemsSource="{Binding Options}"
                                     SelectedItem="{Binding CurrentSetting, Mode=TwoWay}" />

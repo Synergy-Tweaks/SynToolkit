@@ -25,6 +25,24 @@ namespace SynToolkit.ViewModels
         public List<string> Options => _configurationStore.Options; 
         public string Key => Configuration.Key;
 
+        public string Description =>
+            App.GetValueFromItemList(Key, desc: true);
+
+        public string DisplayDescription
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_errorMessage))
+                {
+                    return Description;
+                }
+
+                return string.IsNullOrWhiteSpace(Description)
+                    ? _errorMessage
+                    : $"{Description}{Environment.NewLine}{_errorMessage}";
+            }
+        }
+
         public Color Color { get; set; }
 
 
@@ -50,7 +68,13 @@ namespace SynToolkit.ViewModels
         public string ErrorMessage
         {
             get => _errorMessage;
-            set => SetProperty(ref _errorMessage, value);
+            set
+            {
+                if (SetProperty(ref _errorMessage, value))
+                {
+                    OnPropertyChanged(nameof(DisplayDescription));
+                }
+            }
         }
 
         private bool _isBusy;
@@ -96,6 +120,10 @@ namespace SynToolkit.ViewModels
             _configurationService = configurationService;
 
             _currentSetting = FetchCurrentSetting();
+            if (_configurationService is IPromptingMultiOptionConfigurationService prompting)
+            {
+                ApplyStatusWarning(prompting.GetStatusWarning());
+            }
 
             MultiOptionSaveConfigurationCommand = new MultiOptionSaveConfigurationCommand(this, configurationStore, configurationService);
         }
@@ -134,6 +162,15 @@ namespace SynToolkit.ViewModels
             string detectedSetting = FetchCurrentSetting();
             SetProperty(ref _currentSetting, detectedSetting, nameof(CurrentSetting));
             _configurationStore.CurrentSetting = detectedSetting;
+            if (_configurationService is IPromptingMultiOptionConfigurationService prompting)
+            {
+                ApplyStatusWarning(prompting.GetStatusWarning());
+            }
+        }
+
+        public void ApplyStatusWarning(string warning)
+        {
+            ErrorMessage = string.IsNullOrWhiteSpace(warning) ? string.Empty : warning;
         }
     }
 }

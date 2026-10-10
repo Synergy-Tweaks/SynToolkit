@@ -251,6 +251,7 @@ namespace SynToolkit.HostBuilder
                 ["ShortcutIcon"] = new(App.GetValueFromItemList("ShortcutIcon"), "ShortcutIcon", ConfigurationType.Interface, "ms-appx:///assets/Icons/Windows.png"),
                 ["Mitigations"] = new(App.GetValueFromItemList("Mitigations"), "Mitigations", ConfigurationType.MitigationsSubMenu, "ms-appx:///assets/Icons/Security.png"),
                 ["SafeMode"] = new(App.GetValueFromItemList("SafeMode"), "SafeMode", ConfigurationType.Troubleshooting, "ms-appx:///assets/Icons/SafeMode.png"),
+                ["ProgramPriority"] = new(App.GetValueFromItemList("ProgramPriority"), "ProgramPriority", ConfigurationType.TweaksPerformanceSubMenu, "ms-appx:///assets/Icons/Cpu.png"),
             };
 
             host.ConfigureServices((_, services) =>
@@ -312,6 +313,7 @@ namespace SynToolkit.HostBuilder
                 ["NvidiaDispayContainer"] = new(App.GetValueFromItemList("NvidiaDispayContainer"), "NvidiaDispayContainer", ConfigurationType.NvidiaDisplayContainerSubMenu),
                 ["AddNvidiaDisplayContainerContextMenu"] = new(App.GetValueFromItemList("AddNvidiaDisplayContainerContextMenu"), "AddNvidiaDisplayContainerContextMenu", ConfigurationType.NvidiaDisplayContainerSubMenu),
                 ["CpuIdleContextMenu"] = new(App.GetValueFromItemList("CpuIdleContextMenu"), "CpuIdleContextMenu", ConfigurationType.ContextMenuSubMenu),
+                ["PowerPlanShell"] = new(App.GetValueFromItemList("PowerPlanShell"), "PowerPlanShell", ConfigurationType.ContextMenuSubMenu),
                 ["LockScreen"] = new(App.GetValueFromItemList("LockScreen"), "LockScreen", ConfigurationType.Interface),
                 ["ShortcutText"] = new(App.GetValueFromItemList("ShortcutText"), "ShortcutText", ConfigurationType.Interface),
                 ["BootLogo"] = new(App.GetValueFromItemList("BootLogo"), "BootLogo", ConfigurationType.BootConfigAppearance),
@@ -357,7 +359,6 @@ namespace SynToolkit.HostBuilder
                 ["ToggleWindowsUpdates"] = new(App.GetValueFromItemList("ToggleWindowsUpdates"), "ToggleWindowsUpdates", ConfigurationType.WindowsUpdate),
                 ["MemoryCompression"] = new(App.GetValueFromItemList("MemoryCompression"), "MemoryCompression", ConfigurationType.TweaksPerformanceSubMenu),
                 ["SuperFetch"] = new(App.GetValueFromItemList("SuperFetch"), "SuperFetch", ConfigurationType.TweaksPerformanceSubMenu),
-                ["ProgramPriority"] = new(App.GetValueFromItemList("ProgramPriority"), "ProgramPriority", ConfigurationType.TweaksPerformanceSubMenu),
                 ["MmcssOptimization"] = new(App.GetValueFromItemList("MmcssOptimization"), "MmcssOptimization", ConfigurationType.TweaksPerformanceSubMenu),
                 ["SvcHostSplit"] = new(App.GetValueFromItemList("SvcHostSplit"), "SvcHostSplit", ConfigurationType.TweaksPerformanceSubMenu),
                 ["NtfsOptimization"] = new(App.GetValueFromItemList("NtfsOptimization"), "NtfsOptimization", ConfigurationType.TweaksPerformanceSubMenu),

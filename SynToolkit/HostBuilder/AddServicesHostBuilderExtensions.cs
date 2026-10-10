@@ -66,6 +66,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationService, LanmanWorkstationConfigurationService>("LanmanWorkstation");
                 services.AddKeyedTransient<IConfigurationService, SearchIndexingConfigurationService>("SearchIndexing");
                 services.AddKeyedTransient<IConfigurationService, CpuIdleContextMenuConfigurationService>("CpuIdleContextMenu");
+                services.AddKeyedTransient<IConfigurationService, PowerPlanShellConfigurationService>("PowerPlanShell");
                 services.AddKeyedTransient<IConfigurationService, LockScreenConfigurationService>("LockScreen");
                 services.AddKeyedTransient<IConfigurationService, RunWithPriorityConfigurationService>("RunWithPriority");
                 services.AddKeyedTransient<IConfigurationService, ShortcutTextConfigurationService>("ShortcutText");
@@ -116,7 +117,6 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationService, ToggleWindowsUpdateConfigurationService>("ToggleWindowsUpdates");
                 services.AddKeyedTransient<IConfigurationService, MemoryCompressionConfigurationService>("MemoryCompression");
                 services.AddKeyedTransient<IConfigurationService, SuperFetchConfigurationService>("SuperFetch");
-                services.AddKeyedTransient<IConfigurationService, ProgramPriorityConfigurationService>("ProgramPriority");
                 services.AddKeyedTransient<IConfigurationService, MmcssOptimizationConfigurationService>("MmcssOptimization");
                 services.AddKeyedTransient<IConfigurationService, SvcHostSplitConfigurationService>("SvcHostSplit");
                 services.AddKeyedTransient<IConfigurationService, NtfsOptimizationConfigurationService>("NtfsOptimization");
@@ -153,6 +153,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, ShortcutIconConfigurationService>("ShortcutIcon");
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, MitigationsConfigurationService>("Mitigations");
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, SafeModeConfigurationService>("SafeMode");
+                services.AddKeyedTransient<IMultiOptionConfigurationServices, ForegroundAppBoostConfigurationService>("ProgramPriority");
             });
             App.logger.Info($"[SERVICES] Added services to host");
             return host;

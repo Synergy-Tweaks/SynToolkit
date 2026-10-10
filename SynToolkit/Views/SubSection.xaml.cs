@@ -153,9 +153,28 @@ namespace SynToolkit.Views
             }
         }
 
+        private void RefreshVisibleConfigurationStates()
+        {
+            if (_viewModel is null)
+            {
+                return;
+            }
+
+            foreach (ConfigurationItemViewModel item in _viewModel.ConfigurationItems)
+            {
+                item.RefreshCurrentSetting();
+            }
+
+            foreach (MultiOptionConfigurationItemViewModel item in _viewModel.MultiOptionConfigurationItems)
+            {
+                item.RefreshCurrentSetting();
+            }
+        }
+
         private async void ConfigPage_Loaded(object sender, RoutedEventArgs e)
         {
             App.ConfigurationActionSucceeded += ConfigurationActionSucceeded;
+            RefreshVisibleConfigurationStates();
 
             if (_lifetimeCancellation.IsCancellationRequested)
             {
