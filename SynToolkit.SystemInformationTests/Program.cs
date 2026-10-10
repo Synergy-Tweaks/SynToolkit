@@ -79,6 +79,16 @@ internal static class Program
         Run("Win32PrioritySeparation custom validation", Win32PrioritySeparationTests.CustomValidation);
         Run("Win32PrioritySeparation helper text uses allowed values", Win32PrioritySeparationTests.HelperTextUsesAllowedValues);
         Run("Win32PrioritySeparation custom dialog prefill", Win32PrioritySeparationTests.PrefillUsesAllowedRawOrFallsBackTo36);
+        Run("SystemResponsiveness preset values are unique", SystemResponsivenessTests.PresetValuesAreUnique);
+        Run("SystemResponsiveness preset mapping and hex", SystemResponsivenessTests.PresetMappingAndHex);
+        Run("SystemResponsiveness dropdown order", SystemResponsivenessTests.DropdownHasExactlyThreeItemsInOrder);
+        Run("SystemResponsiveness detection missing and presets", SystemResponsivenessTests.DetectionMissingAndPresets);
+        Run("SystemResponsiveness detection unsupported numbers", SystemResponsivenessTests.DetectionUnsupportedNumbers);
+        Run("SystemResponsiveness signed -1 normalization", SystemResponsivenessTests.DetectionSignedMinusOneNormalizes);
+        Run("SystemResponsiveness wrong registry types", SystemResponsivenessTests.DetectionWrongTypesDoNotThrow);
+        Run("SystemResponsiveness access denied is error", SystemResponsivenessTests.DetectionAccessDeniedIsErrorNotDefault);
+        Run("SystemResponsiveness detection is fresh each call", SystemResponsivenessTests.DetectionAlwaysUsesFreshInput);
+        Run("SystemResponsiveness uint conversion", SystemResponsivenessTests.UIntConversionHandlesSignedNegativeOne);
 
         Console.WriteLine(_failures == 0
             ? "All SynToolkit service tests passed."

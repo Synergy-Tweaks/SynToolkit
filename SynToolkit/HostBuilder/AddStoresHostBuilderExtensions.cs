@@ -83,7 +83,6 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<ConfigurationStore>("VbsState");
                 services.AddKeyedSingleton<ConfigurationStore>("MemoryCompression");
                 services.AddKeyedSingleton<ConfigurationStore>("SuperFetch");
-                services.AddKeyedSingleton<ConfigurationStore>("MmcssOptimization");
                 services.AddKeyedSingleton<ConfigurationStore>("SvcHostSplit");
                 services.AddKeyedSingleton<ConfigurationStore>("NtfsOptimization");
                 services.AddKeyedSingleton<ConfigurationStore>("DynamicTick");
@@ -120,6 +119,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<MultiOptionConfigurationStore>("Mitigations");
                 services.AddKeyedSingleton<MultiOptionConfigurationStore>("SafeMode");
                 services.AddKeyedSingleton<MultiOptionConfigurationStore>("ProgramPriority");
+                services.AddKeyedSingleton<MultiOptionConfigurationStore>("MmcssOptimization");
             });
             App.logger.Info($"[STORE] Added stores to host");
             return host;

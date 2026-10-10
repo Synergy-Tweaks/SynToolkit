@@ -117,7 +117,6 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationService, ToggleWindowsUpdateConfigurationService>("ToggleWindowsUpdates");
                 services.AddKeyedTransient<IConfigurationService, MemoryCompressionConfigurationService>("MemoryCompression");
                 services.AddKeyedTransient<IConfigurationService, SuperFetchConfigurationService>("SuperFetch");
-                services.AddKeyedTransient<IConfigurationService, MmcssOptimizationConfigurationService>("MmcssOptimization");
                 services.AddKeyedTransient<IConfigurationService, SvcHostSplitConfigurationService>("SvcHostSplit");
                 services.AddKeyedTransient<IConfigurationService, NtfsOptimizationConfigurationService>("NtfsOptimization");
                 services.AddKeyedTransient<IConfigurationService, DynamicTickConfigurationService>("DynamicTick");
@@ -154,6 +153,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, MitigationsConfigurationService>("Mitigations");
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, SafeModeConfigurationService>("SafeMode");
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, ForegroundAppBoostConfigurationService>("ProgramPriority");
+                services.AddKeyedTransient<IMultiOptionConfigurationServices, MmcssOptimizationConfigurationService>("MmcssOptimization");
             });
             App.logger.Info($"[SERVICES] Added services to host");
             return host;

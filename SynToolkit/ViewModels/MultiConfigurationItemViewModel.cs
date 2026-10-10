@@ -120,9 +120,9 @@ namespace SynToolkit.ViewModels
             _configurationService = configurationService;
 
             _currentSetting = FetchCurrentSetting();
-            if (_configurationService is IPromptingMultiOptionConfigurationService prompting)
+            if (_configurationService is IWarnedMultiOptionConfigurationService warned)
             {
-                ApplyStatusWarning(prompting.GetStatusWarning());
+                ApplyStatusWarning(warned.GetStatusWarning());
             }
 
             MultiOptionSaveConfigurationCommand = new MultiOptionSaveConfigurationCommand(this, configurationStore, configurationService);
@@ -162,9 +162,9 @@ namespace SynToolkit.ViewModels
             string detectedSetting = FetchCurrentSetting();
             SetProperty(ref _currentSetting, detectedSetting, nameof(CurrentSetting));
             _configurationStore.CurrentSetting = detectedSetting;
-            if (_configurationService is IPromptingMultiOptionConfigurationService prompting)
+            if (_configurationService is IWarnedMultiOptionConfigurationService warned)
             {
-                ApplyStatusWarning(prompting.GetStatusWarning());
+                ApplyStatusWarning(warned.GetStatusWarning());
             }
         }
 

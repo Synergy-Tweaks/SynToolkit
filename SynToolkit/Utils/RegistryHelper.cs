@@ -1,6 +1,7 @@
 using Microsoft.Win32;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 
 namespace SynToolkit.Utils
@@ -15,16 +16,63 @@ namespace SynToolkit.Utils
 
         public static bool TryReadValue(string keyPath, string valueName, out object value)
         {
+            return TryReadValueWithKind(keyPath, valueName, out value, out _);
+        }
+
+        /// <summary>
+        /// Reads a registry value and its kind using the same 64-bit view as writes.
+        /// Returns false only for unexpected failures (e.g. access denied), not for missing keys/values.
+        /// </summary>
+        public static bool TryReadValueWithKind(
+            string keyPath,
+            string valueName,
+            out object value,
+            out RegistryValueKind? valueKind)
+        {
+            value = null;
+            valueKind = null;
             try
             {
                 using RegistryKey key = OpenKey(keyPath);
-                value = key?.GetValue(valueName);
+                if (key is null)
+                {
+                    return true;
+                }
+
+                object raw = key.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+                if (raw is null)
+                {
+                    // Distinguish missing value from empty default: GetValueKind throws if absent.
+                    try
+                    {
+                        _ = key.GetValueKind(valueName);
+                    }
+                    catch (IOException)
+                    {
+                        return true;
+                    }
+
+                    value = null;
+                    return true;
+                }
+
+                value = raw;
+                try
+                {
+                    valueKind = key.GetValueKind(valueName);
+                }
+                catch (IOException)
+                {
+                    valueKind = null;
+                }
+
                 return true;
             }
             catch (Exception exception)
             {
                 App.logger.Warn(exception, $"[REGHELPER] Unable to read registry value: {keyPath}\\{valueName}");
                 value = null;
+                valueKind = null;
                 return false;
             }
         }

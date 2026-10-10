@@ -5,9 +5,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- This zero-package test runner has nothing for NuGet to audit. -->
     <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\SynToolkit\Utils\BoundedCache.cs" Link="Utils\BoundedCache.cs" />
@@ -35,5 +38,6 @@
     <Compile Include="..\SynToolkit\Services\NeedsAttentionIgnorePolicy.cs" Link="Services\NeedsAttentionIgnorePolicy.cs" />
     <Compile Include="..\SynToolkit\Utils\CommandPromptHelper.cs" Link="Utils\CommandPromptHelper.cs" />
     <Compile Include="..\SynToolkit\Services\Win32Priority\Win32PrioritySeparationValues.cs" Link="Services\Win32Priority\Win32PrioritySeparationValues.cs" />
+    <Compile Include="..\SynToolkit\Services\Mmcss\SystemResponsivenessValues.cs" Link="Services\Mmcss\SystemResponsivenessValues.cs" />
   </ItemGroup>
 </Project>

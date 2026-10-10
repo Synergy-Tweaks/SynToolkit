@@ -55,9 +55,9 @@ namespace SynToolkit.Commands
 
                 _configurationItemViewModel.ErrorMessage = string.Empty;
                 _configurationItemViewModel.RefreshCurrentSetting();
-                if (_configurationService is IPromptingMultiOptionConfigurationService promptingAfter)
+                if (_configurationService is IWarnedMultiOptionConfigurationService warnedAfter)
                 {
-                    _configurationItemViewModel.ApplyStatusWarning(promptingAfter.GetStatusWarning());
+                    _configurationItemViewModel.ApplyStatusWarning(warnedAfter.GetStatusWarning());
                 }
             }
             catch (Exception exception)
@@ -65,9 +65,9 @@ namespace SynToolkit.Commands
                 App.logger.Error(exception, $"Unable to apply {_configurationItemViewModel.Key} option {currentSetting}.");
                 _configurationItemViewModel.ErrorMessage = exception.Message;
                 _configurationItemViewModel.RefreshCurrentSetting();
-                if (_configurationService is IPromptingMultiOptionConfigurationService promptingError)
+                if (_configurationService is IWarnedMultiOptionConfigurationService warnedError)
                 {
-                    _configurationItemViewModel.ApplyStatusWarning(promptingError.GetStatusWarning());
+                    _configurationItemViewModel.ApplyStatusWarning(warnedError.GetStatusWarning());
                 }
             }
             finally

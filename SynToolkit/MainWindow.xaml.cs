@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -57,6 +58,7 @@ namespace SynToolkit
 
             AppWindow.TitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
             ExtendsContentIntoTitleBar = true;
+            ApplyWindowIcon();
 
             LoadText();
             LoadExperiments();
@@ -772,6 +774,15 @@ namespace SynToolkit
         /// <summary>
         /// Sets the window position and size
         /// </summary>
+        private void ApplyWindowIcon()
+        {
+            string iconPath = Path.Combine(AppContext.BaseDirectory, "assets", "logo", "SynToolkit.ico");
+            if (File.Exists(iconPath))
+            {
+                AppWindow.SetIcon(iconPath);
+            }
+        }
+
         private void SetWindowPosSize()
         {
             int screenWidth = GetSystemMetrics(SM_CXSCREEN);

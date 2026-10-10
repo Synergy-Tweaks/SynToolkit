@@ -5,7 +5,7 @@
 #define MyAppPublisher "Kwanteks"
 #define MyAppURL "https://github.com/kwanteks/synergyos"
 #define MyAppExeName "SynToolkit.exe"
-#define AppChannel "Beta"
+#define AppChannel "Stable"
 
 [Setup]
 ; AppId is the stable GUID used by Inno Setup for upgrade detection.

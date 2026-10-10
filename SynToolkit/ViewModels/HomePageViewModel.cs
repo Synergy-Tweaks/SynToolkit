@@ -149,6 +149,27 @@ namespace SynToolkit.ViewModels
                     }
                 }
             }
+
+            // Legacy profiles stored MMCSS as a boolean toggle in ConfigurationServices.
+            // Map ON → Optimized, OFF → Default when MultiConfig has no MMCSS entry.
+            bool mmcssInMultiConfig = selectedProfile.MultiOptionConfigServices
+                .Any(pair => string.Equals(pair.Key, "MmcssOptimization", StringComparison.Ordinal));
+            if (!mmcssInMultiConfig)
+            {
+                MultiOptionConfigurationItemViewModel? mmcssVm = multiConfigurationItemVMs
+                    .FirstOrDefault(vm => string.Equals(vm.Key, "MmcssOptimization", StringComparison.Ordinal));
+                if (mmcssVm is not null)
+                {
+                    bool wasEnabled = selectedProfile.ConfigurationServices
+                        .Contains("MmcssOptimization", StringComparer.Ordinal);
+                    string migrated = wasEnabled ? "Optimized" : "Default";
+                    if (!string.Equals(mmcssVm.CurrentSetting, migrated, StringComparison.Ordinal))
+                    {
+                        mmcssVm.CurrentSetting = migrated;
+                    }
+                }
+            }
+
             App.ContentDialogCaller("restart");
         }
     }

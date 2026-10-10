@@ -20,6 +20,7 @@ using System.Linq;
 using Windows.ApplicationModel.Core;
 using System.Diagnostics;
 using System.Configuration;
+using System.Reflection;
 using WinUIEx;
 
 namespace SynToolkit
@@ -53,6 +54,7 @@ namespace SynToolkit
         private int _resourcesDisposed;
 
         public static string Version { get; set; }
+        internal const string AppChannel = "Stable";
         public static bool IsReturningUser { get; private set; }
         public static string DisplayUserName { get; private set; } = "there";
         public static string WelcomeGreetingFormat { get; private set; } = "Welcome back, {0}";
@@ -204,7 +206,7 @@ namespace SynToolkit
             }
 
             _ = Task.Run(StartNamedPipeServer);
-            Version = RegistryHelper.GetValue(@"HKLM\SOFTWARE\SynToolkit", "Channel") + " v" + RegistryHelper.GetValue(@"HKLM\SOFTWARE\SynToolkit", "Version");
+            Version = BuildDisplayVersion();
             if (!CompatibilityHelper.IsWindowsCompatible())
             {
                 m_window = new IncompatibleVersionWindow(IncompatibleVersionReason.Windows);
@@ -753,6 +755,16 @@ namespace SynToolkit
             }
 
             DisplayUserName = displayName;
+        }
+
+        private static string BuildDisplayVersion()
+        {
+            System.Version assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            string versionNumber = assemblyVersion is null
+                ? "1.7.0"
+                : $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
+
+            return $"{AppChannel} {versionNumber}";
         }
 
         public static string GetValueFromItemList(string key, bool desc = false)

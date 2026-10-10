@@ -40,8 +40,10 @@
                         Click="NavigationPaneButton_Click">
                         <Image
                             Width="18"
+                            Height="18"
                             VerticalAlignment="Center"
-                            Source="ms-appx:///assets/logo/SynToolkit.ico" />
+                            Stretch="Uniform"
+                            Source="ms-appx:///assets/logo/SynToolkit-Icon-256.png" />
                     </Button>
                     <TextBlock
                         x:Name="AppTitle"
