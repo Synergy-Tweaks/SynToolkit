@@ -146,10 +146,13 @@ namespace SynToolkit.Services.SynergyOsUpdate
                         null,
                         SynergyOsUpdateNotifyReason.LatestUnknown,
                         ShouldNotify: false,
-                        "SynergyOsUpdate_UpToDate");
+                        "SynergyOsUpdate_VersionUnknown");
                 }
 
-                if (fetch.Status == FetchStatus.Failed || latest is null)
+                // 304 with no cached release, or a failed fetch with nothing usable.
+                if (fetch.Status == FetchStatus.Failed ||
+                    (fetch.Status == FetchStatus.NotModified && latest is null) ||
+                    (fetch.Status == FetchStatus.Ok && latest is null))
                 {
                     return new SynergyOsUpdateCheckResult(
                         SynergyOsUpdateCheckOutcome.Failed,
@@ -160,32 +163,23 @@ namespace SynToolkit.Services.SynergyOsUpdate
                         "SynergyOsUpdate_CouldNotCheck");
                 }
 
-                SynergyOsUpdateNotifyReason notifyReason = SynergyOsUpdateDecision.ShouldNotify(
+                if (latest is null)
+                {
+                    return new SynergyOsUpdateCheckResult(
+                        SynergyOsUpdateCheckOutcome.Failed,
+                        installed,
+                        null,
+                        SynergyOsUpdateNotifyReason.LatestUnknown,
+                        ShouldNotify: false,
+                        "SynergyOsUpdate_CouldNotCheck");
+                }
+
+                return BuildAvailabilityResult(
                     installed,
                     latest,
                     snapshot,
                     now,
-                    updatesEnabled: true);
-
-                if (notifyReason == SynergyOsUpdateNotifyReason.Notify)
-                {
-                    bool notify = ignoreSessionGate || !_notifiedThisSession;
-                    return new SynergyOsUpdateCheckResult(
-                        SynergyOsUpdateCheckOutcome.UpdateAvailable,
-                        installed,
-                        latest,
-                        notifyReason,
-                        notify,
-                        "SynergyOsUpdate_Available");
-                }
-
-                return new SynergyOsUpdateCheckResult(
-                    SynergyOsUpdateCheckOutcome.UpToDate,
-                    installed,
-                    latest,
-                    notifyReason,
-                    ShouldNotify: false,
-                    "SynergyOsUpdate_UpToDate");
+                    ignoreSessionGate);
             }
             catch (OperationCanceledException)
             {
@@ -226,44 +220,90 @@ namespace SynToolkit.Services.SynergyOsUpdate
             bool ignoreSessionGate,
             string? fallbackMessageKey)
         {
-            SynergyOsUpdateNotifyReason reason = SynergyOsUpdateDecision.ShouldNotify(
+            if (outcome is SynergyOsUpdateCheckOutcome.SkippedRateLimited)
+            {
+                SynergyOsUpdateNotifyReason limitedReason = SynergyOsUpdateDecision.ShouldNotify(
+                    installed,
+                    snapshot.CachedRelease,
+                    snapshot,
+                    now,
+                    updatesEnabled: true);
+                return new SynergyOsUpdateCheckResult(
+                    outcome,
+                    installed,
+                    snapshot.CachedRelease,
+                    limitedReason,
+                    ShouldNotify: false,
+                    fallbackMessageKey);
+            }
+
+            if (snapshot.CachedRelease is null)
+            {
+                return new SynergyOsUpdateCheckResult(
+                    outcome,
+                    installed,
+                    null,
+                    SynergyOsUpdateNotifyReason.LatestUnknown,
+                    ShouldNotify: false,
+                    fallbackMessageKey);
+            }
+
+            // Throttled / cache hit: still report real availability (never map skip/snooze → up to date).
+            SynergyOsUpdateCheckResult availability = BuildAvailabilityResult(
                 installed,
                 snapshot.CachedRelease,
                 snapshot,
                 now,
+                ignoreSessionGate);
+
+            return availability;
+        }
+
+        private SynergyOsUpdateCheckResult BuildAvailabilityResult(
+            string installed,
+            SynergyOsCachedRelease latest,
+            SynergyOsUpdateSettingsDocument snapshot,
+            DateTimeOffset now,
+            bool ignoreSessionGate)
+        {
+            SynergyOsUpdateAvailability availability =
+                SynergyOsUpdateDecision.GetUpdateStatus(installed, latest);
+            SynergyOsUpdateNotifyReason notifyReason = SynergyOsUpdateDecision.ShouldNotify(
+                installed,
+                latest,
+                snapshot,
+                now,
                 updatesEnabled: true);
 
-            if (reason == SynergyOsUpdateNotifyReason.Notify && snapshot.CachedRelease is not null)
+            SynergyOsUpdateCheckOutcome outcome = availability switch
             {
-                bool notify = ignoreSessionGate || !_notifiedThisSession;
-                return new SynergyOsUpdateCheckResult(
-                    SynergyOsUpdateCheckOutcome.UpdateAvailable,
-                    installed,
-                    snapshot.CachedRelease,
-                    reason,
-                    notify,
-                    "SynergyOsUpdate_Available");
-            }
+                SynergyOsUpdateAvailability.UpdateAvailable => SynergyOsUpdateCheckOutcome.UpdateAvailable,
+                SynergyOsUpdateAvailability.UpToDate => SynergyOsUpdateCheckOutcome.UpToDate,
+                _ => SynergyOsUpdateCheckOutcome.Failed,
+            };
 
-            if (outcome == SynergyOsUpdateCheckOutcome.SkippedThrottled &&
-                reason == SynergyOsUpdateNotifyReason.NotNewer)
+            bool shouldNotify = SynergyOsUpdateDecision.ShouldShowNotice(
+                installed,
+                latest,
+                snapshot,
+                now,
+                updatesEnabled: true,
+                notifiedThisSession: ignoreSessionGate ? false : _notifiedThisSession);
+
+            string? messageKey = outcome switch
             {
-                return new SynergyOsUpdateCheckResult(
-                    SynergyOsUpdateCheckOutcome.UpToDate,
-                    installed,
-                    snapshot.CachedRelease,
-                    reason,
-                    ShouldNotify: false,
-                    forceRefresh ? "SynergyOsUpdate_UpToDate" : null);
-            }
+                SynergyOsUpdateCheckOutcome.UpdateAvailable => "SynergyOsUpdate_Available",
+                SynergyOsUpdateCheckOutcome.UpToDate => "SynergyOsUpdate_UpToDate",
+                _ => "SynergyOsUpdate_VersionUnknown",
+            };
 
             return new SynergyOsUpdateCheckResult(
                 outcome,
                 installed,
-                snapshot.CachedRelease,
-                reason,
-                ShouldNotify: false,
-                fallbackMessageKey);
+                latest,
+                notifyReason,
+                shouldNotify,
+                messageKey);
         }
 
         private enum FetchStatus

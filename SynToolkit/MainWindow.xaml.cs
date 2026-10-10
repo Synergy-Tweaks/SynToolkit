@@ -145,15 +145,15 @@ namespace SynToolkit
             _ = RunSynergyOsUpdateCheckAsync(forceRefresh: false, ignoreSessionGate: false);
         }
 
-        internal async Task<SynergyOsUpdateCheckResult> CheckSynergyOsUpdatesFromSettingsAsync(
-            CancellationToken cancellationToken = default)
-        {
-            SynergyOsUpdateCheckResult result = await RunSynergyOsUpdateCheckAsync(
+        /// <summary>
+        /// Manual Settings check: always refreshes availability status and never re-opens the notice.
+        /// </summary>
+        internal Task<SynergyOsUpdateCheckResult> CheckSynergyOsUpdatesFromSettingsAsync(
+            CancellationToken cancellationToken = default) =>
+            SynergyOsUpdateChecker.Default.CheckAsync(
                 forceRefresh: true,
                 ignoreSessionGate: true,
                 cancellationToken);
-            return result;
-        }
 
         private async Task<SynergyOsUpdateCheckResult> RunSynergyOsUpdateCheckAsync(
             bool forceRefresh,

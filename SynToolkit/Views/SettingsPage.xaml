@@ -93,27 +93,7 @@
                             <ComboBoxItem x:Name="DefaultGitHubRepoSynergyOsItem" Tag="SynergyOS" />
                         </ComboBox>
                     </controls:SettingsCard>
-                    <!--  Update settings  -->
-                    <controls:SettingsCard x:Name="Update" Style="{StaticResource ConfigurationSettingsCardTemplate}">
-                        <controls:SettingsCard.HeaderIcon>
-                            <ImageIcon Source="ms-appx:///assets/Icons/Update.png" />
-                        </controls:SettingsCard.HeaderIcon>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock
-                                x:Name="NoUpdatesBar"
-                                Margin="0,0,16,0"
-                                VerticalAlignment="Center"
-                                Visibility="Collapsed" />
-                            <ProgressRing
-                                x:Name="ProgressRing"
-                                Width="20"
-                                Height="20"
-                                Margin="0,0,10,0"
-                                IsActive="True"
-                                Visibility="Collapsed" />
-                            <Button x:Name="CheckUpdateButton" Click="CheckUpdateButton_Click" />
-                        </StackPanel>
-                    </controls:SettingsCard>
+                    <!--  SynergyOS update settings  -->
                     <controls:SettingsCard x:Name="SynergyOsUpdateNotifyCard" Style="{StaticResource ConfigurationSettingsCardTemplate}">
                         <controls:SettingsCard.HeaderIcon>
                             <ImageIcon Source="ms-appx:///assets/Icons/Update.png" />
@@ -129,12 +109,17 @@
                                 x:Name="SynergyOsUpdateStatusText"
                                 VerticalAlignment="Center"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                TextWrapping="Wrap" />
+                                TextWrapping="Wrap"
+                                MaxWidth="360" />
                             <ProgressRing
                                 x:Name="SynergyOsUpdateProgressRing"
                                 Width="20"
                                 Height="20"
                                 IsActive="True"
+                                Visibility="Collapsed" />
+                            <Button
+                                x:Name="SynergyOsViewReleaseButton"
+                                Click="SynergyOsViewReleaseButton_Click"
                                 Visibility="Collapsed" />
                             <Button x:Name="SynergyOsCheckUpdateButton" Click="SynergyOsCheckUpdateButton_Click" />
                         </StackPanel>

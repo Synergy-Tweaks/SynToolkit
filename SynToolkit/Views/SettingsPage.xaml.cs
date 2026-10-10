@@ -144,14 +144,12 @@ namespace SynToolkit.Views
                 bugRequestCard.Header = App.GetValueFromItemList("BugReportCard");
                 WarningHeader.Header = App.GetValueFromItemList("WarningHeader");
                 LanguageHeader.Header = App.GetValueFromItemList("Language");
-                Update.Header = App.GetValueFromItemList("CheckUpdates");
-                CheckUpdateButton.Content = App.GetValueFromItemList("CheckUpdatesBtn");
-                NoUpdatesBar.Text = App.GetValueFromItemList("LatestVer");
                 SynergyOsUpdateNotifyCard.Header = App.GetValueFromItemList("SynergyOsUpdate_NotifyToggle");
                 SynergyOsUpdateNotifyCard.Description = App.GetValueFromItemList("SynergyOsUpdate_NotifyToggleDesc");
                 SynergyOsUpdateCheckCard.Header = App.GetValueFromItemList("SynergyOsUpdate_CheckNow");
                 SynergyOsUpdateCheckCard.Description = App.GetValueFromItemList("SynergyOsUpdate_CheckNowDesc");
                 SynergyOsCheckUpdateButton.Content = App.GetValueFromItemList("SynergyOsUpdate_CheckNowBtn");
+                SynergyOsViewReleaseButton.Content = App.GetValueFromItemList("SynergyOsUpdate_ViewRelease");
                 RefreshSynergyOsUpdateStatusText();
                 SystemInfo.Header = App.GetValueFromItemList("SystemInfo");
                 SystemInfo.Description = App.GetValueFromItemList("SystemInfo_ReadOnly");
@@ -296,47 +294,6 @@ namespace SynToolkit.Views
             await CommunityLinks.LaunchPreferredNewIssueAsync();
         }
 
-        private async void CheckUpdateButton_Click(object sender, RoutedEventArgs e)
-        {
-            NoUpdatesBar.Visibility = Visibility.Collapsed;
-            ProgressRing.Visibility = Visibility.Visible;
-            CheckUpdateButton.IsEnabled = false;
-            CancellationToken cancellationToken = _lifetimeCancellation.Token;
-
-            try
-            {
-                SynToolkitUpdateStatus status = await SynToolkitUpdateHelper.CheckUpdatesAsync(
-                    forceRefresh: true,
-                    cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (_isPageLoaded && status.IsUpdateAvailable)
-                {
-                    App.ContentDialogCaller("newUpdate");
-                }
-                else if (_isPageLoaded)
-                {
-                    NoUpdatesBar.Visibility = Visibility.Visible;
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Navigating away makes this result stale.
-            }
-            catch (Exception ex)
-            {
-                App.logger.Error($"Failed to check for updates: {ex.Message}");
-            }
-            finally
-            {
-                if (_isPageLoaded && !cancellationToken.IsCancellationRequested)
-                {
-                    ProgressRing.Visibility = Visibility.Collapsed;
-                    CheckUpdateButton.IsEnabled = true;
-                }
-            }
-        }
-
         private void SynergyOsUpdateNotifyToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (sender is not ToggleSwitch toggle)
@@ -357,6 +314,7 @@ namespace SynToolkit.Views
         private async void SynergyOsCheckUpdateButton_Click(object sender, RoutedEventArgs e)
         {
             SynergyOsUpdateStatusText.Text = string.Empty;
+            SynergyOsViewReleaseButton.Visibility = Visibility.Collapsed;
             SynergyOsUpdateProgressRing.Visibility = Visibility.Visible;
             SynergyOsCheckUpdateButton.IsEnabled = false;
             CancellationToken cancellationToken = _lifetimeCancellation.Token;
@@ -382,7 +340,7 @@ namespace SynToolkit.Views
                     return;
                 }
 
-                SynergyOsUpdateStatusText.Text = FormatSynergyOsManualCheckResult(result);
+                ApplySynergyOsStatusFromCheckResult(result);
             }
             catch (OperationCanceledException)
             {
@@ -393,6 +351,7 @@ namespace SynToolkit.Views
                 if (_isPageLoaded)
                 {
                     SynergyOsUpdateStatusText.Text = App.GetValueFromItemList("SynergyOsUpdate_CouldNotCheck");
+                    SynergyOsViewReleaseButton.Visibility = Visibility.Collapsed;
                 }
             }
             finally
@@ -401,52 +360,82 @@ namespace SynToolkit.Views
                 {
                     SynergyOsUpdateProgressRing.Visibility = Visibility.Collapsed;
                     SynergyOsCheckUpdateButton.IsEnabled = true;
-                    RefreshSynergyOsUpdateStatusText(keepManualResult: true);
                 }
             }
         }
 
-        private void RefreshSynergyOsUpdateStatusText(bool keepManualResult = false)
+        private async void SynergyOsViewReleaseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (keepManualResult && !string.IsNullOrWhiteSpace(SynergyOsUpdateStatusText.Text) &&
-                !SynergyOsUpdateStatusText.Text.StartsWith(
-                    App.GetValueFromItemList("SynergyOsUpdate_LastCheckedPrefix"),
-                    StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            DateTimeOffset? lastCheck = SynergyOsUpdateChecker.Default.Settings.Snapshot().LastSuccessfulCheckUtc;
-            if (lastCheck is null)
-            {
-                SynergyOsUpdateStatusText.Text = App.GetValueFromItemList("SynergyOsUpdate_NeverChecked");
-                return;
-            }
-
-            SynergyOsUpdateStatusText.Text =
-                App.GetValueFromItemList("SynergyOsUpdate_LastCheckedPrefix") + " " +
-                lastCheck.Value.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+            SynergyOsCachedRelease cached = SynergyOsUpdateChecker.Default.Settings.Snapshot().CachedRelease;
+            string url = SynergyOsReleaseUrl.ResolveSafeOpenUrl(cached?.HtmlUrl);
+            await CommunityLinks.LaunchUriAsync(url);
         }
 
-        private static string FormatSynergyOsManualCheckResult(SynergyOsUpdateCheckResult result)
+        private void RefreshSynergyOsUpdateStatusText()
         {
-            return result.Outcome switch
+            SynergyOsUpdateSettingsDocument snapshot = SynergyOsUpdateChecker.Default.Settings.Snapshot();
+            string installed = SynergyOsUpdateChecker.InstalledVersionProvider();
+
+            if (snapshot.CachedRelease is null && snapshot.LastSuccessfulCheckUtc is null)
             {
-                SynergyOsUpdateCheckOutcome.UpdateAvailable when result.Latest is not null =>
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        App.GetValueFromItemList("SynergyOsUpdate_AvailableStatus"),
-                        result.Latest.Version),
-                SynergyOsUpdateCheckOutcome.UpToDate =>
-                    App.GetValueFromItemList("SynergyOsUpdate_UpToDate"),
-                SynergyOsUpdateCheckOutcome.NoReleases =>
-                    App.GetValueFromItemList("SynergyOsUpdate_UpToDate"),
-                SynergyOsUpdateCheckOutcome.SkippedNotSynergyOs =>
-                    App.GetValueFromItemList("SynergyOsUpdate_NotDetected"),
-                SynergyOsUpdateCheckOutcome.SkippedRateLimited =>
-                    App.GetValueFromItemList("SynergyOsUpdate_CouldNotCheck"),
-                _ => App.GetValueFromItemList("SynergyOsUpdate_CouldNotCheck")
+                SynergyOsUpdateStatusText.Text = App.GetValueFromItemList("SynergyOsUpdate_NeverChecked");
+                SynergyOsViewReleaseButton.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            SynergyOsUpdateAvailability status = SynergyOsUpdateDecision.GetUpdateStatus(
+                installed,
+                snapshot.CachedRelease);
+            bool skipped = SynergyOsUpdateDecision.IsVersionSkipped(snapshot.CachedRelease, snapshot);
+            SynergyOsUpdateStatusText.Text = SynergyOsUpdateDecision.FormatSettingsStatusText(
+                status,
+                installed,
+                snapshot.CachedRelease,
+                skipped,
+                key => App.GetValueFromItemList(key));
+            SynergyOsViewReleaseButton.Visibility =
+                status == SynergyOsUpdateAvailability.UpdateAvailable
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+        private void ApplySynergyOsStatusFromCheckResult(SynergyOsUpdateCheckResult result)
+        {
+            SynergyOsUpdateSettingsDocument snapshot = SynergyOsUpdateChecker.Default.Settings.Snapshot();
+
+            if (result.Outcome is SynergyOsUpdateCheckOutcome.Failed
+                or SynergyOsUpdateCheckOutcome.SkippedRateLimited)
+            {
+                SynergyOsUpdateStatusText.Text = App.GetValueFromItemList("SynergyOsUpdate_CouldNotCheck");
+                SynergyOsViewReleaseButton.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            if (result.Outcome == SynergyOsUpdateCheckOutcome.SkippedNotSynergyOs)
+            {
+                SynergyOsUpdateStatusText.Text = App.GetValueFromItemList("SynergyOsUpdate_NotDetected");
+                SynergyOsViewReleaseButton.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            SynergyOsCachedRelease latest = result.Latest ?? snapshot.CachedRelease;
+            SynergyOsUpdateAvailability status = result.Outcome switch
+            {
+                SynergyOsUpdateCheckOutcome.NoReleases => SynergyOsUpdateAvailability.Unknown,
+                _ => SynergyOsUpdateDecision.GetUpdateStatus(result.InstalledVersion, latest),
             };
+
+            bool skipped = SynergyOsUpdateDecision.IsVersionSkipped(latest, snapshot);
+            SynergyOsUpdateStatusText.Text = SynergyOsUpdateDecision.FormatSettingsStatusText(
+                status,
+                result.InstalledVersion,
+                latest,
+                skipped,
+                key => App.GetValueFromItemList(key));
+            SynergyOsViewReleaseButton.Visibility =
+                status == SynergyOsUpdateAvailability.UpdateAvailable
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
         }
         #region experiments
         private void IsExperimentEnabled(object sender, RoutedEventArgs e)

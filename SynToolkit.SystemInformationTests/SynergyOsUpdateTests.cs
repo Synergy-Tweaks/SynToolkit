@@ -11,7 +11,11 @@ internal static class SynergyOsUpdateTests
     public static void RunAll()
     {
         RunStep(nameof(TestVersionComparison), TestVersionComparison);
+        RunStep(nameof(TestGetUpdateStatus), TestGetUpdateStatus);
         RunStep(nameof(TestNotifyDecision), TestNotifyDecision);
+        RunStep(nameof(TestDismissDoesNotChangeAvailability), TestDismissDoesNotChangeAvailability);
+        RunStep(nameof(TestSettingsStatusTextMapping), TestSettingsStatusTextMapping);
+        RunStep(nameof(TestDismissDoesNotClearCacheOrEnabled), TestDismissDoesNotClearCacheOrEnabled);
         RunStep(nameof(TestNoticeContent), TestNoticeContent);
         RunStep(nameof(TestReleaseUrlValidation), TestReleaseUrlValidation);
         RunStep(nameof(TestSettingsPersistenceDefaults), TestSettingsPersistenceDefaults);
@@ -19,6 +23,7 @@ internal static class SynergyOsUpdateTests
         RunStep(nameof(TestParseUsesTagNotName), TestParseUsesTagNotName);
         RunStep(nameof(TestFetchHandling), () => TestFetchHandling().GetAwaiter().GetResult());
         RunStep(nameof(TestThrottleAndManualBypass), () => TestThrottleAndManualBypass().GetAwaiter().GetResult());
+        RunStep(nameof(TestManualCheckAfterSkipAndToggleOff), () => TestManualCheckAfterSkipAndToggleOff().GetAwaiter().GetResult());
         RunStep(nameof(TestRequiredHeaders), () => TestRequiredHeaders().GetAwaiter().GetResult());
         Console.WriteLine("SynergyOsUpdateTests: all passed.");
     }
@@ -46,6 +51,28 @@ internal static class SynergyOsUpdateTests
         AssertNull(SynergyOsSemVer.CompareVersions("1.0.0", "??"));
         AssertFalse(SynergyOsSemVer.IsNewer("1.4.0", "1.4.0"));
         AssertTrue(SynergyOsSemVer.IsNewer("1.5.0", "1.4.0"));
+    }
+
+    private static void TestGetUpdateStatus()
+    {
+        AssertEqual(
+            SynergyOsUpdateAvailability.UpdateAvailable,
+            SynergyOsUpdateDecision.GetUpdateStatus("1.5.0", Release("1.6.0")));
+        AssertEqual(
+            SynergyOsUpdateAvailability.UpToDate,
+            SynergyOsUpdateDecision.GetUpdateStatus("1.6.0", Release("1.6.0")));
+        AssertEqual(
+            SynergyOsUpdateAvailability.UpToDate,
+            SynergyOsUpdateDecision.GetUpdateStatus("1.7.0", Release("1.6.0")));
+        AssertEqual(
+            SynergyOsUpdateAvailability.Unknown,
+            SynergyOsUpdateDecision.GetUpdateStatus(null, Release("1.6.0")));
+        AssertEqual(
+            SynergyOsUpdateAvailability.Unknown,
+            SynergyOsUpdateDecision.GetUpdateStatus("1.5.0", null));
+        AssertEqual(
+            SynergyOsUpdateAvailability.Unknown,
+            SynergyOsUpdateDecision.GetUpdateStatus("1.5.0", Release("not-a-version")));
     }
 
     private static void TestNotifyDecision()
@@ -102,6 +129,112 @@ internal static class SynergyOsUpdateTests
 
         AssertTrue(SynergyOsUpdateDecision.IsWithinCheckInterval(now.AddHours(-1), now));
         AssertFalse(SynergyOsUpdateDecision.IsWithinCheckInterval(now.AddHours(-25), now));
+    }
+
+    private static void TestDismissDoesNotChangeAvailability()
+    {
+        DateTimeOffset now = DateTimeOffset.Parse("2026-10-10T12:00:00Z");
+        SynergyOsCachedRelease latest = Release("1.6.0");
+        SynergyOsUpdateSettingsDocument settings = new();
+
+        AssertEqual(
+            SynergyOsUpdateAvailability.UpdateAvailable,
+            SynergyOsUpdateDecision.GetUpdateStatus("1.5.0", latest));
+
+        // Session dismissed (X)
+        AssertFalse(SynergyOsUpdateDecision.ShouldShowNotice("1.5.0", latest, settings, now, true, notifiedThisSession: true));
+        AssertEqual(
+            SynergyOsUpdateAvailability.UpdateAvailable,
+            SynergyOsUpdateDecision.GetUpdateStatus("1.5.0", latest));
+
+        // Remind me later
+        settings = new SynergyOsUpdateSettingsDocument
+        {
+            SnoozedVersion = "1.6.0",
+            SnoozeUntilUtc = now.AddDays(3)
+        };
+        AssertFalse(SynergyOsUpdateDecision.ShouldShowNotice("1.5.0", latest, settings, now, true, false));
+        AssertEqual(
+            SynergyOsUpdateAvailability.UpdateAvailable,
+            SynergyOsUpdateDecision.GetUpdateStatus("1.5.0", latest));
+
+        // Skip this version
+        settings = new SynergyOsUpdateSettingsDocument { SkippedVersion = "1.6.0" };
+        AssertFalse(SynergyOsUpdateDecision.ShouldShowNotice("1.5.0", latest, settings, now, true, false));
+        AssertEqual(
+            SynergyOsUpdateAvailability.UpdateAvailable,
+            SynergyOsUpdateDecision.GetUpdateStatus("1.5.0", latest));
+
+        string row = SynergyOsUpdateDecision.FormatSettingsStatusText(
+            SynergyOsUpdateAvailability.UpdateAvailable,
+            "1.5.0",
+            latest,
+            isSkipped: true,
+            key => key switch
+            {
+                "SynergyOsUpdate_AvailableStatus" => "SynergyOS {0} is available. You're on {1}.",
+                "SynergyOsUpdate_SkippedMarker" => "(skipped)",
+                "SynergyOsUpdate_UpToDate" => "You're up to date",
+                _ => key
+            });
+        AssertTrue(row.Contains("1.6.0", StringComparison.Ordinal));
+        AssertTrue(row.Contains("1.5.0", StringComparison.Ordinal));
+        AssertTrue(row.Contains("(skipped)", StringComparison.Ordinal));
+        AssertFalse(row.Contains("You're up to date", StringComparison.Ordinal));
+    }
+
+    private static void TestSettingsStatusTextMapping()
+    {
+        string Get(string key) => key switch
+        {
+            "SynergyOsUpdate_AvailableStatus" => "SynergyOS {0} is available. You're on {1}.",
+            "SynergyOsUpdate_SkippedMarker" => "(skipped)",
+            "SynergyOsUpdate_UpToDate" => "You're up to date",
+            "SynergyOsUpdate_CouldNotCheck" => "Couldn't check right now",
+            "SynergyOsUpdate_VersionUnknown" => "Couldn't determine your SynergyOS version",
+            _ => key
+        };
+
+        AssertEqual(
+            "You're up to date",
+            SynergyOsUpdateDecision.FormatSettingsStatusText(
+                SynergyOsUpdateAvailability.UpToDate, "1.6.0", Release("1.6.0"), false, Get));
+        AssertEqual(
+            "Couldn't check right now",
+            SynergyOsUpdateDecision.FormatSettingsStatusText(
+                SynergyOsUpdateAvailability.CheckFailed, "1.5.0", null, false, Get));
+        AssertEqual(
+            "Couldn't determine your SynergyOS version",
+            SynergyOsUpdateDecision.FormatSettingsStatusText(
+                SynergyOsUpdateAvailability.Unknown, null, null, false, Get));
+
+        string available = SynergyOsUpdateDecision.FormatSettingsStatusText(
+            SynergyOsUpdateAvailability.UpdateAvailable, "1.5.0", Release("1.6.0"), false, Get);
+        AssertTrue(available.StartsWith("SynergyOS 1.6.0 is available", StringComparison.Ordinal));
+        AssertFalse(available.Contains("You're up to date", StringComparison.Ordinal));
+    }
+
+    private static void TestDismissDoesNotClearCacheOrEnabled()
+    {
+        string path = Path.Combine(Path.GetTempPath(), "SynToolkit-tests", Guid.NewGuid().ToString("N") + ".json");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        SynergyOsUpdateSettingsStore store = new(path);
+        SynergyOsCachedRelease release = Release("1.6.0");
+        store.MarkSuccessfulCheck(DateTimeOffset.UtcNow, "\"etag\"", release);
+        store.IsEnabled = true;
+
+        store.SnoozeVersion("1.6.0", DateTimeOffset.UtcNow.AddDays(3));
+        SynergyOsUpdateSettingsDocument afterSnooze = store.Snapshot();
+        AssertTrue(afterSnooze.Enabled);
+        AssertEqual("1.6.0", afterSnooze.CachedRelease?.Version);
+        AssertEqual("\"etag\"", afterSnooze.ETag);
+
+        store.SkipVersion("1.6.0");
+        SynergyOsUpdateSettingsDocument afterSkip = store.Snapshot();
+        AssertTrue(afterSkip.Enabled);
+        AssertEqual("1.6.0", afterSkip.CachedRelease?.Version);
+        AssertEqual("\"etag\"", afterSkip.ETag);
+        File.Delete(path);
     }
 
     private static void TestNoticeContent()
@@ -345,6 +478,40 @@ internal static class SynergyOsUpdateTests
         SynergyOsUpdateCheckResult manual = await checker.CheckAsync(forceRefresh: true);
         AssertEqual(2, calls);
         AssertEqual(SynergyOsUpdateCheckOutcome.UpdateAvailable, manual.Outcome);
+    }
+
+    private static async Task TestManualCheckAfterSkipAndToggleOff()
+    {
+        await using TempSettings settings = new();
+        DateTimeOffset now = DateTimeOffset.Parse("2026-10-10T12:00:00Z");
+        RecordingHandler handler = new(_ => JsonResponse(200, SampleReleaseJson("1.6.0"), "etag-s"));
+        SynergyOsUpdateChecker checker = CreateChecker(settings.Store, handler, now, () => "1.5.0");
+
+        SynergyOsUpdateCheckResult first = await checker.CheckAsync(forceRefresh: true);
+        AssertEqual(SynergyOsUpdateCheckOutcome.UpdateAvailable, first.Outcome);
+        AssertTrue(first.ShouldNotify);
+
+        settings.Store.SkipVersion("1.6.0");
+        settings.Store.IsEnabled = false;
+        checker.MarkNotifiedThisSession();
+
+        SynergyOsUpdateCheckResult manual = await checker.CheckAsync(forceRefresh: true, ignoreSessionGate: true);
+        AssertEqual(SynergyOsUpdateCheckOutcome.UpdateAvailable, manual.Outcome);
+        AssertFalse(manual.ShouldNotify);
+        AssertEqual(SynergyOsUpdateNotifyReason.SkippedVersion, manual.NotifyReason);
+
+        // 304 with cache
+        RecordingHandler notModified = new(_ => new HttpResponseMessage(HttpStatusCode.NotModified));
+        SynergyOsUpdateChecker checker304 = CreateChecker(settings.Store, notModified, now.AddHours(25), () => "1.5.0");
+        SynergyOsUpdateCheckResult reused = await checker304.CheckAsync(forceRefresh: true);
+        AssertEqual(SynergyOsUpdateCheckOutcome.UpdateAvailable, reused.Outcome);
+
+        // 304 with no cache → check-failed
+        await using TempSettings empty = new();
+        RecordingHandler empty304 = new(_ => new HttpResponseMessage(HttpStatusCode.NotModified));
+        SynergyOsUpdateChecker noCache = CreateChecker(empty.Store, empty304, now, () => "1.5.0");
+        SynergyOsUpdateCheckResult failed304 = await noCache.CheckAsync(forceRefresh: true);
+        AssertEqual(SynergyOsUpdateCheckOutcome.Failed, failed304.Outcome);
     }
 
     private static async Task TestRequiredHeaders()
