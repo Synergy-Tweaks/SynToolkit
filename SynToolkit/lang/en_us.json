@@ -866,7 +866,7 @@
   "MemoryCompression": "Memory Compression",
   "MemoryCompressionDescription": "Keep Windows memory compression enabled, or turn it off as SynergyOS does for steadier latency under load.",
   "ProgramPriority": "Foreground App Boost",
-  "ProgramPriorityDescription": "Win32PrioritySeparation. Tunes Windows CPU scheduling for the foreground app. The Boost options change how strongly the focused app is favoured; the Quantum options change time-slice behaviour. No single value is best on every PC.",
+  "ProgramPriorityDescription": "Win32PrioritySeparation: Adjusts CPU priority and time allocation for the active app. Optimal settings vary by PC.",
   "MmcssOptimization": "Multimedia Class Scheduler (MMCSS)",
   "MmcssOptimizationDescription": "SystemResponsiveness. Sets the percentage of CPU time MMCSS reserves for low-priority background tasks so multimedia and games get scheduled smoothly. Lower values favour multimedia; higher values favour background tasks. Disabled (100) is intended for systems with a NetAdapterCx driver and may cause audio popping. No single value is best on every PC.",
   "SvcHostSplit": "Service Host Splitting",

@@ -85,7 +85,7 @@ namespace SynToolkit.Services.Win32Priority
             string list = string.Join(", ", CustomAllowedValues);
             return "Type a whole number for Win32PrioritySeparation. SynToolkit accepts only "
                 + list
-                + ". Anything outside that set is ignored or rewritten by Windows, so the result would not match what you entered.";
+                + ".";
         }
 
         public static string FormatCustomLabel(int rawValue) =>

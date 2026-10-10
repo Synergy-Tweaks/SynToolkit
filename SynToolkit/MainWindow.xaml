@@ -80,7 +80,7 @@
             IsSettingsVisible="False"
             IsTabStop="False"
             IsTitleBarAutoPaddingEnabled="False"
-            OpenPaneLength="340"
+            OpenPaneLength="260"
             SelectionChanged="NavigationViewControl_SelectionChanged">
             <!--Main Content-->
             <NavigationView.Content>
