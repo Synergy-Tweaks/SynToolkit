@@ -39,5 +39,12 @@
     <Compile Include="..\SynToolkit\Utils\CommandPromptHelper.cs" Link="Utils\CommandPromptHelper.cs" />
     <Compile Include="..\SynToolkit\Services\Win32Priority\Win32PrioritySeparationValues.cs" Link="Services\Win32Priority\Win32PrioritySeparationValues.cs" />
     <Compile Include="..\SynToolkit\Services\Mmcss\SystemResponsivenessValues.cs" Link="Services\Mmcss\SystemResponsivenessValues.cs" />
+    <Compile Include="..\SynToolkit\Services\SynergyOsUpdate\SynergyOsUpdateConstants.cs" Link="Services\SynergyOsUpdate\SynergyOsUpdateConstants.cs" />
+    <Compile Include="..\SynToolkit\Services\SynergyOsUpdate\SynergyOsSemVer.cs" Link="Services\SynergyOsUpdate\SynergyOsSemVer.cs" />
+    <Compile Include="..\SynToolkit\Services\SynergyOsUpdate\SynergyOsReleaseUrl.cs" Link="Services\SynergyOsUpdate\SynergyOsReleaseUrl.cs" />
+    <Compile Include="..\SynToolkit\Services\SynergyOsUpdate\SynergyOsUpdateDecision.cs" Link="Services\SynergyOsUpdate\SynergyOsUpdateDecision.cs" />
+    <Compile Include="..\SynToolkit\Services\SynergyOsUpdate\SynergyOsUpdateSettingsStore.cs" Link="Services\SynergyOsUpdate\SynergyOsUpdateSettingsStore.cs" />
+    <Compile Include="..\SynToolkit\Services\SynergyOsUpdate\SynergyOsUpdateChecker.cs" Link="Services\SynergyOsUpdate\SynergyOsUpdateChecker.cs" />
+    <Compile Include="..\SynToolkit\Services\SynergyOsUpdate\SynergyOsUpdateNotice.cs" Link="Services\SynergyOsUpdate\SynergyOsUpdateNotice.cs" />
   </ItemGroup>
 </Project>

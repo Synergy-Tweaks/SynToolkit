@@ -1,5 +1,6 @@
 using SynToolkit.Models;
 using SynToolkit.Services;
+using SynToolkit.Services.SynergyOsUpdate;
 using SynToolkit.Utils;
 using SynToolkit.ViewModels;
 using CommunityToolkit.WinUI;
@@ -12,6 +13,7 @@ using NLog.LayoutRenderers;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,6 +69,10 @@ namespace SynToolkit.Views
 
             DiscordRpcToggle.IsOn = DiscordRpc_State;
             DiscordRpcToggle.Toggled += DiscordRpc_Toggled;
+
+            SynergyOsUpdateNotifyToggle.IsOn = SynergyOsUpdateChecker.Default.Settings.IsEnabled;
+            SynergyOsUpdateNotifyToggle.Toggled += SynergyOsUpdateNotifyToggle_Toggled;
+            RefreshSynergyOsUpdateStatusText();
 
             try
             {
@@ -141,6 +147,12 @@ namespace SynToolkit.Views
                 Update.Header = App.GetValueFromItemList("CheckUpdates");
                 CheckUpdateButton.Content = App.GetValueFromItemList("CheckUpdatesBtn");
                 NoUpdatesBar.Text = App.GetValueFromItemList("LatestVer");
+                SynergyOsUpdateNotifyCard.Header = App.GetValueFromItemList("SynergyOsUpdate_NotifyToggle");
+                SynergyOsUpdateNotifyCard.Description = App.GetValueFromItemList("SynergyOsUpdate_NotifyToggleDesc");
+                SynergyOsUpdateCheckCard.Header = App.GetValueFromItemList("SynergyOsUpdate_CheckNow");
+                SynergyOsUpdateCheckCard.Description = App.GetValueFromItemList("SynergyOsUpdate_CheckNowDesc");
+                SynergyOsCheckUpdateButton.Content = App.GetValueFromItemList("SynergyOsUpdate_CheckNowBtn");
+                RefreshSynergyOsUpdateStatusText();
                 SystemInfo.Header = App.GetValueFromItemList("SystemInfo");
                 SystemInfo.Description = App.GetValueFromItemList("SystemInfo_ReadOnly");
 
@@ -323,6 +335,118 @@ namespace SynToolkit.Views
                     CheckUpdateButton.IsEnabled = true;
                 }
             }
+        }
+
+        private void SynergyOsUpdateNotifyToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ToggleSwitch toggle)
+            {
+                return;
+            }
+
+            try
+            {
+                SynergyOsUpdateChecker.Default.Settings.IsEnabled = toggle.IsOn;
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error($"Failed to save SynergyOS update preference: {exception.Message}");
+            }
+        }
+
+        private async void SynergyOsCheckUpdateButton_Click(object sender, RoutedEventArgs e)
+        {
+            SynergyOsUpdateStatusText.Text = string.Empty;
+            SynergyOsUpdateProgressRing.Visibility = Visibility.Visible;
+            SynergyOsCheckUpdateButton.IsEnabled = false;
+            CancellationToken cancellationToken = _lifetimeCancellation.Token;
+
+            try
+            {
+                SynergyOsUpdateCheckResult result;
+                if (App.m_window is MainWindow mainWindow)
+                {
+                    result = await mainWindow.CheckSynergyOsUpdatesFromSettingsAsync(cancellationToken);
+                }
+                else
+                {
+                    result = await SynergyOsUpdateChecker.Default.CheckAsync(
+                        forceRefresh: true,
+                        ignoreSessionGate: true,
+                        cancellationToken);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!_isPageLoaded)
+                {
+                    return;
+                }
+
+                SynergyOsUpdateStatusText.Text = FormatSynergyOsManualCheckResult(result);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception exception)
+            {
+                App.logger.Debug(exception, "Manual SynergyOS update check failed.");
+                if (_isPageLoaded)
+                {
+                    SynergyOsUpdateStatusText.Text = App.GetValueFromItemList("SynergyOsUpdate_CouldNotCheck");
+                }
+            }
+            finally
+            {
+                if (_isPageLoaded && !cancellationToken.IsCancellationRequested)
+                {
+                    SynergyOsUpdateProgressRing.Visibility = Visibility.Collapsed;
+                    SynergyOsCheckUpdateButton.IsEnabled = true;
+                    RefreshSynergyOsUpdateStatusText(keepManualResult: true);
+                }
+            }
+        }
+
+        private void RefreshSynergyOsUpdateStatusText(bool keepManualResult = false)
+        {
+            if (keepManualResult && !string.IsNullOrWhiteSpace(SynergyOsUpdateStatusText.Text) &&
+                !SynergyOsUpdateStatusText.Text.StartsWith(
+                    App.GetValueFromItemList("SynergyOsUpdate_LastCheckedPrefix"),
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            DateTimeOffset? lastCheck = SynergyOsUpdateChecker.Default.Settings.Snapshot().LastSuccessfulCheckUtc;
+            if (lastCheck is null)
+            {
+                SynergyOsUpdateStatusText.Text = App.GetValueFromItemList("SynergyOsUpdate_NeverChecked");
+                return;
+            }
+
+            SynergyOsUpdateStatusText.Text =
+                App.GetValueFromItemList("SynergyOsUpdate_LastCheckedPrefix") + " " +
+                lastCheck.Value.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+        }
+
+        private static string FormatSynergyOsManualCheckResult(SynergyOsUpdateCheckResult result)
+        {
+            return result.Outcome switch
+            {
+                SynergyOsUpdateCheckOutcome.UpdateAvailable when result.Latest is not null =>
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        App.GetValueFromItemList("SynergyOsUpdate_AvailableStatus"),
+                        result.Latest.Version),
+                SynergyOsUpdateCheckOutcome.UpToDate =>
+                    App.GetValueFromItemList("SynergyOsUpdate_UpToDate"),
+                SynergyOsUpdateCheckOutcome.NoReleases =>
+                    App.GetValueFromItemList("SynergyOsUpdate_UpToDate"),
+                SynergyOsUpdateCheckOutcome.SkippedNotSynergyOs =>
+                    App.GetValueFromItemList("SynergyOsUpdate_NotDetected"),
+                SynergyOsUpdateCheckOutcome.SkippedRateLimited =>
+                    App.GetValueFromItemList("SynergyOsUpdate_CouldNotCheck"),
+                _ => App.GetValueFromItemList("SynergyOsUpdate_CouldNotCheck")
+            };
         }
         #region experiments
         private void IsExperimentEnabled(object sender, RoutedEventArgs e)

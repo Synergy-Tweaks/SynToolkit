@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:SynToolkit.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:SynToolkit"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -84,21 +85,62 @@
             <!--Main Content-->
             <NavigationView.Content>
                 <Grid>
-                    <Frame
-                        x:Name="ContentFrame"
-                        Navigated="ContentFrame_Navigated"
-                        NavigationFailed="ContentFrame_NavigationFailed" />
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <!-- In-flow SynergyOS update banner: pushes page content down, never overlays controls. -->
                     <InfoBar
-                        x:Name="UpdateTitleBar"
-                        Margin="0,26,36,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Background="#30313E"
-                        IsOpen="False">
-                        <InfoBar.ActionButton>
-                            <HyperlinkButton x:Name="LearnMoreBtn" NavigateUri="https://github.com/Synergy-Tweaks/SynergyOS/releases/latest" />
-                        </InfoBar.ActionButton>
+                        x:Name="SynergyOsUpdateInfoBar"
+                        Grid.Row="0"
+                        Margin="0,8,12,4"
+                        HorizontalAlignment="Stretch"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        IsClosable="True"
+                        IsOpen="False"
+                        Severity="Informational">
+                        <StackPanel Spacing="12">
+                            <TextBlock
+                                x:Name="SynergyOsUpdatePublished"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="WrapWholeWords"
+                                Visibility="Collapsed" />
+                            <toolkit:WrapPanel
+                                HorizontalSpacing="8"
+                                Orientation="Horizontal"
+                                VerticalSpacing="8">
+                                <Button
+                                    x:Name="SynergyOsViewReleaseButton"
+                                    Click="SynergyOsViewReleaseButton_Click"
+                                    Style="{StaticResource AccentButtonStyle}" />
+                                <Button
+                                    x:Name="SynergyOsRemindLaterButton"
+                                    Click="SynergyOsRemindLaterButton_Click" />
+                                <Button
+                                    x:Name="SynergyOsSkipVersionButton"
+                                    Click="SynergyOsSkipVersionButton_Click" />
+                            </toolkit:WrapPanel>
+                        </StackPanel>
                     </InfoBar>
+                    <Grid Grid.Row="1">
+                        <Frame
+                            x:Name="ContentFrame"
+                            Navigated="ContentFrame_Navigated"
+                            NavigationFailed="ContentFrame_NavigationFailed" />
+                        <InfoBar
+                            x:Name="UpdateTitleBar"
+                            Margin="0,26,36,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Background="#30313E"
+                            IsOpen="False">
+                            <InfoBar.ActionButton>
+                                <HyperlinkButton x:Name="LearnMoreBtn" NavigateUri="https://github.com/Synergy-Tweaks/SynergyOS/releases/latest" />
+                            </InfoBar.ActionButton>
+                        </InfoBar>
+                    </Grid>
                 </Grid>
             </NavigationView.Content>
             <NavigationView.Resources>

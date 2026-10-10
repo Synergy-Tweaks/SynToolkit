@@ -20,6 +20,10 @@ internal sealed class TestLogger
     {
     }
 
+    internal void Debug(Exception exception, string message)
+    {
+    }
+
     internal void Info(string message)
     {
     }
@@ -33,6 +37,9 @@ internal sealed class TestLogger
     }
 
     internal void Error(Exception exception, string message) =>
+        Interlocked.Increment(ref _errorCount);
+
+    internal void Error(string message) =>
         Interlocked.Increment(ref _errorCount);
 
     internal void ResetErrors() => Volatile.Write(ref _errorCount, 0);

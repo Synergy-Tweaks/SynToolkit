@@ -114,6 +114,31 @@
                             <Button x:Name="CheckUpdateButton" Click="CheckUpdateButton_Click" />
                         </StackPanel>
                     </controls:SettingsCard>
+                    <controls:SettingsCard x:Name="SynergyOsUpdateNotifyCard" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        <controls:SettingsCard.HeaderIcon>
+                            <ImageIcon Source="ms-appx:///assets/Icons/Update.png" />
+                        </controls:SettingsCard.HeaderIcon>
+                        <ToggleSwitch x:Name="SynergyOsUpdateNotifyToggle" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Name="SynergyOsUpdateCheckCard" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        <controls:SettingsCard.HeaderIcon>
+                            <ImageIcon Source="ms-appx:///assets/Icons/Update.png" />
+                        </controls:SettingsCard.HeaderIcon>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock
+                                x:Name="SynergyOsUpdateStatusText"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                            <ProgressRing
+                                x:Name="SynergyOsUpdateProgressRing"
+                                Width="20"
+                                Height="20"
+                                IsActive="True"
+                                Visibility="Collapsed" />
+                            <Button x:Name="SynergyOsCheckUpdateButton" Click="SynergyOsCheckUpdateButton_Click" />
+                        </StackPanel>
+                    </controls:SettingsCard>
                 </StackPanel>
                 <!--  Experiments  -->
                 <StackPanel Visibility="Collapsed">

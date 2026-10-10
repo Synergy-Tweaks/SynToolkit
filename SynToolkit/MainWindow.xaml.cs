@@ -1,5 +1,6 @@
 using SynToolkit.Enums;
 using SynToolkit.Services;
+using SynToolkit.Services.SynergyOsUpdate;
 using SynToolkit.Utils;
 using SynToolkit.ViewModels;
 using SynToolkit.Views;
@@ -18,9 +19,11 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using WinUIEx;
@@ -40,6 +43,9 @@ namespace SynToolkit
         private const int MinimumWindowHeight = 491;
         private const int PersistableMinimumWidth = 800;
         private const int PersistableMinimumHeight = 600;
+
+        private SynergyOsCachedRelease? _pendingSynergyOsRelease;
+        private int _synergyOsUpdateCheckRunning;
 
         public MainWindow()
         {
@@ -102,6 +108,7 @@ namespace SynToolkit
             InitializeGpuTabIcon();
             _ = RefreshNeedsAttentionBadgeAsync();
             Activated += OnMainWindowActivated;
+            Activated += OnMainWindowActivatedForSynergyOsUpdate;
             this.Closed += AppBehaviorHelper.HandleMainWindowClosed;
 
             SubscribeToConfigurationChanges();
@@ -118,9 +125,155 @@ namespace SynToolkit
             ApplyWindowPlacement();
         }
 
+        private void OnMainWindowActivatedForSynergyOsUpdate(object sender, WindowActivatedEventArgs e)
+        {
+            if (e.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                return;
+            }
+
+            _ = RunSynergyOsUpdateCheckAsync(forceRefresh: false, ignoreSessionGate: false);
+        }
+
         internal void ApplyWindowPlacement()
         {
             SetWindowPosSize();
+        }
+
+        internal void StartSynergyOsUpdateChecks()
+        {
+            _ = RunSynergyOsUpdateCheckAsync(forceRefresh: false, ignoreSessionGate: false);
+        }
+
+        internal async Task<SynergyOsUpdateCheckResult> CheckSynergyOsUpdatesFromSettingsAsync(
+            CancellationToken cancellationToken = default)
+        {
+            SynergyOsUpdateCheckResult result = await RunSynergyOsUpdateCheckAsync(
+                forceRefresh: true,
+                ignoreSessionGate: true,
+                cancellationToken);
+            return result;
+        }
+
+        private async Task<SynergyOsUpdateCheckResult> RunSynergyOsUpdateCheckAsync(
+            bool forceRefresh,
+            bool ignoreSessionGate,
+            CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.CompareExchange(ref _synergyOsUpdateCheckRunning, 1, 0) != 0)
+            {
+                return new SynergyOsUpdateCheckResult(
+                    SynergyOsUpdateCheckOutcome.SkippedThrottled,
+                    null,
+                    null,
+                    SynergyOsUpdateNotifyReason.NotNewer,
+                    ShouldNotify: false,
+                    null);
+            }
+
+            try
+            {
+                SynergyOsUpdateCheckResult result = await SynergyOsUpdateChecker.Default
+                    .CheckAsync(forceRefresh, ignoreSessionGate, cancellationToken)
+                    .ConfigureAwait(false);
+
+                bool showBanner = result.Latest is not null &&
+                    (result.ShouldNotify ||
+                     (ignoreSessionGate && result.Outcome == SynergyOsUpdateCheckOutcome.UpdateAvailable));
+
+                if (showBanner)
+                {
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        ShowSynergyOsUpdateInfoBar(result);
+                        SynergyOsUpdateChecker.Default.MarkNotifiedThisSession();
+                    });
+                }
+
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                App.logger.Debug(exception, "SynergyOS update UI check failed.");
+                return new SynergyOsUpdateCheckResult(
+                    SynergyOsUpdateCheckOutcome.Failed,
+                    null,
+                    null,
+                    SynergyOsUpdateNotifyReason.LatestUnknown,
+                    ShouldNotify: false,
+                    "SynergyOsUpdate_CouldNotCheck");
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _synergyOsUpdateCheckRunning, 0);
+            }
+        }
+
+        private void ShowSynergyOsUpdateInfoBar(SynergyOsUpdateCheckResult result)
+        {
+            if (result.Latest is null || result.InstalledVersion is null)
+            {
+                return;
+            }
+
+            _pendingSynergyOsRelease = result.Latest;
+
+            SynergyOsUpdateNoticeModel notice = SynergyOsUpdateNotice.Create(
+                result.Latest.Version,
+                result.InstalledVersion,
+                result.Latest.PublishedAtUtc,
+                key => App.GetValueFromItemList(key),
+                CultureInfo.CurrentCulture);
+
+            SynergyOsUpdateInfoBar.Title = notice.Title;
+            SynergyOsUpdateInfoBar.Message = notice.BodyLine;
+            if (notice.HasPublishedLine)
+            {
+                SynergyOsUpdatePublished.Text = notice.PublishedLine;
+                SynergyOsUpdatePublished.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SynergyOsUpdatePublished.Text = string.Empty;
+                SynergyOsUpdatePublished.Visibility = Visibility.Collapsed;
+            }
+
+            SynergyOsViewReleaseButton.Content = notice.ViewReleaseLabel;
+            SynergyOsRemindLaterButton.Content = notice.RemindLaterLabel;
+            SynergyOsSkipVersionButton.Content = notice.SkipVersionLabel;
+            SynergyOsUpdateInfoBar.IsOpen = true;
+        }
+
+        private async void SynergyOsViewReleaseButton_Click(object sender, RoutedEventArgs e)
+        {
+            string url = SynergyOsReleaseUrl.ResolveSafeOpenUrl(_pendingSynergyOsRelease?.HtmlUrl);
+            await CommunityLinks.LaunchUriAsync(url);
+        }
+
+        private void SynergyOsRemindLaterButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pendingSynergyOsRelease is not null)
+            {
+                SynergyOsUpdateChecker.Default.RemindLater(_pendingSynergyOsRelease);
+            }
+
+            SynergyOsUpdateInfoBar.IsOpen = false;
+            _pendingSynergyOsRelease = null;
+        }
+
+        private void SynergyOsSkipVersionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pendingSynergyOsRelease is not null)
+            {
+                SynergyOsUpdateChecker.Default.SkipVersion(_pendingSynergyOsRelease);
+            }
+
+            SynergyOsUpdateInfoBar.IsOpen = false;
+            _pendingSynergyOsRelease = null;
         }
 
         private void InitializeAccountHeader()
