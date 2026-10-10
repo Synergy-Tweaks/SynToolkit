@@ -27,7 +27,8 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<ConfigurationStore>("Animations");
                 services.AddKeyedSingleton<ConfigurationStore>("Bluetooth");
                 services.AddKeyedSingleton<ConfigurationStore>("XboxServices");
-                services.AddKeyedSingleton<ConfigurationStore>("FsoAndGameBar");
+                services.AddKeyedSingleton<ConfigurationStore>("FullScreenOptimizations");
+                services.AddKeyedSingleton<ConfigurationStore>("XboxGameBar");
                 services.AddKeyedSingleton<ConfigurationStore>("LanmanWorkstation");
                 services.AddKeyedSingleton<ConfigurationStore>("SearchIndexing");
                 services.AddKeyedSingleton<ConfigurationStore>("CpuIdleContextMenu");
@@ -120,6 +121,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<MultiOptionConfigurationStore>("SafeMode");
                 services.AddKeyedSingleton<MultiOptionConfigurationStore>("ProgramPriority");
                 services.AddKeyedSingleton<MultiOptionConfigurationStore>("MmcssOptimization");
+                services.AddKeyedSingleton<MultiOptionConfigurationStore>("TaskbarAlignment");
             });
             App.logger.Info($"[STORE] Added stores to host");
             return host;

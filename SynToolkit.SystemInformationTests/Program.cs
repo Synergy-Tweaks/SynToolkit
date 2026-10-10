@@ -67,7 +67,21 @@ internal static class Program
         Run("GPU vendor classification matches PCI IDs and names", GpuVendorClassificationMatchesPciIdsAndNames);
         Run("GPU tab icon uses NVIDIA/AMD brands and falls back for Intel/unknown", GpuTabIconUsesVendorBrandsAndSafeFallback);
         Run("Primary GPU vendor prefers discrete NVIDIA then AMD then Intel", PrimaryGpuVendorPrefersDiscreteGpu);
-        Run("HAGS classification distinguishes enabled, disabled, and unsupported", HagsClassificationDistinguishesStates);
+        Run("HAGS detection rules", HagsDetectionTests.ClassificationRules);
+        Run("HAGS write targets are 1 and 2", HagsDetectionTests.WriteTargetsAreOneAndTwo);
+        Run("Windowed games SwapEffect detection", WindowedGamesOptimizationTests.DetectionRules);
+        Run("Windowed games preserves other DirectX pairs", WindowedGamesOptimizationTests.WritingPreservesOtherPairs);
+        Run("Windowed games detection is fresh", WindowedGamesOptimizationTests.DetectionIsFreshEachCall);
+        Run("MPO detection rules", MultiPlaneOverlayTests.DetectionRules);
+        Run("MPO detection is fresh", MultiPlaneOverlayTests.DetectionIsFreshEachCall);
+        Run("Taskbar alignment constants and order", TaskbarAlignmentTests.ConstantsAndDropdownOrder);
+        Run("Taskbar alignment detection rules", TaskbarAlignmentTests.DetectionRules);
+        Run("Taskbar alignment Windows version gate", TaskbarAlignmentTests.WindowsVersionGate);
+        Run("Taskbar alignment detection is fresh", TaskbarAlignmentTests.DetectionIsFreshEachCall);
+        Run("Favorite ID migration maps FsoAndGameBar", FavoriteIdMigrationTests.LegacyFsoMapsToSplitIds);
+        Run("Favorite ID migration ignores unknown", FavoriteIdMigrationTests.UnknownIdsPassthroughOrIgnored);
+        Run("Favorite ID profile expansion", FavoriteIdMigrationTests.ProfileKeyExpansion);
+        Run("FSO and Game Bar ownership split", FsoGameBarOwnershipTests.OwnedValuesDoNotOverlap);
         Run("Metadata cache retains recent entries and stays bounded", MetadataCacheStaysBounded);
         Run("Metadata cache handles concurrent readers and null values", MetadataCacheHandlesConcurrency);
         Run("Epic store artwork slugs are derived from display names", EpicArtworkSlugsAreDerivedFromNames);
@@ -827,77 +841,6 @@ internal static class Program
             GpuVendor.Unknown,
             GpuVendorClassification.GetPrimaryGpuVendor([]),
             "An empty adapter list must stay Unknown so the tab icon can fail safe.");
-    }
-
-    private static void HagsClassificationDistinguishesStates()
-    {
-        const int windows2004 = HagsDetection.MinimumWindowsBuild;
-        const int windows11 = 26100;
-        const int windows1909 = 18363;
-
-        Equal(
-            HagsSupportState.NotSupportedByWindowsVersion,
-            HagsDetection.Classify(windows1909, null),
-            "A missing HwSchMode on Windows 10 before 2004 is an OS limitation.");
-        Equal(
-            HagsSupportState.NotSupportedByWindowsVersion,
-            HagsDetection.Classify(windows1909, 2),
-            "HAGS is still an OS limitation below build 19041 even if a DWORD exists.");
-        Equal(
-            HagsSupportState.NotSupportedByGpuOrDriver,
-            HagsDetection.Classify(windows2004, null),
-            "A missing HwSchMode on Windows 10 2004+ means the GPU/driver did not register support.");
-        Equal(
-            HagsSupportState.NotSupportedByGpuOrDriver,
-            HagsDetection.Classify(windows11, null),
-            "A missing HwSchMode on Windows 11 means the GPU/driver did not register support.");
-        Equal(
-            HagsSupportState.SupportedDisabled,
-            HagsDetection.Classify(windows11, 1),
-            "HwSchMode=1 is supported and currently disabled, not unavailable.");
-        Equal(
-            HagsSupportState.SupportedEnabled,
-            HagsDetection.Classify(windows11, 2),
-            "HwSchMode=2 is supported and currently enabled.");
-        Equal(
-            HagsSupportState.Unknown,
-            HagsDetection.Classify(windows11, 0),
-            "HwSchMode=0 is unexpected and must not be treated as enabled or disabled.");
-        Equal(
-            HagsSupportState.Unknown,
-            HagsDetection.Classify(windows11, 3),
-            "Any other HwSchMode value is unknown rather than silently available.");
-        Equal(
-            HagsSupportState.Unknown,
-            HagsDetection.Classify(windows11, null, registryReadFailed: true),
-            "A registry-view/read failure is unknown, not a missing-key unsupported state.");
-
-        Equal(
-            "Supported — currently disabled.",
-            HagsDetection.GetStatusText(HagsSupportState.SupportedDisabled),
-            "Disabled-but-supported must keep a distinct status string.");
-        Equal(
-            "Supported — currently enabled.",
-            HagsDetection.GetStatusText(HagsSupportState.SupportedEnabled),
-            "Enabled must keep a distinct status string.");
-        Equal(
-            "Not supported by your Windows version.",
-            HagsDetection.GetStatusText(HagsSupportState.NotSupportedByWindowsVersion),
-            "Pre-2004 Windows must use the OS-version message.");
-        Equal(
-            "Not supported by your GPU/driver.",
-            HagsDetection.GetStatusText(HagsSupportState.NotSupportedByGpuOrDriver),
-            "A missing key on a supported OS must use the GPU/driver message.");
-        Equal(
-            "Unknown (HwSchMode=7).",
-            HagsDetection.GetStatusText(HagsSupportState.Unknown, 7),
-            "Unknown states must surface the raw DWORD for diagnostics.");
-        True(
-            HagsDetection.CanToggle(HagsSupportState.SupportedDisabled),
-            "A present-but-off system must remain toggleable.");
-        True(
-            !HagsDetection.CanToggle(HagsSupportState.NotSupportedByGpuOrDriver),
-            "An unsupported GPU/driver must not be treated as a toggleable off state.");
     }
 
     private static void NoMetadata()

@@ -62,7 +62,8 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationService, AppStoreArchivingConfigurationService>("AppStoreArchiving");
                 services.AddKeyedTransient<IConfigurationService, BluetoothConfigurationService>("Bluetooth");
                 services.AddKeyedTransient<IConfigurationService, XboxServicesConfigurationService>("XboxServices");
-                services.AddKeyedTransient<IConfigurationService, FsoAndGameBarConfigurationService>("FsoAndGameBar");
+                services.AddKeyedTransient<IConfigurationService, FullScreenOptimizationsConfigurationService>("FullScreenOptimizations");
+                services.AddKeyedTransient<IConfigurationService, XboxGameBarConfigurationService>("XboxGameBar");
                 services.AddKeyedTransient<IConfigurationService, LanmanWorkstationConfigurationService>("LanmanWorkstation");
                 services.AddKeyedTransient<IConfigurationService, SearchIndexingConfigurationService>("SearchIndexing");
                 services.AddKeyedTransient<IConfigurationService, CpuIdleContextMenuConfigurationService>("CpuIdleContextMenu");
@@ -154,6 +155,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, SafeModeConfigurationService>("SafeMode");
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, ForegroundAppBoostConfigurationService>("ProgramPriority");
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, MmcssOptimizationConfigurationService>("MmcssOptimization");
+                services.AddKeyedTransient<IMultiOptionConfigurationServices, TaskbarAlignmentConfigurationService>("TaskbarAlignment");
             });
             App.logger.Info($"[SERVICES] Added services to host");
             return host;

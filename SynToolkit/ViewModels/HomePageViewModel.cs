@@ -2,6 +2,7 @@
 
 using ABI.System.Collections;
 using SynToolkit.Models;
+using SynToolkit.Services;
 using SynToolkit.Services.ConfigurationServices;
 using SynToolkit.Utils;
 using SynToolkit.Views;
@@ -119,11 +120,14 @@ namespace SynToolkit.ViewModels
             // need more research to figure out a better way to do this
             List<ConfigurationItemViewModel> configurationItemVMs = ConfigurationItemViewModels.ToList();
             List<MultiOptionConfigurationItemViewModel> multiConfigurationItemVMs = MultiOptionConfigurationItemViewModels.ToList();
+            HashSet<string> profileKeys = new(
+                FavoriteIdMigration.ExpandProfileKeys(selectedProfile.ConfigurationServices),
+                StringComparer.Ordinal);
             foreach (ConfigurationItemViewModel viewModel in configurationItemVMs)
             {
                 try
                 {
-                    if (selectedProfile.ConfigurationServices.Contains(viewModel.Key))
+                    if (profileKeys.Contains(viewModel.Key))
                     {
                         //ConfigurationItemViewModel config = App._host.Services.GetKeyedService<ConfigurationItemViewModel>(viewModel.Key);
                         viewModel.CurrentSetting = true;

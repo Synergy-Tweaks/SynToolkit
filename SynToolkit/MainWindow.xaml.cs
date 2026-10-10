@@ -44,7 +44,7 @@ namespace SynToolkit
         private const int PersistableMinimumWidth = 800;
         private const int PersistableMinimumHeight = 600;
 
-        private SynergyOsCachedRelease? _pendingSynergyOsRelease;
+        private SynergyOsCachedRelease _pendingSynergyOsRelease;
         private int _synergyOsUpdateCheckRunning;
 
         public MainWindow()
@@ -897,6 +897,22 @@ namespace SynToolkit
                     desc = App.GetValueFromItemList("RelogApplyDesc");
                     primBtnTxt = App.GetValueFromItemList("RelogBtn");
                     command = new RelayCommand(ComputerStateHelper.LogOffComputer);
+                    break;
+                case "restartExplorer":
+                    title = App.GetValueFromItemList("RestartExplorer");
+                    desc = App.GetValueFromItemList("RestartExplorerDesc");
+                    primBtnTxt = App.GetValueFromItemList("RestartExplorerBtn");
+                    command = new RelayCommand(() =>
+                    {
+                        try
+                        {
+                            CommandPromptHelper.RestartExplorer();
+                        }
+                        catch (Exception exception)
+                        {
+                            App.logger.Error(exception, "[UI] Restart Explorer failed.");
+                        }
+                    });
                     break;
                 default:
                     throw new Exception("ContentDialog type was not set or does not match any possible type");

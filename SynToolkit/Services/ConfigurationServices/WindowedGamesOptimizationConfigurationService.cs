@@ -1,20 +1,21 @@
+#nullable enable
+
+using SynToolkit.Services.WindowedGames;
 using SynToolkit.Stores;
 using SynToolkit.Utils;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
+using System;
 
 namespace SynToolkit.Services.ConfigurationServices
 {
     /// <summary>
-    /// Enables optimizations for windowed games using flip presentation model.
-    /// Reduces latency and enables advanced features in compatible games.
+    /// Optimizations for windowed games via DirectXUserGlobalSettings
+    /// SwapEffectUpgradeEnable under HKCU\Software\Microsoft\DirectX\UserGpuPreferences.
+    /// Only that pair is rewritten; every other Key=Value pair is preserved.
     /// </summary>
     public class WindowedGamesOptimizationConfigurationService : IConfigurationService
     {
-        private const string GAME_CONFIG_STORE_KEY = @"HKCU\System\GameConfigStore";
-        private const string FSE_BEHAVIOR_VALUE = "GameDVR_FSEBehavior";
-        private const string DXGI_HONOR_VALUE = "GameDVR_DXGIHonorFSEWindowsCompatible";
-        private const string HONOR_USER_MODE_VALUE = "GameDVR_HonorUserFSEBehaviorMode";
-
         private readonly ConfigurationStore _windowedGamesOptimizationStore;
 
         public WindowedGamesOptimizationConfigurationService(
@@ -23,28 +24,77 @@ namespace SynToolkit.Services.ConfigurationServices
             _windowedGamesOptimizationStore = windowedGamesOptimizationStore;
         }
 
-        public void Disable()
-        {
-            RegistryHelper.SetValue(GAME_CONFIG_STORE_KEY, FSE_BEHAVIOR_VALUE, 0);
-            RegistryHelper.SetValue(GAME_CONFIG_STORE_KEY, DXGI_HONOR_VALUE, 0);
-            RegistryHelper.SetValue(GAME_CONFIG_STORE_KEY, HONOR_USER_MODE_VALUE, 0);
+        public void Disable() => Apply(enable: false);
 
-            _windowedGamesOptimizationStore.CurrentSetting = IsEnabled();
-        }
-
-        public void Enable()
-        {
-            RegistryHelper.SetValue(GAME_CONFIG_STORE_KEY, FSE_BEHAVIOR_VALUE, 2);
-            RegistryHelper.SetValue(GAME_CONFIG_STORE_KEY, DXGI_HONOR_VALUE, 1);
-            RegistryHelper.SetValue(GAME_CONFIG_STORE_KEY, HONOR_USER_MODE_VALUE, 1);
-
-            _windowedGamesOptimizationStore.CurrentSetting = IsEnabled();
-        }
+        public void Enable() => Apply(enable: true);
 
         public bool IsEnabled()
         {
-            return RegistryHelper.IsMatch(GAME_CONFIG_STORE_KEY, DXGI_HONOR_VALUE, 1) ||
-                   RegistryHelper.IsMatch(GAME_CONFIG_STORE_KEY, FSE_BEHAVIOR_VALUE, 2);
+            WindowedGamesOptimizationValues.DetectionResult result = DetectCurrentState();
+            if (result.Kind is WindowedGamesOptimizationValues.DetectionKind.Unsupported
+                or WindowedGamesOptimizationValues.DetectionKind.Error)
+            {
+                throw new NotSupportedException(result.Warning ?? result.DisplayLabel);
+            }
+
+            return result.Kind == WindowedGamesOptimizationValues.DetectionKind.On;
+        }
+
+        public WindowedGamesOptimizationValues.DetectionResult DetectCurrentState()
+        {
+            bool readSucceeded = RegistryHelper.TryReadValueWithKind(
+                WindowedGamesOptimizationValues.KeyPath,
+                WindowedGamesOptimizationValues.ValueName,
+                out object? raw,
+                out _);
+            return WindowedGamesOptimizationValues.DetectCurrentState(readSucceeded, raw);
+        }
+
+        private void Apply(bool enable)
+        {
+            WindowedGamesOptimizationValues.DetectionResult before = DetectCurrentState();
+            if (before.Kind is WindowedGamesOptimizationValues.DetectionKind.Error)
+            {
+                throw new InvalidOperationException(before.Warning ?? "Couldn't read DirectXUserGlobalSettings.");
+            }
+
+            if (before.Kind == WindowedGamesOptimizationValues.DetectionKind.On && enable)
+            {
+                _windowedGamesOptimizationStore.CurrentSetting = true;
+                return;
+            }
+
+            if (!enable
+                && before.Kind is WindowedGamesOptimizationValues.DetectionKind.Off
+                    or WindowedGamesOptimizationValues.DetectionKind.MissingPair
+                    or WindowedGamesOptimizationValues.DetectionKind.MissingString)
+            {
+                _windowedGamesOptimizationStore.CurrentSetting = false;
+                return;
+            }
+
+            string existing = before.RawString ?? string.Empty;
+            string updated = WindowedGamesOptimizationValues.BuildUpdatedString(
+                string.IsNullOrEmpty(existing) ? null : existing,
+                enable);
+
+            RegistryHelper.SetValue(
+                WindowedGamesOptimizationValues.KeyPath,
+                WindowedGamesOptimizationValues.ValueName,
+                updated,
+                RegistryValueKind.String);
+
+            WindowedGamesOptimizationValues.DetectionResult after = DetectCurrentState();
+            bool ok = enable
+                ? after.Kind == WindowedGamesOptimizationValues.DetectionKind.On
+                : after.Kind == WindowedGamesOptimizationValues.DetectionKind.Off;
+
+            _windowedGamesOptimizationStore.CurrentSetting = after.Kind == WindowedGamesOptimizationValues.DetectionKind.On;
+            if (!ok)
+            {
+                throw new InvalidOperationException(
+                    "DirectXUserGlobalSettings write could not be verified.");
+            }
         }
     }
 }

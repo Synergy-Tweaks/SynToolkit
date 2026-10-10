@@ -1,3 +1,5 @@
+#nullable enable
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using SynToolkit.Stores;
@@ -6,37 +8,44 @@ using System;
 
 namespace SynToolkit.Services.ConfigurationServices
 {
-    public class FsoAndGameBarConfigurationService : IConfigurationService
+    /// <summary>
+    /// Xbox Game Bar / Game DVR capture only. Owns:
+    /// - HKCU\System\GameConfigStore\GameDVR_Enabled
+    /// - HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR\AppCaptureEnabled
+    /// - HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR\AllowGameDVR
+    /// Does not touch GameDVR_FSEBehaviorMode (Fullscreen Optimizations owns that).
+    /// </summary>
+    public sealed class XboxGameBarConfigurationService : IConfigurationService
     {
-        private const string SynToolkitStoreKey = @"HKLM\SOFTWARE\SynToolkit\Services\FSOGameBar";
+        private const string SynToolkitStoreKey = @"HKLM\SOFTWARE\SynToolkit\Services\XboxGameBar";
         private const string GameConfigStoreKey = @"HKCU\System\GameConfigStore";
         private const string GameDvrKey = @"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR";
         private const string GameDvrPolicyKey = @"HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR";
         private const string StateValue = "state";
         private const string BackupCapturedValue = "BackupCaptured";
 
-        private readonly ConfigurationStore _configurationStore;
+        private readonly ConfigurationStore _store;
 
-        public FsoAndGameBarConfigurationService(
-            [FromKeyedServices("FsoAndGameBar")] ConfigurationStore configurationStore)
+        public XboxGameBarConfigurationService(
+            [FromKeyedServices("XboxGameBar")] ConfigurationStore store)
         {
-            _configurationStore = configurationStore;
+            _store = store;
         }
 
         public void Disable()
         {
             CaptureOriginalSettings();
             RegistryHelper.SetValue(GameConfigStoreKey, "GameDVR_Enabled", 0, RegistryValueKind.DWord);
-            RegistryHelper.SetValue(GameConfigStoreKey, "GameDVR_FSEBehaviorMode", 2, RegistryValueKind.DWord);
             RegistryHelper.SetValue(GameDvrKey, "AppCaptureEnabled", 0, RegistryValueKind.DWord);
             RegistryHelper.SetValue(GameDvrPolicyKey, "AllowGameDVR", 0, RegistryValueKind.DWord);
             RegistryHelper.SetValue(SynToolkitStoreKey, StateValue, 0, RegistryValueKind.DWord);
-            bool detectedState = IsEnabled();
-            _configurationStore.CurrentSetting = detectedState;
-            if (detectedState)
+
+            bool detected = IsEnabled();
+            _store.CurrentSetting = detected;
+            if (detected)
             {
                 throw new InvalidOperationException(
-                    "Windows did not accept all requested Game Bar/FSO changes. The original settings remain available for revert.");
+                    "Windows did not accept all requested Xbox Game Bar changes.");
             }
         }
 
@@ -45,39 +54,67 @@ namespace SynToolkit.Services.ConfigurationServices
             bool hasSnapshot = RegistryHelper.IsMatch(SynToolkitStoreKey, BackupCapturedValue, 1);
             if (hasSnapshot)
             {
-                DwordSnapshot gameDvrEnabled = ReadSnapshot("GameDvrEnabled");
-                DwordSnapshot fsoBehavior = ReadSnapshot("FsoBehavior");
-                DwordSnapshot appCaptureEnabled = ReadSnapshot("AppCaptureEnabled");
-                DwordSnapshot allowGameDvr = ReadSnapshot("AllowGameDvr");
-
-                RestoreSnapshot(GameConfigStoreKey, "GameDVR_Enabled", gameDvrEnabled);
-                RestoreSnapshot(GameConfigStoreKey, "GameDVR_FSEBehaviorMode", fsoBehavior);
-                RestoreSnapshot(GameDvrKey, "AppCaptureEnabled", appCaptureEnabled);
-                RestoreSnapshot(GameDvrPolicyKey, "AllowGameDVR", allowGameDvr);
+                RestoreSnapshot(GameConfigStoreKey, "GameDVR_Enabled", ReadSnapshot("GameDvrEnabled"));
+                RestoreSnapshot(GameDvrKey, "AppCaptureEnabled", ReadSnapshot("AppCaptureEnabled"));
+                RestoreSnapshot(GameDvrPolicyKey, "AllowGameDVR", ReadSnapshot("AllowGameDvr"));
             }
             else
             {
-                // Missing values use the Windows 11 defaults when no SynToolkit
-                // snapshot is available from an earlier disable operation.
                 RegistryHelper.DeleteValue(GameConfigStoreKey, "GameDVR_Enabled");
-                RegistryHelper.DeleteValue(GameConfigStoreKey, "GameDVR_FSEBehaviorMode");
                 RegistryHelper.DeleteValue(GameDvrKey, "AppCaptureEnabled");
                 RegistryHelper.DeleteValue(GameDvrPolicyKey, "AllowGameDVR");
             }
 
             RegistryHelper.SetValue(SynToolkitStoreKey, StateValue, 1, RegistryValueKind.DWord);
-            bool detectedState = IsEnabled();
-            _configurationStore.CurrentSetting = detectedState;
-            if (!detectedState)
+            bool detected = IsEnabled();
+            _store.CurrentSetting = detected;
+            if (!detected)
             {
                 throw new InvalidOperationException(
-                    "Windows did not restore all Game Bar/FSO settings. The saved state was retained so the revert can be retried.");
+                    "Windows did not restore Xbox Game Bar settings. The saved state was retained.");
             }
 
             if (hasSnapshot)
             {
                 ClearSnapshots();
             }
+        }
+
+        public bool IsEnabled()
+        {
+            if (!TryReadDword(GameConfigStoreKey, "GameDVR_Enabled", out uint? gameDvrEnabled)
+                || !TryReadDword(GameDvrKey, "AppCaptureEnabled", out uint? appCapture)
+                || !TryReadDword(GameDvrPolicyKey, "AllowGameDVR", out uint? policy))
+            {
+                throw new InvalidOperationException("Couldn't read Xbox Game Bar state.");
+            }
+
+            // Missing values retain Windows defaults (enabled). Explicit 0 disables.
+            return gameDvrEnabled != 0 && appCapture != 0 && policy != 0;
+        }
+
+        private static bool TryReadDword(string keyPath, string valueName, out uint? value)
+        {
+            value = null;
+            if (!RegistryHelper.TryReadValueWithKind(keyPath, valueName, out object? raw, out RegistryValueKind? kind))
+            {
+                return false;
+            }
+
+            if (raw is null)
+            {
+                return true;
+            }
+
+            if (kind is not null and not RegistryValueKind.DWord
+                || !HagsDetection.TryConvertToUInt32(raw, out uint parsed))
+            {
+                throw new NotSupportedException(
+                    $"Xbox Game Bar value {valueName} has an unexpected type/value.");
+            }
+
+            value = parsed;
+            return true;
         }
 
         private static void CaptureOriginalSettings()
@@ -88,19 +125,14 @@ namespace SynToolkit.Services.ConfigurationServices
             }
 
             CaptureDword(GameConfigStoreKey, "GameDVR_Enabled", "GameDvrEnabled");
-            CaptureDword(GameConfigStoreKey, "GameDVR_FSEBehaviorMode", "FsoBehavior");
             CaptureDword(GameDvrKey, "AppCaptureEnabled", "AppCaptureEnabled");
             CaptureDword(GameDvrPolicyKey, "AllowGameDVR", "AllowGameDvr");
-            RegistryHelper.SetValue(
-                SynToolkitStoreKey,
-                BackupCapturedValue,
-                1,
-                RegistryValueKind.DWord);
+            RegistryHelper.SetValue(SynToolkitStoreKey, BackupCapturedValue, 1, RegistryValueKind.DWord);
         }
 
         private static void CaptureDword(string keyPath, string valueName, string backupName)
         {
-            object value = RegistryHelper.GetValue(keyPath, valueName);
+            object? value = RegistryHelper.GetValue(keyPath, valueName);
             RegistryHelper.SetValue(
                 SynToolkitStoreKey,
                 $"Backup{backupName}Exists",
@@ -113,7 +145,7 @@ namespace SynToolkit.Services.ConfigurationServices
                 return;
             }
 
-            if (value is not int dwordValue)
+            if (!HagsDetection.TryConvertToUInt32(value, out uint dwordValue))
             {
                 throw new InvalidOperationException(
                     $"The existing {valueName} setting is not a DWORD. SynToolkit left it unchanged.");
@@ -122,34 +154,26 @@ namespace SynToolkit.Services.ConfigurationServices
             RegistryHelper.SetValue(
                 SynToolkitStoreKey,
                 $"Backup{backupName}Value",
-                dwordValue,
+                unchecked((int)dwordValue),
                 RegistryValueKind.DWord);
         }
 
         private static DwordSnapshot ReadSnapshot(string backupName)
         {
-            bool existed = RegistryHelper.IsMatch(
-                SynToolkitStoreKey,
-                $"Backup{backupName}Exists",
-                1);
+            bool existed = RegistryHelper.IsMatch(SynToolkitStoreKey, $"Backup{backupName}Exists", 1);
             if (!existed)
             {
                 return new DwordSnapshot(false, 0);
             }
 
-            object value = RegistryHelper.GetValue(
-                SynToolkitStoreKey,
-                $"Backup{backupName}Value");
+            object? value = RegistryHelper.GetValue(SynToolkitStoreKey, $"Backup{backupName}Value");
             return value is int dwordValue
                 ? new DwordSnapshot(true, dwordValue)
                 : throw new InvalidOperationException(
-                    "A saved Game Bar/FSO setting is invalid. No settings were restored.");
+                    "A saved Xbox Game Bar setting is invalid.");
         }
 
-        private static void RestoreSnapshot(
-            string keyPath,
-            string valueName,
-            DwordSnapshot snapshot)
+        private static void RestoreSnapshot(string keyPath, string valueName, DwordSnapshot snapshot)
         {
             if (snapshot.Existed)
             {
@@ -163,42 +187,13 @@ namespace SynToolkit.Services.ConfigurationServices
 
         private static void ClearSnapshots()
         {
-            foreach (string backupName in new[]
-            {
-                "GameDvrEnabled",
-                "FsoBehavior",
-                "AppCaptureEnabled",
-                "AllowGameDvr"
-            })
+            foreach (string backupName in new[] { "GameDvrEnabled", "AppCaptureEnabled", "AllowGameDvr" })
             {
                 RegistryHelper.DeleteValue(SynToolkitStoreKey, $"Backup{backupName}Exists");
                 RegistryHelper.DeleteValue(SynToolkitStoreKey, $"Backup{backupName}Value");
             }
 
             RegistryHelper.DeleteValue(SynToolkitStoreKey, BackupCapturedValue);
-        }
-
-        public bool IsEnabled()
-        {
-            try
-            {
-                object gameDvrEnabled = RegistryHelper.GetValue(GameConfigStoreKey, "GameDVR_Enabled");
-                object fsoBehavior = RegistryHelper.GetValue(GameConfigStoreKey, "GameDVR_FSEBehaviorMode");
-                object appCaptureEnabled = RegistryHelper.GetValue(GameDvrKey, "AppCaptureEnabled");
-                object gameDvrPolicy = RegistryHelper.GetValue(GameDvrPolicyKey, "AllowGameDVR");
-
-                // Missing values retain Windows defaults. Explicit zero values
-                // disable Game DVR/capture, and FSEBehaviorMode=2 disables FSO.
-                return !(gameDvrEnabled is int gameDvr && gameDvr == 0)
-                    && !(fsoBehavior is int fso && fso == 2)
-                    && !(appCaptureEnabled is int capture && capture == 0)
-                    && !(gameDvrPolicy is int policy && policy == 0);
-            }
-            catch (System.Exception exception)
-            {
-                App.logger.Warn($"Unable to detect FSO/Game Bar state: {exception.Message}");
-                return false;
-            }
         }
 
         private sealed record DwordSnapshot(bool Existed, int Value);

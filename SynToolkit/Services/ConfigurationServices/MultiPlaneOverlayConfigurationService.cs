@@ -1,22 +1,22 @@
+#nullable enable
+
+using SynToolkit.Services.Mpo;
 using SynToolkit.Stores;
 using SynToolkit.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using System;
 
 namespace SynToolkit.Services.ConfigurationServices
 {
     /// <summary>
-    /// Disables Multi-Plane Overlay (MPO), a common fix for DWM flickering/black-flash
-    /// issues on some GPU driver combinations.
+    /// Multi-Plane Overlay (MPO). Disable writes OverlayTestMode=5; Enable deletes the value
+    /// (Windows default = MPO enabled). Requires signing out.
     /// </summary>
     internal class MultiPlaneOverlayConfigurationService : IConfigurationService
     {
         private const string SYNTOOLKIT_STORE_KEY_NAME = @"HKLM\SOFTWARE\SynToolkit\Services\MultiPlaneOverlay";
         private const string STATE_VALUE_NAME = "state";
-
-        private const string DWM_KEY_NAME = @"HKLM\SOFTWARE\Microsoft\Windows\Dwm";
-        private const string OVERLAY_TEST_MODE_VALUE_NAME = "OverlayTestMode";
-        private const int DISABLE_MPO_VALUE = 5;
 
         private readonly ConfigurationStore _multiPlaneOverlayConfigurationStore;
 
@@ -28,27 +28,90 @@ namespace SynToolkit.Services.ConfigurationServices
 
         public void Disable()
         {
-            RegistryHelper.SetValue(DWM_KEY_NAME, OVERLAY_TEST_MODE_VALUE_NAME, DISABLE_MPO_VALUE, RegistryValueKind.DWord);
+            MultiPlaneOverlayValues.DetectionResult before = DetectCurrentState();
+            if (before.Kind == MultiPlaneOverlayValues.DetectionKind.Disabled)
+            {
+                _multiPlaneOverlayConfigurationStore.CurrentSetting = false;
+                return;
+            }
+
+            if (before.Kind is MultiPlaneOverlayValues.DetectionKind.Unsupported
+                or MultiPlaneOverlayValues.DetectionKind.Error)
+            {
+                throw new NotSupportedException(before.Warning ?? before.DisplayLabel);
+            }
+
+            RegistryHelper.SetValue(
+                MultiPlaneOverlayValues.DwmKeyPath,
+                MultiPlaneOverlayValues.OverlayTestModeValueName,
+                unchecked((int)MultiPlaneOverlayValues.DisableMpoValue),
+                RegistryValueKind.DWord);
             RegistryHelper.SetValue(SYNTOOLKIT_STORE_KEY_NAME, STATE_VALUE_NAME, 0);
 
-            App.ContentDialogCaller("logoff");
+            MultiPlaneOverlayValues.DetectionResult after = DetectCurrentState();
+            _multiPlaneOverlayConfigurationStore.CurrentSetting = after.Kind == MultiPlaneOverlayValues.DetectionKind.Enabled;
+            if (after.Kind != MultiPlaneOverlayValues.DetectionKind.Disabled)
+            {
+                throw new InvalidOperationException(
+                    "OverlayTestMode write could not be verified.");
+            }
 
-            _multiPlaneOverlayConfigurationStore.CurrentSetting = IsEnabled();
+            App.ContentDialogCaller("logoff");
         }
 
         public void Enable()
         {
-            RegistryHelper.DeleteValue(DWM_KEY_NAME, OVERLAY_TEST_MODE_VALUE_NAME);
+            MultiPlaneOverlayValues.DetectionResult before = DetectCurrentState();
+            if (before.Kind == MultiPlaneOverlayValues.DetectionKind.Enabled
+                && before.RawValue is null)
+            {
+                _multiPlaneOverlayConfigurationStore.CurrentSetting = true;
+                return;
+            }
+
+            if (before.Kind is MultiPlaneOverlayValues.DetectionKind.Unsupported
+                or MultiPlaneOverlayValues.DetectionKind.Error)
+            {
+                throw new NotSupportedException(before.Warning ?? before.DisplayLabel);
+            }
+
+            // Restoring default means deleting the value, not writing another number.
+            RegistryHelper.DeleteValue(
+                MultiPlaneOverlayValues.DwmKeyPath,
+                MultiPlaneOverlayValues.OverlayTestModeValueName);
             RegistryHelper.SetValue(SYNTOOLKIT_STORE_KEY_NAME, STATE_VALUE_NAME, 1);
 
-            App.ContentDialogCaller("logoff");
+            MultiPlaneOverlayValues.DetectionResult after = DetectCurrentState();
+            _multiPlaneOverlayConfigurationStore.CurrentSetting = after.Kind == MultiPlaneOverlayValues.DetectionKind.Enabled;
+            if (after.Kind != MultiPlaneOverlayValues.DetectionKind.Enabled || after.RawValue is not null)
+            {
+                throw new InvalidOperationException(
+                    "OverlayTestMode delete could not be verified.");
+            }
 
-            _multiPlaneOverlayConfigurationStore.CurrentSetting = IsEnabled();
+            App.ContentDialogCaller("logoff");
         }
 
         public bool IsEnabled()
         {
-            return !RegistryHelper.IsMatch(DWM_KEY_NAME, OVERLAY_TEST_MODE_VALUE_NAME, DISABLE_MPO_VALUE);
+            MultiPlaneOverlayValues.DetectionResult result = DetectCurrentState();
+            if (result.Kind is MultiPlaneOverlayValues.DetectionKind.Unsupported
+                or MultiPlaneOverlayValues.DetectionKind.Error)
+            {
+                throw new NotSupportedException(result.Warning ?? result.DisplayLabel);
+            }
+
+            return result.Kind == MultiPlaneOverlayValues.DetectionKind.Enabled;
+        }
+
+        public MultiPlaneOverlayValues.DetectionResult DetectCurrentState()
+        {
+            bool readSucceeded = RegistryHelper.TryReadValueWithKind(
+                MultiPlaneOverlayValues.DwmKeyPath,
+                MultiPlaneOverlayValues.OverlayTestModeValueName,
+                out object? raw,
+                out RegistryValueKind? kind);
+            return MultiPlaneOverlayValues.DetectCurrentState(readSucceeded, raw, kind);
         }
     }
 }

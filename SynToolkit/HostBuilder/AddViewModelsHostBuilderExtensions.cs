@@ -253,6 +253,7 @@ namespace SynToolkit.HostBuilder
                 ["SafeMode"] = new(App.GetValueFromItemList("SafeMode"), "SafeMode", ConfigurationType.Troubleshooting, "ms-appx:///assets/Icons/SafeMode.png"),
                 ["ProgramPriority"] = new(App.GetValueFromItemList("ProgramPriority"), "ProgramPriority", ConfigurationType.TweaksPerformanceSubMenu, "ms-appx:///assets/Icons/Cpu.png"),
                 ["MmcssOptimization"] = new(App.GetValueFromItemList("MmcssOptimization"), "MmcssOptimization", ConfigurationType.TweaksPerformanceSubMenu, "ms-appx:///assets/Icons/Cpu.png"),
+                ["TaskbarAlignment"] = new(App.GetValueFromItemList("TaskbarAlignment"), "TaskbarAlignment", ConfigurationType.TweaksInterfaceSubMenu, "ms-appx:///assets/Icons/Theme.png"),
             };
 
             host.ConfigureServices((_, services) =>
@@ -329,7 +330,8 @@ namespace SynToolkit.HostBuilder
                 ["RemovableDrivesInSidebar"] = new(App.GetValueFromItemList("RemovableDrivesInSidebar"), "RemovableDrivesInSidebar", ConfigurationType.FileExplorerSubMenu),
                 ["BackgroundApps"] = new(App.GetValueFromItemList("BackgroundApps"), "BackgroundApps", ConfigurationType.General),
                 ["SearchIndexing"] = new(App.GetValueFromItemList("SearchIndexing"), "SearchIndexing", ConfigurationType.General),
-                ["FsoAndGameBar"] = new(App.GetValueFromItemList("FsoAndGameBar"), "FsoAndGameBar", ConfigurationType.General),
+                ["FullScreenOptimizations"] = new(App.GetValueFromItemList("FullScreenOptimizations"), "FullScreenOptimizations", ConfigurationType.TweaksPerformanceSubMenu, "ms-appx:///assets/Icons/Games.png"),
+                ["XboxGameBar"] = new(App.GetValueFromItemList("XboxGameBar"), "XboxGameBar", ConfigurationType.TweaksPerformanceSubMenu, "ms-appx:///assets/Icons/Games.png"),
                 ["AutomaticUpdates"] = new(App.GetValueFromItemList("AutomaticUpdates"), "AutomaticUpdates", ConfigurationType.General),
                 ["DeliveryOptimisation"] = new(App.GetValueFromItemList("DeliveryOptimisation"), "DeliveryOptimisation", ConfigurationType.General),
                 ["Hibernation"] = new(App.GetValueFromItemList("Hibernation"), "Hibernation", ConfigurationType.General),
@@ -350,9 +352,9 @@ namespace SynToolkit.HostBuilder
                 ["HideAppBrowserControl"] = new(App.GetValueFromItemList("HideAppBrowserControl"), "HideAppBrowserControl", ConfigurationType.DefenderSubMenu),
                 ["SecurityHealthTray"] = new(App.GetValueFromItemList("SecurityHealthTray"), "SecurityHealthTray", ConfigurationType.DefenderSubMenu),
                 ["DefenderRealtimeProtection"] = new(App.GetValueFromItemList("DefenderRealtimeProtection"), "DefenderRealtimeProtection", ConfigurationType.DefenderSubMenu),
-                ["MultiPlaneOverlay"] = new(App.GetValueFromItemList("MultiPlaneOverlay"), "MultiPlaneOverlay", ConfigurationType.Advanced),
-                ["Hags"] = new(App.GetValueFromItemList("Hags"), "Hags", ConfigurationType.General, "ms-appx:///assets/Icons/Gpu.png"),
-                ["WindowedGamesOptimization"] = new(App.GetValueFromItemList("WindowedGamesOptimization"), "WindowedGamesOptimization", ConfigurationType.General, "ms-appx:///assets/Icons/Games.png"),
+                ["MultiPlaneOverlay"] = new(App.GetValueFromItemList("MultiPlaneOverlay"), "MultiPlaneOverlay", ConfigurationType.TweaksPerformanceSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
+                ["Hags"] = new(App.GetValueFromItemList("Hags"), "Hags", ConfigurationType.TweaksPerformanceSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
+                ["WindowedGamesOptimization"] = new(App.GetValueFromItemList("WindowedGamesOptimization"), "WindowedGamesOptimization", ConfigurationType.TweaksPerformanceSubMenu, "ms-appx:///assets/Icons/Games.png"),
                 ["FaultTolerantHeap"] = new(App.GetValueFromItemList("FaultTolerantHeap"), "FaultTolerantHeap", ConfigurationType.MitigationsSubMenu),
                 ["CpuIdle"] = new(App.GetValueFromItemList("CpuIdle"), "CpuIdle", ConfigurationType.General),
                 ["GiveAccessToMenu"] = new(App.GetValueFromItemList("GiveAccessToMenu"), "GiveAccessToMenu", ConfigurationType.FileSharingSubMenu),

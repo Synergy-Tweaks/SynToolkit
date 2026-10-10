@@ -122,7 +122,19 @@ namespace SynToolkit.ViewModels
                 bool currentSetting = _configurationService.IsEnabled();
                 _configurationStore.CurrentSetting = currentSetting;
                 IsStateAvailable = true;
-                ClearStatus();
+
+                if (_configurationService is HagsConfigurationService hags
+                    && hags.GetDetectionStatus() is string hagsStatus
+                    && !string.IsNullOrWhiteSpace(hagsStatus))
+                {
+                    _statusMessage = hagsStatus;
+                    OnPropertyChanged(nameof(DisplayDescription));
+                }
+                else
+                {
+                    ClearStatus();
+                }
+
                 return currentSetting;
             }
             catch (Exception exception)

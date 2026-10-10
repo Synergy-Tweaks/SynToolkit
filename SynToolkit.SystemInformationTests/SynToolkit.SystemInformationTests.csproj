@@ -31,6 +31,10 @@
     <Compile Include="..\SynToolkit\Services\CpuZMainboardDetailsParser.cs" Link="Services\CpuZMainboardDetailsParser.cs" />
     <Compile Include="..\SynToolkit\Services\GpuVendorClassification.cs" Link="Services\GpuVendorClassification.cs" />
     <Compile Include="..\SynToolkit\Services\HagsDetection.cs" Link="Services\HagsDetection.cs" />
+    <Compile Include="..\SynToolkit\Services\FavoriteIdMigration.cs" Link="Services\FavoriteIdMigration.cs" />
+    <Compile Include="..\SynToolkit\Services\Mpo\MultiPlaneOverlayValues.cs" Link="Services\Mpo\MultiPlaneOverlayValues.cs" />
+    <Compile Include="..\SynToolkit\Services\Taskbar\TaskbarAlignmentValues.cs" Link="Services\Taskbar\TaskbarAlignmentValues.cs" />
+    <Compile Include="..\SynToolkit\Services\WindowedGames\WindowedGamesOptimizationValues.cs" Link="Services\WindowedGames\WindowedGamesOptimizationValues.cs" />
     <Compile Include="..\SynToolkit\Services\NvidiaProfileInspector\NvidiaProfilePreviewService.cs" Link="Services\NvidiaProfileInspector\NvidiaProfilePreviewService.cs" />
     <Compile Include="..\SynToolkit\Services\RadeonSlimmer\RadeonSelectionModels.cs" Link="Services\RadeonSlimmer\RadeonSelectionModels.cs" />
     <Compile Include="..\SynToolkit\Services\SystemInformationService.cs" Link="Services\SystemInformationService.cs" />

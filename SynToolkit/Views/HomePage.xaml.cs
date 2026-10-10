@@ -168,6 +168,8 @@ namespace SynToolkit.Views
         }
         private void LoadFavorites()
         {
+            FavoriteIdMigrationRegistry.MigrateFavoritesRegistry();
+
             _configurationItems = new List<IConfigurationItem>();
             // Get all values in the Favorites reg key
             string keyPath = @"SOFTWARE\SynToolkit\Favorites";
@@ -179,10 +181,14 @@ namespace SynToolkit.Views
                     {
                         try
                         {
-                            var favorite = App.RootList.FirstOrDefault(item => item.Key == valueName);
-                            if (favorite is not null)
+                            foreach (string mappedId in FavoriteIdMigration.Expand(valueName))
                             {
-                                _configurationItems.Add(favorite);
+                                var favorite = App.RootList.FirstOrDefault(item => item.Key == mappedId);
+                                if (favorite is not null
+                                    && !_configurationItems.Any(item => item.Key == favorite.Key))
+                                {
+                                    _configurationItems.Add(favorite);
+                                }
                             }
                         }
                         catch

@@ -79,10 +79,13 @@ public sealed partial class ConfigPage : Page
     {
         foreach (IConfigurationItem item in _viewModel.ConfigurationItems)
         {
-            if (item is ConfigurationItemViewModel { Key: "Hags" } hagsItem)
+            if (item is ConfigurationItemViewModel configurationItem)
             {
-                hagsItem.RefreshCurrentSetting();
-                break;
+                configurationItem.RefreshCurrentSetting();
+            }
+            else if (item is MultiOptionConfigurationItemViewModel multiOptionItem)
+            {
+                multiOptionItem.RefreshCurrentSetting();
             }
         }
     }

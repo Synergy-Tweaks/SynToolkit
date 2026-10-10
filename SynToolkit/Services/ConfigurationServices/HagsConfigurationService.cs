@@ -10,16 +10,16 @@ using System.Globalization;
 namespace SynToolkit.Services.ConfigurationServices
 {
     /// <summary>
-    /// Hardware-accelerated GPU scheduling (HAGS) toggle for General Configuration.
+    /// Hardware-accelerated GPU scheduling (HAGS) for Tweaks → Performance.
     /// Single read/write path: HwSchMode DWORD under
-    /// HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers, accessed through
-    /// RegistryHelper (RegistryView.Registry64 via OpenBaseKey). 2 = on, 1 = off.
-    /// Windows Settings uses this SYSTEM key; the SOFTWARE\...\GraphicsDrivers path
-    /// is not where Windows stores HwSchMode. A restart is required for the GPU
-    /// scheduler to pick up the new DWORD.
+    /// HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers via RegistryHelper
+    /// (RegistryView.Registry64). 2 = on, 1 = off. Missing = Default (system decides).
+    /// A restart is required for the GPU scheduler to apply the requested DWORD.
     /// </summary>
     public class HagsConfigurationService : IConfigurationService
     {
+        private static bool _wroteThisSession;
+
         private readonly ConfigurationStore _hagsConfigurationStore;
 
         public HagsConfigurationService(
@@ -30,29 +30,47 @@ namespace SynToolkit.Services.ConfigurationServices
 
         public static bool IsSupported() => HagsDetection.CanToggle(Detect().State);
 
-        public static HagsDetectionResult Detect()
+        public static HagsDetectionResult Detect() => DetectCurrentState();
+
+        /// <summary>
+        /// Fresh registry read every call. Only code path that infers HAGS state.
+        /// </summary>
+        public static HagsDetectionResult DetectCurrentState()
         {
             int windowsBuild = ReadWindowsBuildNumber();
-            HwSchModeRead read = ReadHwSchMode();
-            HagsSupportState state = HagsDetection.Classify(
-                windowsBuild,
-                read.Value,
-                read.Failed);
+            bool readSucceeded = RegistryHelper.TryReadValueWithKind(
+                HagsDetection.GraphicsDriversKeyPath,
+                HagsDetection.HwSchModeValueName,
+                out object? raw,
+                out RegistryValueKind? kind);
 
-            if (read.Failed)
+            // Driver effective-state query (D3DKMTQueryAdapterInfo) is not wired —
+            // registry-only detection with session restart feedback after writes.
+            HagsDetectionResult result = HagsDetection.DetectCurrentState(
+                windowsBuild,
+                readSucceeded,
+                raw,
+                kind,
+                hardwareSupported: null,
+                effectiveEnabled: null,
+                wroteThisSession: _wroteThisSession);
+
+            if (!readSucceeded)
             {
-                App.logger.Warn("[HAGS] Registry read failed while inspecting HwSchMode on Windows build {0}.", windowsBuild);
+                App.logger.Warn(
+                    "[HAGS] Registry read failed while inspecting HwSchMode on Windows build {0}.",
+                    windowsBuild);
             }
-            else if (state == HagsSupportState.Unknown)
+            else if (result.State == HagsSupportState.UnsupportedValue)
             {
                 App.logger.Warn(
                     "[HAGS] Unexpected HwSchMode value {0} ({1}) on Windows build {2}.",
-                    read.RawDisplay,
-                    read.RawType,
+                    result.HwSchMode?.ToString(CultureInfo.InvariantCulture) ?? "(unparsed)",
+                    kind?.ToString() ?? "none",
                     windowsBuild);
             }
 
-            return new HagsDetectionResult(state, read.Value, windowsBuild);
+            return result;
         }
 
         public void Disable() => WriteHwSchMode(enabled: false);
@@ -61,41 +79,70 @@ namespace SynToolkit.Services.ConfigurationServices
 
         public bool IsEnabled()
         {
-            HagsDetectionResult result = Detect();
+            HagsDetectionResult result = DetectCurrentState();
             if (!HagsDetection.CanToggle(result.State))
             {
                 throw new NotSupportedException(HagsDetection.GetStatusText(result));
             }
 
-            return RegistryHelper.IsMatch(
-                HagsDetection.GraphicsDriversKeyPath,
-                HagsDetection.HwSchModeValueName,
-                2);
+            // Default is not On — show toggle Off with status text from GetDetectionStatus.
+            return result.State == HagsSupportState.On;
+        }
+
+        /// <summary>
+        /// Status line for default / restart-required while the toggle remains interactive.
+        /// </summary>
+        public string? GetDetectionStatus()
+        {
+            HagsDetectionResult result = DetectCurrentState();
+            if (result.State == HagsSupportState.Default || result.RestartRequired)
+            {
+                return HagsDetection.GetStatusText(result);
+            }
+
+            return null;
         }
 
         private void WriteHwSchMode(bool enabled)
         {
-            EnsureCanToggle();
-            int value = enabled ? 2 : 1;
+            HagsDetectionResult before = DetectCurrentState();
+            if (!HagsDetection.CanToggle(before.State))
+            {
+                throw new NotSupportedException(HagsDetection.GetStatusText(before));
+            }
+
+            uint target = enabled ? HagsDetection.HwSchModeOn : HagsDetection.HwSchModeOff;
+            if (before.State == HagsSupportState.On && enabled)
+            {
+                _hagsConfigurationStore.CurrentSetting = true;
+                return;
+            }
+
+            if (before.State == HagsSupportState.Off && !enabled)
+            {
+                _hagsConfigurationStore.CurrentSetting = false;
+                return;
+            }
+
             RegistryHelper.SetValue(
                 HagsDetection.GraphicsDriversKeyPath,
                 HagsDetection.HwSchModeValueName,
-                value,
+                unchecked((int)target),
                 RegistryValueKind.DWord);
 
-            // Optimistic: the DWORD is what Windows will apply after reboot.
-            // Do not requery a live kernel flag — HwSchMode is a persisted setting.
+            _wroteThisSession = true;
+
+            HagsDetectionResult after = DetectCurrentState();
+            if (after.HwSchMode != target
+                || after.State is not (HagsSupportState.On or HagsSupportState.Off))
+            {
+                _hagsConfigurationStore.CurrentSetting = after.State == HagsSupportState.On;
+                throw new InvalidOperationException(
+                    "HwSchMode write could not be verified. The registry value did not match what was written.");
+            }
+
             _hagsConfigurationStore.CurrentSetting = enabled;
             App.ContentDialogCaller("restart");
-        }
-
-        private static void EnsureCanToggle()
-        {
-            HagsDetectionResult result = Detect();
-            if (!HagsDetection.CanToggle(result.State))
-            {
-                throw new NotSupportedException(HagsDetection.GetStatusText(result));
-            }
         }
 
         private static int ReadWindowsBuildNumber()
@@ -119,35 +166,6 @@ namespace SynToolkit.Services.ConfigurationServices
             }
 
             return Environment.OSVersion.Version.Build;
-        }
-
-        private readonly record struct HwSchModeRead(int? Value, bool Failed, string RawDisplay, string RawType);
-
-        private static HwSchModeRead ReadHwSchMode()
-        {
-            if (!RegistryHelper.TryReadValue(
-                    HagsDetection.GraphicsDriversKeyPath,
-                    HagsDetection.HwSchModeValueName,
-                    out object? raw))
-            {
-                return new HwSchModeRead(null, true, "read failed", "none");
-            }
-
-            if (raw is null)
-            {
-                return new HwSchModeRead(null, false, "missing value", "none");
-            }
-
-            if (TryParseInt32(raw, out int parsed))
-            {
-                return new HwSchModeRead(parsed, false, parsed.ToString(CultureInfo.InvariantCulture), raw.GetType().Name);
-            }
-
-            return new HwSchModeRead(
-                null,
-                true,
-                Convert.ToString(raw, CultureInfo.InvariantCulture) ?? "(unprintable)",
-                raw.GetType().FullName ?? raw.GetType().Name);
         }
 
         private static bool TryParseInt32(object? value, out int mode)
