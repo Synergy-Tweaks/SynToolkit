@@ -49,6 +49,7 @@ public sealed partial class ConfigPage : Page
                 new Folder {Name = type.GetDescription() ?? "Configuration"}
             };
             BreadcrumbBar.ItemClicked += BreadcrumbBar_ItemClicked;
+            ConfigureTweaksIntro(type);
 
             this.Loaded += ConfigPage_Loaded;
             this.Unloaded += ConfigPage_Unloaded;
@@ -57,6 +58,21 @@ public sealed partial class ConfigPage : Page
         {
             App.logger.Error($"Error initializing ConfigPage: {ex.Message}");
         }
+    }
+
+    private void ConfigureTweaksIntro(ConfigurationType type)
+    {
+        bool isTweaks = type == ConfigurationType.Tweaks;
+        TweaksIntroPanel.Visibility = isTweaks ? Visibility.Visible : Visibility.Collapsed;
+        TweaksWarningBanner.IsOpen = isTweaks;
+        if (!isTweaks)
+        {
+            return;
+        }
+
+        TweaksDescriptionText.Text = App.GetValueFromItemList("TweaksPageDescription");
+        TweaksWarningBanner.Title = App.GetValueFromItemList("TweaksWarningTitle");
+        TweaksWarningBanner.Message = App.GetValueFromItemList("TweaksWarningMessage");
     }
 
     private void RefreshVisibleConfigurationStates()
@@ -237,6 +253,7 @@ public sealed partial class ConfigPage : Page
     {
         if (sender is not SettingsCard settingCard) return;
         if (settingCard.DataContext is not ConfigurationSubMenuViewModel item) return;
+        if (!item.CanOpen) return;
 
         DataTemplate template = (DataTemplate)MainGrid.Resources["ConfigurationSubMenuTemplate"];
 

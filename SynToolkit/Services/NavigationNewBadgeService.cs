@@ -33,6 +33,7 @@ namespace SynToolkit.Services
                 ["PowerPlans"] = "SynToolkit.Views.PowerPlansPage",
                 ["Games"] = "SynToolkit.Views.GamesPage",
                 ["AdvancedConfigurations"] = "Advanced",
+                ["Tweaks"] = "Tweaks",
             };
 
         private static readonly Dictionary<string, string> NavigationTagToTabId =

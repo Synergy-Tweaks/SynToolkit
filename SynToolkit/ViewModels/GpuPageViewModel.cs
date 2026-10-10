@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using SynToolkit.Enums;
 using SynToolkit.Models.GpuDrivers;
 using SynToolkit.Services.GpuDrivers;
 using SynToolkit.Services.NvidiaProfileInspector;
@@ -195,7 +196,12 @@ namespace SynToolkit.ViewModels
             }
         }
 
-        public GpuPageViewModel(IGpuDriverCatalogService gpuDriverCatalogService, IGpuDriverPackageService gpuDriverPackageService)
+        public ObservableCollection<ConfigurationItemViewModel> AmdGpuTweaks { get; } = new();
+
+        public GpuPageViewModel(
+            IGpuDriverCatalogService gpuDriverCatalogService,
+            IGpuDriverPackageService gpuDriverPackageService,
+            IEnumerable<ConfigurationItemViewModel> configurationItemViewModels)
         {
             _gpuDriverCatalogService = gpuDriverCatalogService;
             _gpuDriverPackageService = gpuDriverPackageService;
@@ -209,6 +215,12 @@ namespace SynToolkit.ViewModels
             foreach (BundledNvidiaProfileFile bundledProfile in NvidiaProfileGalleryService.GetBundledProfiles())
             {
                 BundledProfiles.Add(bundledProfile);
+            }
+
+            foreach (ConfigurationItemViewModel item in configurationItemViewModels
+                .Where(item => item.Type == ConfigurationType.AmdGpuTweaksSubMenu))
+            {
+                AmdGpuTweaks.Add(item);
             }
         }
 

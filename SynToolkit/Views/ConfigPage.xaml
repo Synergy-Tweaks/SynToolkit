@@ -48,10 +48,11 @@
                 <controls:SettingsCard
                     x:Name="SubMenuSettingsCard"
                     Click="OnCardClicked"
-                    Description="{Binding Description}"
+                    Description="{Binding DisplayDescription}"
                     Header="{Binding Name}"
                     HeaderIcon="{Binding Icon, Converter={StaticResource FontIconConverter}}"
-                    IsClickEnabled="True"
+                    IsEnabled="{Binding CanOpen}"
+                    IsClickEnabled="{Binding CanOpen}"
                     Style="{StaticResource ConfigurationSettingsCardTemplate}" />
             </DataTemplate>
 
@@ -129,7 +130,7 @@
                 MultiOptionConfigurationItem="{StaticResource MultiOptionTemplate}" />
         </Grid.Resources>
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <BreadcrumbBar x:Name="BreadcrumbBar">
@@ -139,7 +140,7 @@
                         <BreadcrumbBarItem.ContentTemplate>
                             <DataTemplate>
                                 <TextBlock
-                                    Margin="0,24,30,24"
+                                    Margin="0,24,30,8"
                                     Style="{StaticResource TitleTextBlockStyle}"
                                     Text="{Binding Name}" />
                             </DataTemplate>
@@ -150,6 +151,21 @@
         </BreadcrumbBar>
         <ScrollViewer x:Name="ConfigScrollViewer" Grid.Row="1">
             <StackPanel>
+                <StackPanel
+                    x:Name="TweaksIntroPanel"
+                    Margin="0,0,36,18"
+                    Spacing="12"
+                    Visibility="Collapsed">
+                    <TextBlock
+                        x:Name="TweaksDescriptionText"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <InfoBar
+                        x:Name="TweaksWarningBanner"
+                        IsClosable="False"
+                        IsOpen="False"
+                        Severity="Warning" />
+                </StackPanel>
                 <InfoBar
                     x:Name="OperationInfoBar"
                     Margin="0,0,36,18"

@@ -20,6 +20,7 @@ using Windows.Security.Cryptography.Core;
 using Windows.Devices.WiFi;
 using SynToolkit.Commands.ConfigurationButtonsCommand;
 using SynToolkit.Services;
+using SynToolkit.Services.GpuDrivers;
 using SynToolkit.Utils;
 using SynToolkit.Models.ProfileModels;
 using Newtonsoft.Json;
@@ -37,7 +38,7 @@ namespace SynToolkit.HostBuilder
                 services.AddTransient(CreateConfigPageViewModel);
                 services.AddTransient(CreateHomePageViewModel);
                 services.AddTransient(CreateAppFetchPageViewModel);
-                services.AddTransient<GpuPageViewModel>();
+                services.AddTransient(CreateGpuPageViewModel);
                 services.AddTransient<GamesPageViewModel>();
                 services.AddTransient<AudioMixerPageViewModel>();
                 services.AddTransient<SpecsPageViewModel>();
@@ -206,6 +207,10 @@ namespace SynToolkit.HostBuilder
                 ["TroubleshootingNetwork"] = new("TroubleshootingNetwork", App.GetValueFromItemList("TroubleshootingNetwork"), App.GetValueFromItemList("TroubleshootingNetwork", true), ConfigurationType.Troubleshooting, "ms-appx:///assets/Icons/Internet.png"),
                 ["FileSharingSubMenu"] = new("FileSharingSubMenu", App.GetValueFromItemList("FileSharingSubMenu"), App.GetValueFromItemList("FileSharingSubMenu", true), ConfigurationType.General, "ms-appx:///assets/Icons/Internet.png"),
                 ["WindowsUpdate"] = new("WindowsUpdate", App.GetValueFromItemList("WindowsUpdate"), App.GetValueFromItemList("WindowsUpdate", true), ConfigurationType.General, "ms-appx:///assets/Icons/Update.png"),
+                ["TweaksPerformanceSubMenu"] = new("TweaksPerformanceSubMenu", App.GetValueFromItemList("TweaksPerformanceSubMenu"), App.GetValueFromItemList("TweaksPerformanceSubMenu", true), ConfigurationType.Tweaks, "ms-appx:///assets/Icons/Cpu.png"),
+                ["TweaksNetworkPowerSubMenu"] = new("TweaksNetworkPowerSubMenu", App.GetValueFromItemList("TweaksNetworkPowerSubMenu"), App.GetValueFromItemList("TweaksNetworkPowerSubMenu", true), ConfigurationType.Tweaks, "ms-appx:///assets/Icons/Internet.png"),
+                ["TweaksPrivacySubMenu"] = new("TweaksPrivacySubMenu", App.GetValueFromItemList("TweaksPrivacySubMenu"), App.GetValueFromItemList("TweaksPrivacySubMenu", true), ConfigurationType.Tweaks, "ms-appx:///assets/Icons/Security.png"),
+                ["TweaksInterfaceSubMenu"] = new("TweaksInterfaceSubMenu", App.GetValueFromItemList("TweaksInterfaceSubMenu"), App.GetValueFromItemList("TweaksInterfaceSubMenu", true), ConfigurationType.Tweaks, "ms-appx:///assets/Icons/Theme.png"),
             };
             host.ConfigureServices((_, services) =>
             {
@@ -350,6 +355,41 @@ namespace SynToolkit.HostBuilder
                 ["GiveAccessToMenu"] = new(App.GetValueFromItemList("GiveAccessToMenu"), "GiveAccessToMenu", ConfigurationType.FileSharingSubMenu),
                 ["NetworkNavigationPane"] = new(App.GetValueFromItemList("NetworkNavigationPane"), "NetworkNavigationPane", ConfigurationType.FileSharingSubMenu),
                 ["ToggleWindowsUpdates"] = new(App.GetValueFromItemList("ToggleWindowsUpdates"), "ToggleWindowsUpdates", ConfigurationType.WindowsUpdate),
+                ["MemoryCompression"] = new(App.GetValueFromItemList("MemoryCompression"), "MemoryCompression", ConfigurationType.TweaksPerformanceSubMenu),
+                ["SuperFetch"] = new(App.GetValueFromItemList("SuperFetch"), "SuperFetch", ConfigurationType.TweaksPerformanceSubMenu),
+                ["ProgramPriority"] = new(App.GetValueFromItemList("ProgramPriority"), "ProgramPriority", ConfigurationType.TweaksPerformanceSubMenu),
+                ["MmcssOptimization"] = new(App.GetValueFromItemList("MmcssOptimization"), "MmcssOptimization", ConfigurationType.TweaksPerformanceSubMenu),
+                ["SvcHostSplit"] = new(App.GetValueFromItemList("SvcHostSplit"), "SvcHostSplit", ConfigurationType.TweaksPerformanceSubMenu),
+                ["NtfsOptimization"] = new(App.GetValueFromItemList("NtfsOptimization"), "NtfsOptimization", ConfigurationType.TweaksPerformanceSubMenu),
+                ["DynamicTick"] = new(App.GetValueFromItemList("DynamicTick"), "DynamicTick", ConfigurationType.TweaksPerformanceSubMenu),
+                ["DmaRemapping"] = new(App.GetValueFromItemList("DmaRemapping"), "DmaRemapping", ConfigurationType.TweaksPerformanceSubMenu),
+                ["SleepStudy"] = new(App.GetValueFromItemList("SleepStudy"), "SleepStudy", ConfigurationType.TweaksPerformanceSubMenu),
+                ["NetworkLatency"] = new(App.GetValueFromItemList("NetworkLatency"), "NetworkLatency", ConfigurationType.TweaksNetworkPowerSubMenu),
+                ["PowerSaving"] = new(App.GetValueFromItemList("PowerSaving"), "PowerSaving", ConfigurationType.TweaksNetworkPowerSubMenu),
+                ["SettingsSync"] = new(App.GetValueFromItemList("SettingsSync"), "SettingsSync", ConfigurationType.TweaksPrivacySubMenu),
+                ["TelemetryOptimizations"] = new(App.GetValueFromItemList("TelemetryOptimizations"), "TelemetryOptimizations", ConfigurationType.TweaksPrivacySubMenu),
+                ["DriverUpdates"] = new(App.GetValueFromItemList("DriverUpdates"), "DriverUpdates", ConfigurationType.TweaksPrivacySubMenu),
+                ["EnhancePointerPrecision"] = new(App.GetValueFromItemList("EnhancePointerPrecision"), "EnhancePointerPrecision", ConfigurationType.TweaksInterfaceSubMenu),
+                ["LongPaths"] = new(App.GetValueFromItemList("LongPaths"), "LongPaths", ConfigurationType.TweaksInterfaceSubMenu),
+                ["InstantMenus"] = new(App.GetValueFromItemList("InstantMenus"), "InstantMenus", ConfigurationType.TweaksInterfaceSubMenu),
+                ["AutoEndTasks"] = new(App.GetValueFromItemList("AutoEndTasks"), "AutoEndTasks", ConfigurationType.TweaksInterfaceSubMenu),
+                ["TransparencyEffects"] = new(App.GetValueFromItemList("TransparencyEffects"), "TransparencyEffects", ConfigurationType.TweaksInterfaceSubMenu),
+                ["TaskViewButton"] = new(App.GetValueFromItemList("TaskViewButton"), "TaskViewButton", ConfigurationType.TweaksInterfaceSubMenu),
+                ["SearchBoxTaskbar"] = new(App.GetValueFromItemList("SearchBoxTaskbar"), "SearchBoxTaskbar", ConfigurationType.TweaksInterfaceSubMenu),
+                ["StartRecommended"] = new(App.GetValueFromItemList("StartRecommended"), "StartRecommended", ConfigurationType.TweaksInterfaceSubMenu),
+                ["ShowFileExtensions"] = new(App.GetValueFromItemList("ShowFileExtensions"), "ShowFileExtensions", ConfigurationType.TweaksInterfaceSubMenu),
+                ["AeroShake"] = new(App.GetValueFromItemList("AeroShake"), "AeroShake", ConfigurationType.TweaksInterfaceSubMenu),
+                ["WallpaperQuality"] = new(App.GetValueFromItemList("WallpaperQuality"), "WallpaperQuality", ConfigurationType.TweaksInterfaceSubMenu),
+                ["AmdDriverTelemetry"] = new(App.GetValueFromItemList("AmdDriverTelemetry"), "AmdDriverTelemetry", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
+                ["AmdFeatureLatency"] = new(App.GetValueFromItemList("AmdFeatureLatency"), "AmdFeatureLatency", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
+                ["AmdPowerPlay"] = new(App.GetValueFromItemList("AmdPowerPlay"), "AmdPowerPlay", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
+                ["AmdUlps"] = new(App.GetValueFromItemList("AmdUlps"), "AmdUlps", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
+                ["AmdAspm"] = new(App.GetValueFromItemList("AmdAspm"), "AmdAspm", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
+                ["AmdClockGating"] = new(App.GetValueFromItemList("AmdClockGating"), "AmdClockGating", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
+                ["AmdPowerGating"] = new(App.GetValueFromItemList("AmdPowerGating"), "AmdPowerGating", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
+                ["AmdDisplayPower"] = new(App.GetValueFromItemList("AmdDisplayPower"), "AmdDisplayPower", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
+                ["AmdSpreadSpectrum"] = new(App.GetValueFromItemList("AmdSpreadSpectrum"), "AmdSpreadSpectrum", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
+                ["AmdCrashDefender"] = new(App.GetValueFromItemList("AmdCrashDefender"), "AmdCrashDefender", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
             };
 
             host.ConfigureServices((_, services) =>
@@ -430,6 +470,14 @@ namespace SynToolkit.HostBuilder
                 serviceProvider.GetRequiredService<AppFetchService>(),
                 serviceProvider.GetRequiredService<WingetInstallerService>(),
                 serviceProvider.GetRequiredKeyedService<IConfigurationService>("XboxServices"));
+        }
+
+        private static GpuPageViewModel CreateGpuPageViewModel(IServiceProvider serviceProvider)
+        {
+            return new GpuPageViewModel(
+                serviceProvider.GetRequiredService<IGpuDriverCatalogService>(),
+                serviceProvider.GetRequiredService<IGpuDriverPackageService>(),
+                serviceProvider.GetRequiredService<IEnumerable<ConfigurationItemViewModel>>());
         }
         private static ConfigurationSubMenuViewModel CreateConfigurationSubMenuViewModel(
           IServiceProvider serviceProvider, ObservableCollection<ConfigurationItemViewModel> configurationItemViewModels, ObservableCollection<MultiOptionConfigurationItemViewModel> multiOptionConfigurationItemViewModel, ObservableCollection<LinksViewModel> linksViewModel, object key, ConfigurationSubMenu configuration, ObservableCollection<ConfigurationSubMenuViewModel> configurationSubMenuViewModel, ObservableCollection<ConfigurationButtonViewModel> configurationButtonViewModels)

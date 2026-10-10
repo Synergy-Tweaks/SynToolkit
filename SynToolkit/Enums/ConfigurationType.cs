@@ -7,6 +7,8 @@ namespace SynToolkit.Enums
     {
         [Description("General Configuration")]
         General,
+        [Description("Tweaks")]
+        Tweaks,
         [Description("Interface Tweaks")]
         Interface,
         [Description("Windows Settings")]
@@ -36,6 +38,11 @@ namespace SynToolkit.Enums
         TroubleshootingNetwork,
         FileSharingSubMenu,
         WindowsUpdate,
+        TweaksPerformanceSubMenu,
+        TweaksNetworkPowerSubMenu,
+        TweaksPrivacySubMenu,
+        TweaksInterfaceSubMenu,
+        AmdGpuTweaksSubMenu,
     }
 
     public static class EnumExtensions
@@ -51,6 +58,9 @@ namespace SynToolkit.Enums
             {
                 case ConfigurationType.General:
                     return App.GetValueFromItemList("GeneralConfig");
+
+                case ConfigurationType.Tweaks:
+                    return App.GetValueFromItemList("Tweaks");
 
                 case ConfigurationType.Interface:
                     return App.GetValueFromItemList("Interface");

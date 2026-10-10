@@ -277,6 +277,30 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItemSeparator />
+                <NavigationViewItem x:Name="Tweaks" Tag="Tweaks">
+                    <NavigationViewItem.Icon>
+                        <ImageIcon Source="ms-appx:///assets/Icons/Tweaks.png" />
+                    </NavigationViewItem.Icon>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock x:Name="TweaksText" VerticalAlignment="Center" />
+                        <Border
+                            x:Name="TweaksNewBadgeBorder"
+                            Padding="6,2"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource SystemAccentColorLight2}"
+                            CornerRadius="10"
+                            Visibility="Collapsed">
+                            <TextBlock
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Foreground="White"
+                                Text="NEW" />
+                        </Border>
+                        <Border x:Name="TweaksBadgeBorder" Background="{ThemeResource SystemAccentColorLight2}" CornerRadius="10" Padding="6,2" VerticalAlignment="Center">
+                            <TextBlock x:Name="TweaksBadge" FontSize="11" Foreground="White" />
+                        </Border>
+                    </StackPanel>
+                </NavigationViewItem>
                 <NavigationViewItem x:Name="GeneralConfig" Tag="General">
                     <NavigationViewItem.Icon>
                         <ImageIcon Source="ms-appx:///assets/Icons/Info.png" />

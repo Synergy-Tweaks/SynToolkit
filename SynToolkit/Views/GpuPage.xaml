@@ -210,6 +210,18 @@
                             <Button x:Name="DebloatTabButton" Click="DebloatTab_Click" Style="{StaticResource BreadcrumbTabInactive}" Content="Debloat" local:LocalizedText.ContentKey="GpuPage_TabDebloat" />
                             <TextBlock Style="{StaticResource BreadcrumbChevron}" Text="/" />
                             <Button x:Name="RemovalTabButton" Click="RemovalTab_Click" Style="{StaticResource BreadcrumbTabInactive}" Content="Removal" local:LocalizedText.ContentKey="GpuPage_TabRemoval" />
+                            <TextBlock
+                                x:Name="AmdTweaksTabChevron"
+                                Style="{StaticResource BreadcrumbChevron}"
+                                Text="/"
+                                Visibility="Collapsed" />
+                            <Button
+                                x:Name="AmdTweaksTabButton"
+                                Click="AmdTweaksTab_Click"
+                                Content="Tweaks"
+                                Style="{StaticResource BreadcrumbTabInactive}"
+                                Visibility="Collapsed"
+                                local:LocalizedText.ContentKey="GpuPage_TabTweaks" />
                         </StackPanel>
                     </ScrollViewer>
 
@@ -305,6 +317,26 @@
                         </controls:SettingsCard>
 
                         <InfoBar Margin="0,0,0,10" IsClosable="False" IsOpen="{Binding HasPreparedPackage}" Message="{Binding PreparedPackageSummary}" Severity="Informational" />
+
+                        <controls:SettingsCard
+                            x:Name="AmdTweaksOverviewCard"
+                            Margin="0,0,0,10"
+                            Click="AmdTweaksOverviewCard_Click"
+                            Description="Open AMD Radeon driver DWORD optimizations (ULPS, ASPM, PowerPlay, gating, and more)."
+                            Header="AMD GPU Tweaks"
+                            IsClickEnabled="True"
+                            Style="{StaticResource ConfigurationSettingsCardTemplate}"
+                            Visibility="Collapsed"
+                            local:LocalizedText.HeaderKey="AmdGpuTweaksSubMenu"
+                            local:LocalizedText.DescriptionKey="GpuPage_AmdTweaksDescription">
+                            <controls:SettingsCard.HeaderIcon>
+                                <ImageIcon Source="ms-appx:///assets/Icons/Amd.png" />
+                            </controls:SettingsCard.HeaderIcon>
+                            <FontIcon
+                                FontSize="14"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Glyph="&#xE76C;" />
+                        </controls:SettingsCard>
 
                         <StackPanel x:Name="NvidiaOverviewExtrasPanel" Visibility="Collapsed">
                             <InfoBar Margin="0,0,0,10" IsClosable="True" IsOpen="{Binding HasNvidiaApplyResult}" Message="{Binding NvidiaApplyResultSummary}" Severity="Informational" />
@@ -570,6 +602,47 @@
                                 </ItemsControl>
                             </ScrollViewer>
                         </Border>
+                    </StackPanel>
+
+                    <StackPanel x:Name="AmdTweaksPanel" Visibility="Collapsed" Spacing="12">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            TextWrapping="Wrap"
+                            local:LocalizedText.TextKey="GpuPage_AmdTweaksDescription" />
+                        <InfoBar
+                            x:Name="AmdTweaksWarningBanner"
+                            IsClosable="False"
+                            IsOpen="False"
+                            Severity="Warning"
+                            local:LocalizedText.TitleKey="TweaksWarningTitle"
+                            local:LocalizedText.MessageKey="TweaksWarningMessage" />
+                        <InfoBar
+                            x:Name="AmdTweaksUnavailableBanner"
+                            IsClosable="False"
+                            IsOpen="False"
+                            Severity="Informational"
+                            local:LocalizedText.TitleKey="GpuPage_AmdTweaksUnavailableTitle"
+                            local:LocalizedText.MessageKey="AmdGpuRequired" />
+                        <ItemsControl ItemsSource="{Binding AmdGpuTweaks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="viewmodel:ConfigurationItemViewModel">
+                                    <controls:SettingsCard
+                                        Margin="0,0,0,6"
+                                        Description="{Binding DisplayDescription}"
+                                        Header="{Binding Name}"
+                                        IsEnabled="{Binding CanInteract}"
+                                        Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                                        <controls:SettingsCard.HeaderIcon>
+                                            <ImageIcon Source="ms-appx:///assets/Icons/Amd.png" />
+                                        </controls:SettingsCard.HeaderIcon>
+                                        <ToggleSwitch
+                                            IsEnabled="{Binding CanInteract}"
+                                            IsOn="{Binding CurrentSetting}"
+                                            Loaded="AmdTweakToggle_Loaded" />
+                                    </controls:SettingsCard>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </StackPanel>
             </StackPanel>

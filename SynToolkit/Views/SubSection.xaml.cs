@@ -38,6 +38,25 @@ namespace SynToolkit.Views
             this.Unloaded += ConfigPage_Unloaded;
         }
         private string oldCat { get; set; }
+
+        private void ConfigureSubSectionWarning(ConfigurationSubMenuViewModel item)
+        {
+            bool isTweaksCategory =
+                string.Equals(item.Key, "TweaksPerformanceSubMenu", StringComparison.Ordinal)
+                || string.Equals(item.Key, "TweaksNetworkPowerSubMenu", StringComparison.Ordinal)
+                || string.Equals(item.Key, "TweaksPrivacySubMenu", StringComparison.Ordinal)
+                || string.Equals(item.Key, "TweaksInterfaceSubMenu", StringComparison.Ordinal);
+
+            SubSectionWarningBanner.IsOpen = isTweaksCategory;
+            if (!isTweaksCategory)
+            {
+                return;
+            }
+
+            SubSectionWarningBanner.Title = App.GetValueFromItemList("TweaksWarningTitle");
+            SubSectionWarningBanner.Message = App.GetValueFromItemList("TweaksWarningMessage");
+        }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
@@ -75,6 +94,7 @@ namespace SynToolkit.Views
                 BreadcrumbBar.ItemsSource = item2;
                 BreadcrumbBar.ItemClicked -= BreadcrumbBar_ItemClicked;
                 BreadcrumbBar.ItemClicked += BreadcrumbBar_ItemClicked;
+                ConfigureSubSectionWarning(item);
 
                 oldCat = App.CurrentCategory;
             }

@@ -260,6 +260,7 @@ namespace SynToolkit
             Gpu.Content = App.GetValueFromItemList("Gpu");
             Specs.Content = App.GetValueFromItemList("Specs");
             DiskCleanup.Content = App.GetValueFromItemList("Cleaner");
+            TweaksText.Text = App.GetValueFromItemList("Tweaks");
             GeneralConfigText.Text = App.GetValueFromItemList("GeneralConfig");
             InterfaceText.Text = App.GetValueFromItemList("Interface");
             WindowsText.Text = App.GetValueFromItemList("Windows");
@@ -286,6 +287,7 @@ namespace SynToolkit
             SetNewBadgeVisibility(GamesNewBadgeBorder, "Games");
             SetNewBadgeVisibility(AdjustmentsNewBadgeBorder, "Customizations");
             SetNewBadgeVisibility(AdvancedNewBadgeBorder, "AdvancedConfigurations");
+            SetNewBadgeVisibility(TweaksNewBadgeBorder, "Tweaks");
         }
 
         private static void SetNewBadgeVisibility(Border border, string tabId)
@@ -369,6 +371,14 @@ namespace SynToolkit
                 var configItems = App._host?.Services?.GetServices<ConfigurationItemViewModel>()?.ToList();
                 if (configItems == null || configItems.Count == 0) return;
 
+                UpdateBadgeForTypes(
+                    TweaksBadge,
+                    TweaksBadgeBorder,
+                    configItems,
+                    ConfigurationType.TweaksPerformanceSubMenu,
+                    ConfigurationType.TweaksNetworkPowerSubMenu,
+                    ConfigurationType.TweaksPrivacySubMenu,
+                    ConfigurationType.TweaksInterfaceSubMenu);
                 UpdateBadgeForType(GeneralBadge, GeneralBadgeBorder, configItems, ConfigurationType.General);
                 UpdateBadgeForType(InterfaceBadge, InterfaceBadgeBorder, configItems, ConfigurationType.Interface);
                 UpdateBadgeForType(WindowsBadge, WindowsBadgeBorder, configItems, ConfigurationType.Windows);
@@ -384,7 +394,12 @@ namespace SynToolkit
 
         private void UpdateBadgeForType(TextBlock badge, Border border, List<ConfigurationItemViewModel> items, ConfigurationType type)
         {
-            var typeItems = items.Where(x => x.Type == type).ToList();
+            UpdateBadgeForTypes(badge, border, items, type);
+        }
+
+        private void UpdateBadgeForTypes(TextBlock badge, Border border, List<ConfigurationItemViewModel> items, params ConfigurationType[] types)
+        {
+            var typeItems = items.Where(x => types.Contains(x.Type)).ToList();
             if (typeItems.Count == 0)
             {
                 border.Visibility = Visibility.Collapsed;
@@ -612,6 +627,7 @@ namespace SynToolkit
                 "SynToolkit.Views.GpuPage" => "GPU",
                 "SynToolkit.Views.SpecsPage" => "Specs",
                 "SynToolkit.Views.CleanerPage" => "Disk Cleanup",
+                "Tweaks" => "Tweaks",
                 "General" => "General Configuration",
                 "Interface" => "Interface Tweaks",
                 "Windows" => "Windows Settings",

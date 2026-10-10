@@ -41,6 +41,12 @@
         <ScrollViewer x:Name="ConfigScrollViewer" Grid.Row="1">
             <StackPanel>
                 <InfoBar
+                    x:Name="SubSectionWarningBanner"
+                    Margin="0,0,36,18"
+                    IsClosable="False"
+                    IsOpen="False"
+                    Severity="Warning" />
+                <InfoBar
                     x:Name="OperationInfoBar"
                     Margin="0,0,36,18"
                     IsClosable="True"

@@ -79,12 +79,6 @@
       "activeSchemeNameHints": ["Calypto's Low Latency"]
     },
     {
-      "fileName": "core.pow",
-      "displayName": "Core",
-      "description": "CoreVeeAir performance power plan for enthusiasts.",
-      "activeSchemeNameHints": ["CoreVeeAir's"]
-    },
-    {
       "fileName": "DTOS Pineapple Squad Laptop.pow",
       "displayName": "DTOS Pineapple Squad Laptop",
       "description": "Pineapple Squad DTOS power plan tuned for laptops.",
@@ -167,12 +161,6 @@
       "displayName": "Kaisen",
       "description": "Kaisen V5 low-latency performance-tuned power configuration.",
       "activeSchemeNameHints": ["Kaisen V5 lowlatency"]
-    },
-    {
-      "fileName": "khorvie.pow",
-      "displayName": "Khorvie",
-      "description": "Khorvie's optimized power plan for gaming.",
-      "activeSchemeNameHints": ["Khorvie's PowerPlan"]
     },
     {
       "fileName": "kirby.pow",

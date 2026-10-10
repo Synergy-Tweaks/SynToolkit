@@ -1,9 +1,11 @@
 using SynToolkit.Enums;
 using SynToolkit.Models;
+using SynToolkit.Services;
 using SynToolkit.Services.ConfigurationServices;
 using SynToolkit.Services.ConfigurationSubMenu;
 using SynToolkit.Stores;
 using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Collections.ObjectModel;
 
 namespace SynToolkit.ViewModels
@@ -21,10 +23,32 @@ namespace SynToolkit.ViewModels
         public ConfigurationSubMenu _configurationSubMenu { get; set; }
         public string Name => _configurationSubMenu.Name;
         public string Description => _configurationSubMenu.Description;
+        public string DisplayDescription
+        {
+            get
+            {
+                if (CanOpen)
+                {
+                    return Description;
+                }
+
+                string unavailable = App.GetValueFromItemList("AmdGpuRequired");
+                return string.IsNullOrWhiteSpace(Description)
+                    ? unavailable
+                    : $"{Description}{Environment.NewLine}{unavailable}";
+            }
+        }
         public ConfigurationType Type => _configurationSubMenu.Type;
         public string Icon => _configurationSubMenu.Icon;
 
         public string Key => _configurationSubMenu.Key;
+
+        /// <summary>
+        /// AMD GPU submenu stays visible but non-interactive without an AMD adapter.
+        /// </summary>
+        public bool CanOpen =>
+            !string.Equals(Key, "AmdGpuTweaksSubMenu", StringComparison.Ordinal)
+            || GpuDetectionService.HasAmdGpu();
 
         public ConfigurationSubMenuViewModel() { }
 

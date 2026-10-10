@@ -1,10 +1,14 @@
 using SynToolkit.Stores;
 using SynToolkit.Utils;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
+using Microsoft.Win32;
 
 namespace SynToolkit.Services.ConfigurationServices
 {
+    /// <summary>
+    /// SynergyOS blocks Windows Update driver search / delivery.
+    /// Toggle on = driver updates allowed; off = excluded (SOS).
+    /// </summary>
     public class DriverUpdatesConfigurationService : IConfigurationService
     {
         private const string DEVICE_UPDATE_KEY_NAME = @"HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\Update";
@@ -18,8 +22,8 @@ namespace SynToolkit.Services.ConfigurationServices
         private const string EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME = "ExcludeWUDriversInQualityUpdate";
         private const string VALUE_VALUE_NAME = "value";
         private const string PREVENT_DEVICE_METADATA_FROM_NETWORK_VALUE_NAME = "PreventDeviceMetadataFromNetwork";
-        private const string SEARCH_ORDER_CONFIG_VALUE_NAME = "PreventDeviceMetadataFromNetwork";
-        private const string DONT_SEARCH_WINDOWS_UPDATE_VALUE_NAME = "PreventDeviceMetadataFromNetwork";
+        private const string SEARCH_ORDER_CONFIG_VALUE_NAME = "SearchOrderConfig";
+        private const string DONT_SEARCH_WINDOWS_UPDATE_VALUE_NAME = "DontSearchWindowsUpdate";
 
         private readonly ConfigurationStore _driverUpdatesConfigurationStore;
 
@@ -31,14 +35,14 @@ namespace SynToolkit.Services.ConfigurationServices
 
         public void Disable()
         {
-            RegistryHelper.SetValue(DEVICE_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, 1);
-            RegistryHelper.SetValue(DEFAULT_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, 1);
-            RegistryHelper.SetValue(SETTINGS_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, 1);
-            RegistryHelper.SetValue(WINDOWS_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, 1);
-            RegistryHelper.SetValue(EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_KEY_NAME, VALUE_VALUE_NAME, 1);
-            RegistryHelper.SetValue(DEVICE_METADATA_KEY_NAME, PREVENT_DEVICE_METADATA_FROM_NETWORK_VALUE_NAME, 1);
-            RegistryHelper.SetValue(DRIVER_SEARCHING_KEY_NAME, SEARCH_ORDER_CONFIG_VALUE_NAME, 0);
-            RegistryHelper.SetValue(DRIVER_SEARCHING_KEY_NAME, DONT_SEARCH_WINDOWS_UPDATE_VALUE_NAME, 1);
+            RegistryHelper.SetValue(DEVICE_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, 1, RegistryValueKind.DWord);
+            RegistryHelper.SetValue(DEFAULT_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, 1, RegistryValueKind.DWord);
+            RegistryHelper.SetValue(SETTINGS_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, 1, RegistryValueKind.DWord);
+            RegistryHelper.SetValue(WINDOWS_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, 1, RegistryValueKind.DWord);
+            RegistryHelper.SetValue(EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_KEY_NAME, VALUE_VALUE_NAME, 1, RegistryValueKind.DWord);
+            RegistryHelper.SetValue(DEVICE_METADATA_KEY_NAME, PREVENT_DEVICE_METADATA_FROM_NETWORK_VALUE_NAME, 1, RegistryValueKind.DWord);
+            RegistryHelper.SetValue(DRIVER_SEARCHING_KEY_NAME, SEARCH_ORDER_CONFIG_VALUE_NAME, 0, RegistryValueKind.DWord);
+            RegistryHelper.SetValue(DRIVER_SEARCHING_KEY_NAME, DONT_SEARCH_WINDOWS_UPDATE_VALUE_NAME, 1, RegistryValueKind.DWord);
 
             _driverUpdatesConfigurationStore.CurrentSetting = IsEnabled();
         }
@@ -49,9 +53,9 @@ namespace SynToolkit.Services.ConfigurationServices
             RegistryHelper.DeleteValue(DEFAULT_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME);
             RegistryHelper.DeleteValue(SETTINGS_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME);
             RegistryHelper.DeleteValue(WINDOWS_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME);
-            RegistryHelper.SetValue(EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_KEY_NAME, VALUE_VALUE_NAME, 0);
+            RegistryHelper.SetValue(EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_KEY_NAME, VALUE_VALUE_NAME, 0, RegistryValueKind.DWord);
             RegistryHelper.DeleteValue(DEVICE_METADATA_KEY_NAME, PREVENT_DEVICE_METADATA_FROM_NETWORK_VALUE_NAME);
-            RegistryHelper.SetValue(DRIVER_SEARCHING_KEY_NAME, SEARCH_ORDER_CONFIG_VALUE_NAME, 1);
+            RegistryHelper.SetValue(DRIVER_SEARCHING_KEY_NAME, SEARCH_ORDER_CONFIG_VALUE_NAME, 1, RegistryValueKind.DWord);
             RegistryHelper.DeleteValue(DRIVER_SEARCHING_KEY_NAME, DONT_SEARCH_WINDOWS_UPDATE_VALUE_NAME);
 
             _driverUpdatesConfigurationStore.CurrentSetting = IsEnabled();
@@ -59,19 +63,8 @@ namespace SynToolkit.Services.ConfigurationServices
 
         public bool IsEnabled()
         {
-            bool[] checks =
-            {
-                RegistryHelper.IsMatch(DEVICE_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, null),
-                RegistryHelper.IsMatch(DEFAULT_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, null),
-                RegistryHelper.IsMatch(SETTINGS_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, null),
-                RegistryHelper.IsMatch(WINDOWS_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, null),
-                RegistryHelper.IsMatch(EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_KEY_NAME, VALUE_VALUE_NAME, 0),
-                RegistryHelper.IsMatch(DEVICE_METADATA_KEY_NAME, PREVENT_DEVICE_METADATA_FROM_NETWORK_VALUE_NAME, null),
-                RegistryHelper.IsMatch(DRIVER_SEARCHING_KEY_NAME, SEARCH_ORDER_CONFIG_VALUE_NAME, 1),
-                RegistryHelper.IsMatch(DRIVER_SEARCHING_KEY_NAME, DONT_SEARCH_WINDOWS_UPDATE_VALUE_NAME, null)
-            };
-
-            return checks.All(x => x);
+            return !RegistryHelper.IsMatch(WINDOWS_UPDATE_KEY_NAME, EXCLUDE_WU_DRIVERS_IN_QUALITY_UPDATE_VALUE_NAME, 1)
+                && !RegistryHelper.IsMatch(DRIVER_SEARCHING_KEY_NAME, DONT_SEARCH_WINDOWS_UPDATE_VALUE_NAME, 1);
         }
     }
 }
