@@ -1,31 +1,57 @@
 #nullable enable
 
 using System;
-using System.Collections.Concurrent;
-using System.Drawing;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.Storage;
+using Windows.Storage.FileProperties;
 
 namespace SynToolkit.Services.Uninstaller
 {
     /// <summary>
-    /// Extracts per-app icons for the Uninstaller tab from the registry DisplayIcon
+    /// Resolves per-app icons for the Uninstaller tab from the registry DisplayIcon
     /// value, falling back to InstallLocation when it points at an executable.
-    /// Runs on a background thread; the caller converts the PNG bytes to a
-    /// BitmapImage on the UI thread. Failures return null (row keeps its default icon).
+    /// Uses the WinRT thumbnail pipeline (same as CleanerPage drives) so no GDI
+    /// dependency is needed. Failures return null (row keeps its default icon).
+    /// Must be called on the UI thread: BitmapImage creation is not free-threaded.
     /// </summary>
     internal static class InstalledAppIconHelper
     {
-        private static readonly ConcurrentDictionary<string, byte[]?> PngCache = new(StringComparer.OrdinalIgnoreCase);
-
-        public static byte[]? TryExtractIconPng(string? displayIconRaw, string? installLocation)
+        public static async Task<ImageSource?> GetIconAsync(
+            string? displayIconRaw,
+            string? installLocation,
+            CancellationToken cancellationToken = default)
         {
             string? path = ResolveIconPath(displayIconRaw, installLocation);
-            if (path is null)
+            if (path is null || cancellationToken.IsCancellationRequested)
             {
                 return null;
             }
 
-            return PngCache.GetOrAdd(path, ExtractPng);
+            try
+            {
+                StorageFile file = await StorageFile.GetFileFromPathAsync(path).AsTask(cancellationToken);
+                using StorageItemThumbnail? thumbnail = await file.GetThumbnailAsync(
+                    ThumbnailMode.SingleItem,
+                    64,
+                    ThumbnailOptions.UseCurrentScale).AsTask(cancellationToken);
+                if (thumbnail is null || thumbnail.Size == 0 || cancellationToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+
+                BitmapImage bitmap = new();
+                await bitmap.SetSourceAsync(thumbnail).AsTask(cancellationToken);
+                return bitmap;
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                App.logger.Debug(exception, "[Uninstaller] Unable to load icon for {IconPath}.", path);
+                return null;
+            }
         }
 
         internal static string? ResolveIconPath(string? displayIconRaw, string? installLocation)
@@ -37,7 +63,7 @@ namespace SynToolkit.Services.Uninstaller
             }
 
             // shortcut: non-exe DisplayIcon targets (dll/ico with index, folders) are skipped;
-            // ExtractAssociatedIcon only handles the default icon of a real file.
+            // the thumbnail pipeline only handles real files with registered icons.
             string? location = CleanPath(installLocation);
             if (!string.IsNullOrWhiteSpace(location) &&
                 File.Exists(location) &&
@@ -60,7 +86,7 @@ namespace SynToolkit.Services.Uninstaller
             // DisplayIcon is commonly "C:\path\app.exe,0".
             int comma = cleaned.LastIndexOf(',');
             if (comma > 0 &&
-                cleaned.EndsWith('"') == false &&
+                !cleaned.EndsWith('"') &&
                 int.TryParse(cleaned.AsSpan(comma + 1).Trim(), out _))
             {
                 cleaned = cleaned.Substring(0, comma).Trim().Trim('"');
@@ -78,27 +104,6 @@ namespace SynToolkit.Services.Uninstaller
 
             string expanded = Environment.ExpandEnvironmentVariables(raw.Trim()).Trim('"').Trim();
             return string.IsNullOrWhiteSpace(expanded) ? null : expanded;
-        }
-
-        private static byte[]? ExtractPng(string path)
-        {
-            try
-            {
-                using Icon? icon = Icon.ExtractAssociatedIcon(path);
-                if (icon is null)
-                {
-                    return null;
-                }
-
-                using Bitmap bitmap = icon.ToBitmap();
-                using MemoryStream stream = new();
-                bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-                return stream.ToArray();
-            }
-            catch
-            {
-                return null;
-            }
         }
     }
 }

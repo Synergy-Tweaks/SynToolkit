@@ -7,11 +7,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Media;
 using SynToolkit.Services;
 using SynToolkit.Services.Uninstaller;
 using SynToolkit.ViewModels;
-using Windows.Storage.Streams;
 
 namespace SynToolkit.Views
 {
@@ -76,7 +75,7 @@ namespace SynToolkit.Views
 
         /// <summary>
         /// Fills row icons after the list is visible so scanning stays fast.
-        /// Extraction runs off the UI thread; BitmapImage creation stays on it.
+        /// WinRT thumbnails are awaited on the UI thread (BitmapImage requires it).
         /// </summary>
         private async Task LoadIconsAsync()
         {
@@ -88,40 +87,20 @@ namespace SynToolkit.Views
                     return;
                 }
 
-                byte[]? png;
                 try
                 {
-                    png = await Task.Run(
-                        () => InstalledAppIconHelper.TryExtractIconPng(app.DisplayIcon, app.InstallLocation),
+                    ImageSource? icon = await InstalledAppIconHelper.GetIconAsync(
+                        app.DisplayIcon,
+                        app.InstallLocation,
                         cancellationToken);
+                    if (icon is not null)
+                    {
+                        app.SetIcon(icon);
+                    }
                 }
                 catch (OperationCanceledException)
                 {
                     return;
-                }
-
-                if (png is null || png.Length == 0 || cancellationToken.IsCancellationRequested)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    using InMemoryRandomAccessStream stream = new();
-                    using (DataWriter writer = new(stream))
-                    {
-                        writer.WriteBytes(png);
-                        await writer.StoreAsync();
-                    }
-
-                    stream.Seek(0);
-                    BitmapImage bitmap = new();
-                    await bitmap.SetSourceAsync(stream);
-                    app.SetIcon(bitmap);
-                }
-                catch
-                {
-                    // keep the default icon
                 }
             }
         }
