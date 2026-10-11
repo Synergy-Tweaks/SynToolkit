@@ -53,7 +53,7 @@ try {
         --exclude=SynToolkit.SystemInformationTests/bin `
         --exclude=SynToolkit.SystemInformationTests/obj `
         --exclude=Installer/Output `
-        .github SynToolkit SynToolkit.SystemInformationTests Installer tools build-installer.ps1 build-release.ps1 SynToolkit.sln LICENSE THIRD-PARTY-NOTICES.md README.md .gitattributes .gitignore
+        .github SynToolkit SynToolkit.SystemInformationTests Installer tools build-installer.ps1 build-release.ps1 SynToolkit.sln LICENSE README.md .gitattributes .gitignore
     if ($LASTEXITCODE -ne 0) {
         throw "Source archive creation failed with exit code $LASTEXITCODE."
     }

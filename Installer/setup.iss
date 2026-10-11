@@ -63,7 +63,6 @@ Name: "{commonappdata}\Synergy\Profiles"; Permissions: users-modify; Flags: unin
 [Files]
 Source: "..\artifacts\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
-Source: "..\THIRD-PARTY-NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Synergy\*"; DestDir: "{commonappdata}\Synergy"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Registry]
@@ -453,7 +452,6 @@ begin
 
   RequireInstalledFile(AppRoot + '\{#MyAppExeName}', MissingFiles);
   RequireInstalledFile(AppRoot + '\LICENSE.txt', MissingFiles);
-  RequireInstalledFile(AppRoot + '\THIRD-PARTY-NOTICES.md', MissingFiles);
   RequireInstalledFile(AppRoot + '\assets\Fonts\OFL-Archivo.txt', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Assets\SynToolkit.ico', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Assets\Blank.ico', MissingFiles);
