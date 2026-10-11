@@ -88,7 +88,21 @@
                 ItemsSource="{Binding FilteredApps}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="viewmodel:InstalledAppItemViewModel">
-                        <controls:SettingsCard Margin="0,0,0,8" Header="{x:Bind DisplayName, Mode=OneWay}" Description="{x:Bind DetailsText, Mode=OneWay}">
+                        <controls:SettingsCard Margin="0,0,0,8" Description="{x:Bind DetailsText, Mode=OneWay}">
+                            <controls:SettingsCard.Header>
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <Image
+                                        Width="32"
+                                        Height="32"
+                                        VerticalAlignment="Center"
+                                        Source="{x:Bind Icon, Mode=OneWay}"
+                                        Stretch="Uniform" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind DisplayName, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </controls:SettingsCard.Header>
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <ProgressRing
                                     Width="20"

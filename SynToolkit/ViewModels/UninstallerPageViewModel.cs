@@ -7,19 +7,28 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Xaml.Media.Imaging;
 using SynToolkit.Services;
 
 namespace SynToolkit.ViewModels
 {
     public partial class InstalledAppItemViewModel : ObservableObject
     {
+        private static readonly BitmapImage DefaultIcon =
+            new(new Uri("ms-appx:///assets/Icons/Uninstall.png"));
+
         public string DisplayName { get; }
         public string? DisplayVersion { get; }
         public string? Publisher { get; }
         public bool CanUninstall { get; }
+        public string? DisplayIcon { get; }
+        public string? InstallLocation { get; }
 
         [ObservableProperty]
         public partial bool IsUninstalling { get; set; }
+
+        [ObservableProperty]
+        public partial Microsoft.UI.Xaml.Media.ImageSource Icon { get; set; } = DefaultIcon;
 
         public string DetailsText
         {
@@ -45,9 +54,13 @@ namespace SynToolkit.ViewModels
             DisplayName = info.DisplayName;
             DisplayVersion = info.DisplayVersion;
             Publisher = info.Publisher;
+            DisplayIcon = info.DisplayIcon;
+            InstallLocation = info.InstallLocation;
             CanUninstall = !string.IsNullOrWhiteSpace(info.UninstallString)
                 || !string.IsNullOrWhiteSpace(info.QuietUninstallString);
         }
+
+        public void SetIcon(Microsoft.UI.Xaml.Media.ImageSource icon) => Icon = icon;
     }
 
     public partial class UninstallerPageViewModel : ObservableObject
@@ -75,12 +88,14 @@ namespace SynToolkit.ViewModels
 
         public ObservableCollection<InstalledAppItemViewModel> FilteredApps { get; } = new();
 
+        public IReadOnlyList<InstalledAppItemViewModel> AllApps => _allApps;
+
         public UninstallerPageViewModel(WingetInstallerService wingetInstallerService)
         {
             _wingetInstallerService = wingetInstallerService;
         }
 
-        partial void OnSearchTextChanged(string value) => ApplyFilter();
+        partial void OnSearchTextChanged(string value) => _ = ApplyFilterDebouncedAsync(value);
 
         public async Task ScanAsync(CancellationToken cancellationToken = default)
         {
@@ -127,6 +142,34 @@ namespace SynToolkit.ViewModels
             _allApps.Remove(item);
             FilteredApps.Remove(item);
             CountText = $"{_allApps.Count} apps";
+        }
+
+        private CancellationTokenSource? _filterDebounce;
+
+        /// <summary>
+        /// Rebuilding 100+ heavy rows per keystroke stutters typing; wait for a pause.
+        /// Immediate callers (scan, remove) still use <see cref="ApplyFilter"/> directly.
+        /// </summary>
+        private async Task ApplyFilterDebouncedAsync(string value)
+        {
+            _filterDebounce?.Cancel();
+            _filterDebounce?.Dispose();
+            _filterDebounce = new CancellationTokenSource();
+            try
+            {
+                await Task.Delay(250, _filterDebounce.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
+            if (!string.Equals(value, SearchText, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            ApplyFilter();
         }
 
         private void ApplyFilter()

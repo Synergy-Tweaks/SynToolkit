@@ -1,13 +1,17 @@
 #nullable enable
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
 using SynToolkit.Services;
+using SynToolkit.Services.Uninstaller;
 using SynToolkit.ViewModels;
+using Windows.Storage.Streams;
 
 namespace SynToolkit.Views
 {
@@ -42,6 +46,7 @@ namespace SynToolkit.Views
             try
             {
                 await _viewModel.ScanAsync(_lifetimeCancellation.Token);
+                _ = LoadIconsAsync();
             }
             catch (OperationCanceledException)
             {
@@ -62,9 +67,62 @@ namespace SynToolkit.Views
             try
             {
                 await _viewModel.ScanAsync(_lifetimeCancellation.Token);
+                _ = LoadIconsAsync();
             }
             catch (OperationCanceledException)
             {
+            }
+        }
+
+        /// <summary>
+        /// Fills row icons after the list is visible so scanning stays fast.
+        /// Extraction runs off the UI thread; BitmapImage creation stays on it.
+        /// </summary>
+        private async Task LoadIconsAsync()
+        {
+            CancellationToken cancellationToken = _lifetimeCancellation.Token;
+            foreach (InstalledAppItemViewModel app in _viewModel.AllApps.ToArray())
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                byte[]? png;
+                try
+                {
+                    png = await Task.Run(
+                        () => InstalledAppIconHelper.TryExtractIconPng(app.DisplayIcon, app.InstallLocation),
+                        cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                if (png is null || png.Length == 0 || cancellationToken.IsCancellationRequested)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    using InMemoryRandomAccessStream stream = new();
+                    using (DataWriter writer = new(stream))
+                    {
+                        writer.WriteBytes(png);
+                        await writer.StoreAsync();
+                    }
+
+                    stream.Seek(0);
+                    BitmapImage bitmap = new();
+                    await bitmap.SetSourceAsync(stream);
+                    app.SetIcon(bitmap);
+                }
+                catch
+                {
+                    // keep the default icon
+                }
             }
         }
 

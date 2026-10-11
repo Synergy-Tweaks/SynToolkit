@@ -47,6 +47,8 @@ namespace SynToolkit.Services
         string DisplayName,
         string? DisplayVersion,
         string? Publisher,
+        string? DisplayIcon,
+        string? InstallLocation,
         string? UninstallString,
         string? QuietUninstallString);
 
@@ -200,6 +202,8 @@ namespace SynToolkit.Services
                     application.DisplayName,
                     application.DisplayVersion,
                     application.Publisher,
+                    application.DisplayIcon,
+                    application.InstallLocation,
                     application.UninstallString,
                     application.QuietUninstallString))
                 .ToArray();
@@ -578,6 +582,8 @@ namespace SynToolkit.Services
                             displayName.Trim(),
                             (applicationKey?.GetValue("DisplayVersion") as string)?.Trim(),
                             (applicationKey?.GetValue("Publisher") as string)?.Trim(),
+                            (applicationKey?.GetValue("DisplayIcon") as string)?.Trim(),
+                            (applicationKey?.GetValue("InstallLocation") as string)?.Trim(),
                             (applicationKey?.GetValue("UninstallString") as string)?.Trim(),
                             (applicationKey?.GetValue("QuietUninstallString") as string)?.Trim()));
                     }
@@ -1098,6 +1104,8 @@ namespace SynToolkit.Services
             string DisplayName,
             string? DisplayVersion,
             string? Publisher,
+            string? DisplayIcon,
+            string? InstallLocation,
             string? UninstallString,
             string? QuietUninstallString);
 
