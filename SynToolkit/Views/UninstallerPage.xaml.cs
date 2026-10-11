@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,6 +81,18 @@ namespace SynToolkit.Views
         private async Task LoadIconsAsync()
         {
             CancellationToken cancellationToken = _lifetimeCancellation.Token;
+            Dictionary<string, List<Services.Uninstaller.ShortcutIconEntry>> shortcutMap;
+            try
+            {
+                shortcutMap = await Task.Run(
+                    Services.Uninstaller.InstalledAppIconHelper.BuildShortcutMap,
+                    cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
             foreach (InstalledAppItemViewModel app in _viewModel.AllApps.ToArray())
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -90,8 +103,10 @@ namespace SynToolkit.Views
                 try
                 {
                     ImageSource? icon = await InstalledAppIconHelper.GetIconAsync(
+                        app.DisplayName,
                         app.DisplayIcon,
                         app.InstallLocation,
+                        shortcutMap,
                         cancellationToken);
                     if (icon is not null)
                     {
