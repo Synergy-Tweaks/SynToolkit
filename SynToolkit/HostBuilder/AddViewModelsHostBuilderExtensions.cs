@@ -1,3 +1,4 @@
+using SynToolkit.Services;
 using SynToolkit.Services.ConfigurationServices;
 using SynToolkit.Models;
 using SynToolkit.Stores;
@@ -19,7 +20,6 @@ using System.Windows.Input;
 using Windows.Security.Cryptography.Core;
 using Windows.Devices.WiFi;
 using SynToolkit.Commands.ConfigurationButtonsCommand;
-using SynToolkit.Services;
 using SynToolkit.Services.GpuDrivers;
 using SynToolkit.Utils;
 using SynToolkit.Models.ProfileModels;
@@ -473,6 +473,7 @@ namespace SynToolkit.HostBuilder
             return new AppFetchPageViewModel(
                 serviceProvider.GetRequiredService<AppFetchService>(),
                 serviceProvider.GetRequiredService<WingetInstallerService>(),
+                serviceProvider.GetRequiredService<PortableAppService>(),
                 serviceProvider.GetRequiredKeyedService<IConfigurationService>("XboxServices"));
         }
 

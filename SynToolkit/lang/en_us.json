@@ -408,6 +408,7 @@
   "GamesPage_PickCover": "Choose cover image…",
   "GamesPage_ListViewTooltip": "List view",
   "GamesPage_GridViewTooltip": "Grid view",
+  "GamesPage_CoverArtNotice": "Some cover art may appear bugged or missing. This is only for the covers, and your games will still launch and work as normal.",
   "Settings_SteamGridDb": "SteamGridDB API Key",
   "Settings_SteamGridDbDesc": "Optional. Used to fetch cover art for Epic, GOG, Xbox, and manually added games. Leave blank to skip.",
   "Settings_SteamGridDbPlaceholder": "Paste API key from steamgriddb.com",

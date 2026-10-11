@@ -266,7 +266,7 @@
                                             Width="34"
                                             Height="34"
                                             Padding="6"
-                                            Background="Transparent"
+                                            Background="White"
                                             CornerRadius="7">
                                             <Image Source="{Binding IconSource, Converter={StaticResource ImageSourceConverter}}" Stretch="Uniform" />
                                         </Border>
@@ -356,7 +356,7 @@
                                         Height="48"
                                         Margin="0,0,14,0"
                                         Padding="6"
-                                        Background="Transparent"
+                                        Background="White"
                                         CornerRadius="10">
                                         <Image
                                             Source="{Binding IconSource, Converter={StaticResource ImageSourceConverter}}"

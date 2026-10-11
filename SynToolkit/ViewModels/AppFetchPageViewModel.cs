@@ -24,6 +24,7 @@ namespace SynToolkit.ViewModels
         private const int MaximumStoreSearchResults = 24;
         private readonly AppFetchService _service;
         private readonly WingetInstallerService _wingetInstallerService;
+        private readonly PortableAppService _portableAppService;
         private readonly IConfigurationService _xboxServicesConfigurationService;
         private readonly IReadOnlyList<FeaturedInstallerViewModel> _allFeaturedInstallers;
         private CancellationTokenSource? _installQueueCancellationTokenSource;
@@ -219,7 +220,22 @@ namespace SynToolkit.ViewModels
 
                 // Community modifications require their official, visible setup flow.
                 new("SpotX", "Community", "Community Spotify customization and patching tool.", "ms-appx:///assets/Icons/Installers/spotx.svg", "https://github.com/SpotX-Official/SpotX", "Community.SpotX", [], isManualOnly: true),
-                new("Vencord", "Community", "Community client modification for the Discord desktop app.", "ms-appx:///assets/Icons/Installers/vencord.svg", "https://vencord.dev/download/", "Community.Vencord", [], isManualOnly: true)
+                new("Vencord", "Community", "Community client modification for the Discord desktop app.", "ms-appx:///assets/Icons/Installers/vencord.svg", "https://vencord.dev/download/", "Community.Vencord", [], isManualOnly: true),
+
+                // Portable apps (downloaded from GitHub releases)
+                FeaturedInstallerViewModel.CreatePortableApp(
+                    "ProcessX",
+                    "System",
+                    "CPU affinity and priority manager for games and apps.",
+                    "ms-appx:///assets/Icons/Installers/processx.svg",
+                    "jadenpeek",
+                    "ProcessX",
+                    "ProcessX.exe",
+                    "ProcessX.exe",
+                    isEssential: false,
+                    requiresElevation: true,
+                    expectedSha256: null,
+                    warningMessage: "ProcessX is not digitally signed. Windows SmartScreen may show a warning when you first run it.")
             };
 
         [ObservableProperty]
@@ -254,10 +270,12 @@ namespace SynToolkit.ViewModels
         public AppFetchPageViewModel(
             AppFetchService service,
             WingetInstallerService wingetInstallerService,
+            PortableAppService portableAppService,
             [Microsoft.Extensions.DependencyInjection.FromKeyedServices("XboxServices")] IConfigurationService xboxServicesConfigurationService)
         {
             _service = service;
             _wingetInstallerService = wingetInstallerService;
+            _portableAppService = portableAppService;
             _xboxServicesConfigurationService = xboxServicesConfigurationService;
             _allFeaturedInstallers = CreateFeaturedInstallers();
 
@@ -419,10 +437,11 @@ namespace SynToolkit.ViewModels
 
             try
             {
+                // Check status of non-portable, non-manual apps via WinGet
                 IReadOnlyList<CuratedPackageStatus> statuses =
                     await _wingetInstallerService.DetectPackageStatusesAsync(
                         _allFeaturedInstallers
-                            .Where(installer => !installer.IsManualOnly)
+                            .Where(installer => !installer.IsManualOnly && !installer.IsPortableApp)
                             .Select(installer => new CuratedPackageProbe(
                                 installer.PackageIdentifier,
                                 installer.InstalledDisplayNamePrefixes,
@@ -434,6 +453,28 @@ namespace SynToolkit.ViewModels
                     status => status.PackageIdentifier,
                     StringComparer.OrdinalIgnoreCase);
 
+                // Check status of portable apps
+                Dictionary<string, PortableAppStatus> portableStatuses = new(StringComparer.OrdinalIgnoreCase);
+                foreach (FeaturedInstallerViewModel installer in _allFeaturedInstallers.Where(i => i.IsPortableApp && i.PortableAppDefinition != null))
+                {
+                    try
+                    {
+                        PortableAppStatus status = await _portableAppService.CheckForUpdateAsync(
+                            installer.PortableAppDefinition!,
+                            cancellationToken);
+                        portableStatuses[installer.PackageIdentifier] = status;
+                    }
+                    catch (Exception exception)
+                    {
+                        App.logger.Debug(exception, "[Installers] Unable to check portable app status for {AppName}.", installer.Name);
+                        // Fall back to basic installed check
+                        PortableAppStatus basicStatus = await _portableAppService.GetStatusAsync(
+                            installer.PortableAppDefinition!,
+                            cancellationToken);
+                        portableStatuses[installer.PackageIdentifier] = basicStatus;
+                    }
+                }
+
                 ApplyInstallerStateUpdates(() =>
                 {
                     foreach (FeaturedInstallerViewModel installer in _allFeaturedInstallers)
@@ -443,19 +484,40 @@ namespace SynToolkit.ViewModels
                             continue;
                         }
 
+                        if (installer.IsPortableApp)
+                        {
+                            if (!portableStatuses.TryGetValue(installer.PackageIdentifier, out PortableAppStatus? portableStatus))
+                            {
+                                installer.ApplyAvailabilityState(InstallerAvailabilityState.Unavailable);
+                                continue;
+                            }
+
+                            InstallerAvailabilityState availabilityState = !portableStatus.IsInstalled
+                                ? InstallerAvailabilityState.NotInstalled
+                                : portableStatus.IsUpdateAvailable
+                                    ? InstallerAvailabilityState.UpdateAvailable
+                                    : InstallerAvailabilityState.Installed;
+                            installer.ApplyAvailabilityState(
+                                availabilityState,
+                                portableStatus.InstalledVersion,
+                                portableStatus.AvailableVersion,
+                                isUpdateCheckComplete: true);
+                            continue;
+                        }
+
                         if (!statusesByIdentifier.TryGetValue(installer.PackageIdentifier, out CuratedPackageStatus? status))
                         {
                             installer.ApplyAvailabilityState(InstallerAvailabilityState.Unavailable);
                             continue;
                         }
 
-                        InstallerAvailabilityState availabilityState = !status.IsInstalled
+                        InstallerAvailabilityState wingetAvailabilityState = !status.IsInstalled
                             ? InstallerAvailabilityState.NotInstalled
                             : status.IsUpdateAvailable
                                 ? InstallerAvailabilityState.UpdateAvailable
                                 : InstallerAvailabilityState.Installed;
                         installer.ApplyAvailabilityState(
-                            availabilityState,
+                            wingetAvailabilityState,
                             status.InstalledVersion,
                             status.AvailableVersion,
                             status.IsUpdateCheckComplete);
@@ -550,6 +612,22 @@ namespace SynToolkit.ViewModels
             HasError = false;
             try
             {
+                // Handle portable app uninstallation
+                if (installer.IsPortableApp && installer.PortableAppDefinition != null)
+                {
+                    PortableAppInstallResult portableResult = await _portableAppService.UninstallAsync(
+                        installer.PortableAppDefinition);
+
+                    if (!portableResult.Succeeded)
+                    {
+                        ErrorMessage = portableResult.Message;
+                        HasError = true;
+                        return new WingetInstallResult(false, -1, portableResult.Message, WingetInstallDisposition.Failed);
+                    }
+
+                    return new WingetInstallResult(true, 0, portableResult.Message, WingetInstallDisposition.Completed);
+                }
+
                 WingetInstallResult result = await _wingetInstallerService.UninstallAsync(
                     installer.PackageIdentifier,
                     installer.InstalledDisplayNamePrefixes,
@@ -616,11 +694,50 @@ namespace SynToolkit.ViewModels
                     queueItem.DetailToolTip = string.Empty;
                     QueueSummary = $"Installing {index + 1} of {InstallQueue.Count}: {queueItem.Name}";
 
+                    bool wasUpdate = queueItem.Installer.AvailabilityState == InstallerAvailabilityState.UpdateAvailable;
+
+                    // Handle portable app installations differently
+                    if (queueItem.Installer.IsPortableApp && queueItem.Installer.PortableAppDefinition != null)
+                    {
+                        PortableAppInstallResult portableResult = await _portableAppService.InstallAsync(
+                            queueItem.Installer.PortableAppDefinition,
+                            new Progress<double>(value =>
+                            {
+                                queueItem.Progress = value;
+                                queueItem.Detail = value < 0.8
+                                    ? $"Downloading {value * 100:0}%"
+                                    : value < 1.0 ? "Verifying" : "Finishing";
+                            }),
+                            cancellationToken);
+
+                        if (portableResult.Succeeded)
+                        {
+                            queueItem.State = InstallerQueueState.Completed;
+                            queueItem.Detail = wasUpdate ? "Updated" : "Installed";
+                            queueItem.DetailToolTip = portableResult.Message;
+                            queueItem.Installer.ApplyAvailabilityState(
+                                InstallerAvailabilityState.Installed,
+                                portableResult.InstalledVersion,
+                                portableResult.InstalledVersion);
+                            queueItem.Installer.IsSelected = false;
+                            if (wasUpdate) updatedCount++; else installedCount++;
+                        }
+                        else
+                        {
+                            queueItem.State = InstallerQueueState.Failed;
+                            queueItem.Detail = "Download or verification failed";
+                            queueItem.DetailToolTip = portableResult.Message;
+                            failedCount++;
+                            OnPropertyChanged(nameof(CanRetryFailed));
+                        }
+                        continue;
+                    }
+
                     WingetInstallResult result = await _wingetInstallerService.InstallAsync(
                         queueItem.PackageIdentifier,
                         queueItem.Installer.PackageSource,
                         queueItem.Installer.SilentArgumentsOverride,
-                        queueItem.Installer.AvailabilityState == InstallerAvailabilityState.UpdateAvailable,
+                        wasUpdate,
                         new Progress<double>(value =>
                         {
                             queueItem.Progress = value;
@@ -632,8 +749,6 @@ namespace SynToolkit.ViewModels
 
                     if (result.Succeeded)
                     {
-                        bool wasUpdate = queueItem.Installer.AvailabilityState ==
-                            InstallerAvailabilityState.UpdateAvailable;
                         queueItem.State = InstallerQueueState.Completed;
                         queueItem.Detail = result.Disposition == WingetInstallDisposition.AlreadySatisfied
                             ? "Already installed"

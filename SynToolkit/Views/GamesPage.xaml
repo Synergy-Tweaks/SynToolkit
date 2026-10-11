@@ -185,6 +185,15 @@
 
             <InfoBar
                 Margin="0,0,36,18"
+                AutomationProperties.Name="Cover art notice"
+                IsClosable="False"
+                IsOpen="{x:Bind ViewModel.HasGames, Mode=OneWay}"
+                Message="Some cover art may appear bugged or missing. This is only for the covers, and your games will still launch and work as normal."
+                Severity="Informational"
+                local:LocalizedText.MessageKey="GamesPage_CoverArtNotice" />
+
+            <InfoBar
+                Margin="0,0,36,18"
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
                 Message="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
+using SynToolkit.Services;
 
 namespace SynToolkit.ViewModels
 {
@@ -45,9 +46,56 @@ namespace SynToolkit.ViewModels
             SilentArgumentsOverride = silentArgumentsOverride;
             IsManualOnly = isManualOnly;
             PackageSource = packageSource;
+            IsPortableApp = false;
+            PortableAppDefinition = null;
             _availabilityState = isManualOnly
                 ? InstallerAvailabilityState.ManualSetup
                 : InstallerAvailabilityState.Checking;
+        }
+
+        /// <summary>
+        /// Creates a portable app entry that downloads from GitHub releases.
+        /// </summary>
+        public static FeaturedInstallerViewModel CreatePortableApp(
+            string name,
+            string category,
+            string description,
+            string iconSource,
+            string gitHubOwner,
+            string gitHubRepo,
+            string assetName,
+            string executableName,
+            bool isEssential = false,
+            bool requiresElevation = false,
+            string? expectedSha256 = null,
+            string? warningMessage = null)
+        {
+            PortableAppDefinition definition = new(
+                name,
+                gitHubOwner,
+                gitHubRepo,
+                assetName,
+                executableName,
+                expectedSha256,
+                requiresElevation);
+
+            return new FeaturedInstallerViewModel(
+                name,
+                category,
+                description,
+                iconSource,
+                $"https://github.com/{gitHubOwner}/{gitHubRepo}/releases",
+                $"portable.{gitHubOwner}.{gitHubRepo}",
+                Array.Empty<string>(),
+                isEssential,
+                null,
+                false,
+                "portable")
+            {
+                IsPortableApp = true,
+                PortableAppDefinition = definition,
+                WarningMessage = warningMessage
+            };
         }
 
         public string Name { get; }
@@ -72,7 +120,22 @@ namespace SynToolkit.ViewModels
 
         public string PackageSource { get; }
 
-        public string PublisherLinkText => IsManualOnly ? "Open official setup" : "Website";
+        /// <summary>
+        /// Whether this is a portable app downloaded from GitHub releases.
+        /// </summary>
+        public bool IsPortableApp { get; private init; }
+
+        /// <summary>
+        /// Definition for portable app downloads. Only set when IsPortableApp is true.
+        /// </summary>
+        public PortableAppDefinition? PortableAppDefinition { get; private init; }
+
+        /// <summary>
+        /// Warning message to display for this app (e.g., unsigned executable warning).
+        /// </summary>
+        public string? WarningMessage { get; init; }
+
+        public string PublisherLinkText => IsManualOnly ? "Open official setup" : IsPortableApp ? "GitHub releases" : "Website";
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(QueueSelectionText))]

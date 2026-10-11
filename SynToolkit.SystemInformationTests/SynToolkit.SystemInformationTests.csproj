@@ -31,6 +31,7 @@
     <Compile Include="..\SynToolkit\Services\CpuZMainboardDetailsParser.cs" Link="Services\CpuZMainboardDetailsParser.cs" />
     <Compile Include="..\SynToolkit\Services\GpuVendorClassification.cs" Link="Services\GpuVendorClassification.cs" />
     <Compile Include="..\SynToolkit\Services\HagsDetection.cs" Link="Services\HagsDetection.cs" />
+    <Compile Include="..\SynToolkit\Services\FsoDetection.cs" Link="Services\FsoDetection.cs" />
     <Compile Include="..\SynToolkit\Services\SteamTrayWebHelper\SteamTrayWebHelperConstants.cs" Link="Services\SteamTrayWebHelper\SteamTrayWebHelperConstants.cs" />
     <Compile Include="..\SynToolkit\Services\SteamTrayWebHelper\SteamTrayWebHelperPaths.cs" Link="Services\SteamTrayWebHelper\SteamTrayWebHelperPaths.cs" />
     <Compile Include="..\SynToolkit\Services\FavoriteIdMigration.cs" Link="Services\FavoriteIdMigration.cs" />
