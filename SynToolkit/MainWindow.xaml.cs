@@ -409,6 +409,7 @@ namespace SynToolkit
             NeedsAttentionText.Text = App.GetValueFromItemList("NeedsAttention");
             AudioMixer.Content = App.GetValueFromItemList("AudioMixer");
             InstallerText.Text = App.GetValueFromItemList("Installer");
+            Uninstaller.Content = App.GetValueFromItemList("Uninstaller");
             PowerPlansText.Text = App.GetValueFromItemList("PowerPlans");
             GamesText.Text = App.GetValueFromItemList("Games");
             AdjustmentsText.Text = App.GetValueFromItemList("Adjustments");
@@ -602,6 +603,7 @@ namespace SynToolkit
                 "SynToolkit.Views.NeedsAttentionPage" => typeof(NeedsAttentionPage),
                 "SynToolkit.Views.AudioMixerPage" => typeof(AudioMixerPage),
                 "SynToolkit.Views.AppFetchPage" => typeof(AppFetchPage),
+                "SynToolkit.Views.UninstallerPage" => typeof(UninstallerPage),
                 "SynToolkit.Views.PowerPlansPage" => typeof(PowerPlansPage),
                 "SynToolkit.Views.GamesPage" => typeof(GamesPage),
                 "SynToolkit.Views.AdjustmentsPage" => typeof(AdjustmentsPage),
@@ -721,6 +723,7 @@ namespace SynToolkit
             {
                 Type pageType = ContentFrame.BackStack[index].SourcePageType;
                 if (                    pageType != typeof(AppFetchPage) &&
+                    pageType != typeof(UninstallerPage) &&
                     pageType != typeof(PowerPlansPage) &&
                     pageType != typeof(GamesPage) &&
                     pageType != typeof(AdjustmentsPage))
@@ -776,6 +779,7 @@ namespace SynToolkit
                 "SynToolkit.Views.NeedsAttentionPage" => "Needs Attention",
                 "SynToolkit.Views.AudioMixerPage" => "Audio Mixer",
                 "SynToolkit.Views.AppFetchPage" => "Installer",
+                "SynToolkit.Views.UninstallerPage" => "Uninstaller",
                 "SynToolkit.Views.PowerPlansPage" => "Power Plans",
                 "SynToolkit.Views.GamesPage" => "Games",
                 "SynToolkit.Views.AdjustmentsPage" => "Adjustments",

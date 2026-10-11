@@ -43,6 +43,7 @@ namespace SynToolkit.HostBuilder
                 services.AddTransient<AudioMixerPageViewModel>();
                 services.AddTransient<SpecsPageViewModel>();
                 services.AddTransient<CleanerPageViewModel>();
+                services.AddTransient<UninstallerPageViewModel>();
             });
 
             host.AddConfigurationButtonItemViewModels();

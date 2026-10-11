@@ -43,6 +43,13 @@ namespace SynToolkit.Services
         string? AvailableVersion,
         bool IsUpdateCheckComplete);
 
+    public sealed record InstalledApplicationInfo(
+        string DisplayName,
+        string? DisplayVersion,
+        string? Publisher,
+        string? UninstallString,
+        string? QuietUninstallString);
+
     /// <summary>
     /// Installs curated packages through the Windows Package Manager community source.
     /// Each invocation is non-interactive and can be canceled with its process tree.
@@ -167,6 +174,60 @@ namespace SynToolkit.Services
             if (string.IsNullOrWhiteSpace(uninstallCommand))
             {
                 return wingetResult ?? new WingetInstallResult(
+                    false,
+                    -1,
+                    "Windows did not provide an uninstall command for this app.",
+                    WingetInstallDisposition.Failed);
+            }
+
+            return await RunRegisteredUninstallerAsync(uninstallCommand, cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<InstalledApplicationInfo>> GetInstalledApplicationsAsync(
+            CancellationToken cancellationToken = default)
+        {
+            IReadOnlyList<InstalledDesktopApplication> applications = await Task.Run(
+                ReadInstalledDesktopApplications,
+                cancellationToken);
+
+            return applications
+                .GroupBy(application => application.DisplayName.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Select(group => group
+                    .OrderByDescending(application => ParseLooseVersion(application.DisplayVersion))
+                    .First())
+                .OrderBy(application => application.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .Select(application => new InstalledApplicationInfo(
+                    application.DisplayName,
+                    application.DisplayVersion,
+                    application.Publisher,
+                    application.UninstallString,
+                    application.QuietUninstallString))
+                .ToArray();
+        }
+
+        public async Task<WingetInstallResult> UninstallByDisplayNameAsync(
+            string displayName,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
+
+            InstalledDesktopApplication? installedApplication = await Task.Run(
+                () => ReadInstalledDesktopApplications()
+                    .Where(application => application.DisplayName.Equals(displayName, StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(application => ParseLooseVersion(application.DisplayVersion))
+                    .FirstOrDefault(),
+                cancellationToken);
+            if (installedApplication == null)
+            {
+                return new WingetInstallResult(true, 0, "The app is no longer detected on this PC.", WingetInstallDisposition.Completed);
+            }
+
+            string? uninstallCommand = !string.IsNullOrWhiteSpace(installedApplication.QuietUninstallString)
+                ? installedApplication.QuietUninstallString
+                : installedApplication.UninstallString;
+            if (string.IsNullOrWhiteSpace(uninstallCommand))
+            {
+                return new WingetInstallResult(
                     false,
                     -1,
                     "Windows did not provide an uninstall command for this app.",
@@ -494,9 +555,29 @@ namespace SynToolkit.Services
                             continue;
                         }
 
+                        // Skip OS components, updates, and child entries without their own uninstaller.
+                        object? systemComponent = applicationKey?.GetValue("SystemComponent");
+                        if (systemComponent is int systemComponentInt
+                            ? systemComponentInt == 1
+                            : string.Equals(systemComponent?.ToString(), "1", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(applicationKey?.GetValue("ParentKeyName") as string))
+                        {
+                            continue;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(applicationKey?.GetValue("ReleaseType") as string))
+                        {
+                            continue;
+                        }
+
                         applications.Add(new InstalledDesktopApplication(
                             displayName.Trim(),
                             (applicationKey?.GetValue("DisplayVersion") as string)?.Trim(),
+                            (applicationKey?.GetValue("Publisher") as string)?.Trim(),
                             (applicationKey?.GetValue("UninstallString") as string)?.Trim(),
                             (applicationKey?.GetValue("QuietUninstallString") as string)?.Trim()));
                     }
@@ -1016,6 +1097,7 @@ namespace SynToolkit.Services
         private sealed record InstalledDesktopApplication(
             string DisplayName,
             string? DisplayVersion,
+            string? Publisher,
             string? UninstallString,
             string? QuietUninstallString);
 
