@@ -63,6 +63,30 @@ namespace SynToolkit
         {
             ConfigureNLog();
             logger.Info("[APP]: App Started");
+
+            // Global handlers for unhandled exceptions - catches both managed and some native crashes
+            AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.SetCurrentStackTrace(new Exception());
+            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+
+            // Startup native DLL architecture check
+            try
+            {
+                IReadOnlyList<string> dllIssues = Services.NativeDllHealthChecker.CheckApplicationDlls();
+                if (dllIssues.Count > 0)
+                {
+                    logger.Warn("[Startup] Native DLL architecture issues detected:");
+                    foreach (string issue in dllIssues)
+                    {
+                        logger.Warn("  - {0}", issue);
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                logger.Warn(exception, "[Startup] Unable to perform native DLL health check.");
+            }
+
             InitializeUserGreetingState();
             LoadLangString();
             SelectWelcomeGreeting();
@@ -166,13 +190,63 @@ namespace SynToolkit
         }
 
         /// <summary>
-        /// Catches unhandled exceptions and logs them
+        /// Catches unhandled exceptions from WinUI/XAML and logs them.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void OnAppUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            logger.Error(e.Exception, "Unhandled exception occurred");
+            logger.Error(e.Exception, "[WinUI] Unhandled exception occurred: {0}", e.Message);
+
+            // Mark as handled to prevent immediate crash, allowing logging to complete.
+            // Note: Some exceptions (like native DLL load failures) cannot be caught here.
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Catches unhandled exceptions from the AppDomain, including some native crashes.
+        /// This is the last chance to log before the process terminates.
+        /// </summary>
+        private static void OnDomainUnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+        {
+            Exception exception = e.ExceptionObject as Exception;
+            string exitType = e.IsTerminating ? "FATAL" : "ERROR";
+
+            if (exception is not null)
+            {
+                logger.Error(exception, "[{0}] AppDomain unhandled exception (IsTerminating={1}): {2}",
+                    exitType, e.IsTerminating, exception.Message);
+
+                // Check for common native DLL issues
+                if (exception is DllNotFoundException or BadImageFormatException or TypeInitializationException)
+                {
+                    logger.Error("[{0}] This appears to be a native DLL loading issue. " +
+                        "Check that all native dependencies match the process architecture ({1}).",
+                        exitType, System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+                }
+            }
+            else
+            {
+                logger.Error("[{0}] AppDomain unhandled exception (non-Exception type): {1}",
+                    exitType, e.ExceptionObject);
+            }
+
+            // Force flush logs before potential termination
+            try
+            {
+                NLog.LogManager.Flush(TimeSpan.FromSeconds(2));
+            }
+            catch
+            {
+                // Ignore flush errors during termination
+            }
+        }
+
+        /// <summary>
+        /// Catches unobserved exceptions from async tasks.
+        /// </summary>
+        private static void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            logger.Error(e.Exception, "[Task] Unobserved task exception");
+            e.SetObserved(); // Prevent process termination
         }
         
         /// <summary>

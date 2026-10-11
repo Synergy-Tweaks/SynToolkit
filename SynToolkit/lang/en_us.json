@@ -918,7 +918,7 @@
   "WallpaperQualityDescription": "Set desktop wallpaper JPEG import quality to 100%.",
   "TweaksPageDescription": "These controls show the same optimizations SynergyOS applies for performance, latency, privacy, and quality of life. Adjust them to suit your setup — each setting can be changed back.",
   "TweaksWarningTitle": "Create a Restore Point First",
-  "TweaksWarningMessage": "Be careful with the optimizations SynergyOS applies. Results can vary by PC. Create a System Restore point before changing them so you can roll back if something breaks. Some tweaks require a restart.",
+  "TweaksWarningMessage": "Be careful with the optimizations SynergyOS applies. Results can vary by PC. Not Every Tweak will perform the same. Create a System Restore point before changing them so you can roll back if something breaks. Some tweaks require a restart.",
   "TweaksPerformanceSubMenu": "Performance",
   "TweaksPerformanceSubMenuDescription": "CPU scheduling, memory, filesystem, and timer optimizations used by SynergyOS.",
   "TweaksNetworkPowerSubMenu": "Network & Power",

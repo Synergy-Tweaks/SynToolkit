@@ -1,5 +1,6 @@
 #nullable enable
 
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -16,6 +17,35 @@ namespace SynToolkit.Views
 {
     internal sealed class BundledPowerPlanItem
     {
+        // Cache theme brushes once to avoid repeated lookups that may fail during construction
+        private static Brush? _accentBrush;
+        private static Brush? _defaultBrush;
+
+        private static Brush AccentBrush => _accentBrush ??= GetThemeBrush("AccentFillColorDefaultBrush");
+        private static Brush DefaultBrush => _defaultBrush ??= GetThemeBrush("CardStrokeColorDefaultBrush");
+
+        /// <summary>Gets the cached accent brush for external use (e.g., UpdateBuiltInPlanActiveBorder).</summary>
+        internal static Brush GetAccentBrush() => AccentBrush;
+
+        private static Brush GetThemeBrush(string resourceKey)
+        {
+            try
+            {
+                if (Application.Current?.Resources?.TryGetValue(resourceKey, out object? value) == true &&
+                    value is Brush brush)
+                {
+                    return brush;
+                }
+            }
+            catch (Exception exception)
+            {
+                App.logger.Debug(exception, "Unable to load theme brush {ResourceKey}.", resourceKey);
+            }
+
+            // Fallback to a default gray stroke if theme resource isn't available
+            return new SolidColorBrush(Microsoft.UI.Colors.Gray);
+        }
+
         public required BundledPowerPlan Plan { get; init; }
         public bool IsActive { get; init; }
         public bool IsApplying { get; init; }
@@ -24,9 +54,7 @@ namespace SynToolkit.Views
         public string DisplayName => Plan.DisplayName;
         public string Description => Plan.Description;
 
-        public Brush BorderBrush => IsActive
-            ? (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"]
-            : (Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"];
+        public Brush BorderBrush => IsActive ? AccentBrush : DefaultBrush;
 
         public Thickness BorderThickness => IsActive ? new Thickness(2) : new Thickness(1);
 
@@ -797,8 +825,7 @@ namespace SynToolkit.Views
         {
             if (_snapshot?.IsSynToolkitPlanActive == true)
             {
-                BuiltInPlanActiveBorder.BorderBrush =
-                    (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
+                BuiltInPlanActiveBorder.BorderBrush = BundledPowerPlanItem.GetAccentBrush();
                 BuiltInPlanActiveBorder.BorderThickness = new Thickness(2);
                 return;
             }
