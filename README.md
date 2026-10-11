@@ -26,3 +26,4 @@ You can now make all your changes and view them live!
 - [Ameliroated Privacy+ Settings](https://github.com/Ameliorated-LLC/ame-settings-cli) used for the Customizations tab.
 - [Ameliorated App Fetch](https://github.com/Ameliorated-LLC/appfetch) used for the App Fetch. 
 - [AutoOs](https://github.com/tinodin/AutoOS) used for Disk Cleanup functionality. 
+- [SteamWebHelper](https://github.com/NobbyBollocks/SteamTrayWebHelper) used for SteamWebHelper Toggle in Tweaks Tab
