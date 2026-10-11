@@ -69,6 +69,11 @@ internal static class Program
         Run("Primary GPU vendor prefers discrete NVIDIA then AMD then Intel", PrimaryGpuVendorPrefersDiscreteGpu);
         Run("HAGS detection rules", HagsDetectionTests.ClassificationRules);
         Run("HAGS write targets are 1 and 2", HagsDetectionTests.WriteTargetsAreOneAndTwo);
+        Run("SteamTrayWebHelper path resolution", SteamTrayWebHelperTests.PathResolutionPrefersHkcuThenHklmThenFallback);
+        Run("SteamTrayWebHelper missing steam.exe", SteamTrayWebHelperTests.MissingSteamExeIsReported);
+        Run("SteamTrayWebHelper DLL presence", SteamTrayWebHelperTests.DllPresenceUsesSteamFolder);
+        Run("SteamTrayWebHelper SHA-256 parsing", SteamTrayWebHelperTests.Sha256ParsingAndHashCompare);
+        Run("SteamTrayWebHelper pinned constants", SteamTrayWebHelperTests.PinnedReleaseConstantsAreCoherent);
         Run("Windowed games SwapEffect detection", WindowedGamesOptimizationTests.DetectionRules);
         Run("Windowed games preserves other DirectX pairs", WindowedGamesOptimizationTests.WritingPreservesOtherPairs);
         Run("Windowed games detection is fresh", WindowedGamesOptimizationTests.DetectionIsFreshEachCall);

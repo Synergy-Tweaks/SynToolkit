@@ -117,6 +117,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationService, NetworkNavigationPaneConfigurationService>("NetworkNavigationPane");
                 services.AddKeyedTransient<IConfigurationService, ToggleWindowsUpdateConfigurationService>("ToggleWindowsUpdates");
                 services.AddKeyedTransient<IConfigurationService, MemoryCompressionConfigurationService>("MemoryCompression");
+                services.AddKeyedTransient<IConfigurationService, SteamTrayWebHelperConfigurationService>("SteamTrayWebHelper");
                 services.AddKeyedTransient<IConfigurationService, SuperFetchConfigurationService>("SuperFetch");
                 services.AddKeyedTransient<IConfigurationService, SvcHostSplitConfigurationService>("SvcHostSplit");
                 services.AddKeyedTransient<IConfigurationService, NtfsOptimizationConfigurationService>("NtfsOptimization");

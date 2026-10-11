@@ -361,6 +361,7 @@ namespace SynToolkit.HostBuilder
                 ["NetworkNavigationPane"] = new(App.GetValueFromItemList("NetworkNavigationPane"), "NetworkNavigationPane", ConfigurationType.FileSharingSubMenu),
                 ["ToggleWindowsUpdates"] = new(App.GetValueFromItemList("ToggleWindowsUpdates"), "ToggleWindowsUpdates", ConfigurationType.WindowsUpdate),
                 ["MemoryCompression"] = new(App.GetValueFromItemList("MemoryCompression"), "MemoryCompression", ConfigurationType.TweaksPerformanceSubMenu),
+                ["SteamTrayWebHelper"] = new(App.GetValueFromItemList("SteamTrayWebHelper"), "SteamTrayWebHelper", ConfigurationType.TweaksPerformanceSubMenu, "ms-appx:///assets/Icons/Games.png"),
                 ["SuperFetch"] = new(App.GetValueFromItemList("SuperFetch"), "SuperFetch", ConfigurationType.TweaksPerformanceSubMenu),
                 ["SvcHostSplit"] = new(App.GetValueFromItemList("SvcHostSplit"), "SvcHostSplit", ConfigurationType.TweaksPerformanceSubMenu),
                 ["NtfsOptimization"] = new(App.GetValueFromItemList("NtfsOptimization"), "NtfsOptimization", ConfigurationType.TweaksPerformanceSubMenu),

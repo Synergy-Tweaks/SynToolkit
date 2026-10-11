@@ -83,6 +83,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<ConfigurationStore>("Printing");
                 services.AddKeyedSingleton<ConfigurationStore>("VbsState");
                 services.AddKeyedSingleton<ConfigurationStore>("MemoryCompression");
+                services.AddKeyedSingleton<ConfigurationStore>("SteamTrayWebHelper");
                 services.AddKeyedSingleton<ConfigurationStore>("SuperFetch");
                 services.AddKeyedSingleton<ConfigurationStore>("SvcHostSplit");
                 services.AddKeyedSingleton<ConfigurationStore>("NtfsOptimization");
