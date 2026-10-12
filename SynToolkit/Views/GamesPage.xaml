@@ -56,7 +56,7 @@
                 <Border
                     Grid.Row="0"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="#0DFFFFFF"
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="6">
                     <Grid>
@@ -174,7 +174,7 @@
                 Margin="0,0,36,18"
                 Padding="12,10"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="#0DFFFFFF"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="6">
                 <TextBlock TextWrapping="Wrap">
