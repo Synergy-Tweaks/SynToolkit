@@ -10,7 +10,7 @@
         <Setter Property="Header" Value="{Binding Name}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Margin" Value="0,0,36,5" />
-        <Setter Property="BorderBrush" Value="#0DFFFFFF" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
     </Style>
 
 
@@ -151,19 +151,19 @@
 
     <Style x:Key="ConfigurationSettingsCardTemplate" TargetType="controls:SettingsCard">
         <Setter Property="Margin" Value="0,0,36,10" />
-        <Setter Property="BorderBrush" Value="#0DFFFFFF" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
     </Style>
 
     <Style x:Key="ConfigurationSettingsExpanderTemplate" TargetType="controls:SettingsExpander">
         <Setter Property="Margin" Value="0,0,36,10" />
-        <Setter Property="BorderBrush" Value="#0DFFFFFF" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
     </Style>
 
     <Style x:Key="ConfigurationSubSetting" TargetType="controls:SettingsCard">
         <Setter Property="Header" Value="{Binding Name}" />
         <Setter Property="MinHeight" Value="60" />
         <Setter Property="Height" Value="60" />
-        <Setter Property="BorderBrush" Value="#0DFFFFFF" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
         <Setter Property="Margin" Value="0,1,0,0" />
     </Style>
 

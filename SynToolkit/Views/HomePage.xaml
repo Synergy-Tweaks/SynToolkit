@@ -143,7 +143,7 @@
                     Margin="0,10,0,0"
                     Padding="16"
                     Background="{ThemeResource ControlFillColorDefault}"
-                    BorderBrush="#15FFFFFF"
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="8">
                     <StackPanel>
@@ -206,7 +206,7 @@
                         Source="ms-appx:///assets/Icons/UserAccount.png" />
                     <TextBlock x:Name="ProfilesHeader" FontSize="20" VerticalAlignment="Center" />
                 </StackPanel>
-                <Border CornerRadius="8" BorderThickness="1" BorderBrush="#15FFFFFF" Margin="0,10,36,10">
+                <Border CornerRadius="8" BorderThickness="1" BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" Margin="0,10,36,10">
                     <ListView
                     x:Name="ProfilesListView"
                     Grid.Row="1"
