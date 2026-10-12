@@ -10,15 +10,15 @@ namespace SynToolkit.Services;
 /// </summary>
 public enum ContextMenuState
 {
-    /// <summary>The context menu entry is registered and points to the current executable.</summary>
+    /// <summary>All shell entries are registered and point to the current executable.</summary>
     On,
 
-    /// <summary>The context menu entry is not registered.</summary>
+    /// <summary>No shell entry is registered.</summary>
     Off,
 
     /// <summary>
-    /// The context menu entry exists but is out of date (stale path, incomplete structure, etc.).
-    /// A toggle action will rewrite or remove it cleanly.
+    /// Entries exist but are out of date (stale path, partial set, legacy v1 key, etc.).
+    /// Enabling rewrites them cleanly, disabling removes them.
     /// </summary>
     Modified,
 
@@ -33,7 +33,7 @@ public enum ContextMenuState
 /// Result of detecting the current context menu registration state.
 /// </summary>
 /// <param name="State">The overall state of the context menu entry.</param>
-/// <param name="LegacyPresent">Whether any legacy registry key exists (even if incomplete or stale).</param>
+/// <param name="LegacyPresent">Whether any key exists (even if incomplete or stale).</param>
 public readonly record struct ContextMenuDetectionResult(ContextMenuState State, bool LegacyPresent);
 
 /// <summary>
@@ -45,8 +45,8 @@ public readonly record struct ContextMenuDetectionResult(ContextMenuState State,
 public readonly record struct ContextMenuOperationResult(bool Success, string FailedStep, ContextMenuDetectionResult DetectedState);
 
 /// <summary>
-/// Manages the SynToolkit Explorer context menu registration.
-/// Supports Desktop and folder background right-click via Directory\Background.
+/// Manages the SynToolkit Explorer context menu registration (opt-in toggle only).
+/// Covers the real desktop, folder icons, and folder backgrounds.
 /// </summary>
 public static class ContextMenuService
 {
@@ -76,49 +76,39 @@ public static class ContextMenuService
             string currentExePath = GetCurrentExePath();
             if (string.IsNullOrWhiteSpace(currentExePath))
             {
-                // Cannot determine current exe path - treat as error
                 return new ContextMenuDetectionResult(ContextMenuState.Error, false);
             }
 
-            // Check if the shell key exists at all
-            bool shellKeyExists = RegistryHelper.KeyExists(ContextMenuConstants.ShellKeyPath);
-            if (!shellKeyExists)
+            int present = 0;
+            int current = 0;
+            foreach (string shellKey in ContextMenuConstants.ShellKeyPaths)
+            {
+                if (!RegistryHelper.KeyExists(shellKey))
+                {
+                    continue;
+                }
+
+                present++;
+                if (IsKeyCurrent(shellKey, currentExePath))
+                {
+                    current++;
+                }
+            }
+
+            bool legacyPresent = RegistryHelper.KeyExists(ContextMenuConstants.LegacyShellKeyPath);
+            bool anyPresent = present > 0 || legacyPresent;
+
+            if (!anyPresent)
             {
                 return new ContextMenuDetectionResult(ContextMenuState.Off, false);
             }
 
-            // Shell key exists - check the command subkey
-            bool commandKeyExists = RegistryHelper.KeyExists(ContextMenuConstants.CommandKeyPath);
-            if (!commandKeyExists)
-            {
-                // Parent exists but command is missing - incomplete/modified
-                return new ContextMenuDetectionResult(ContextMenuState.Modified, true);
-            }
-
-            // Read the command value
-            if (!RegistryHelper.TryReadValue(ContextMenuConstants.CommandKeyPath, string.Empty, out object commandValue))
-            {
-                // Read failed (access denied, etc.)
-                return new ContextMenuDetectionResult(ContextMenuState.Error, true);
-            }
-
-            if (commandValue is not string commandString || string.IsNullOrWhiteSpace(commandString))
-            {
-                // Command value is missing or wrong type
-                return new ContextMenuDetectionResult(ContextMenuState.Modified, true);
-            }
-
-            // Compare paths (case-insensitive, handle quotes)
-            string expectedCommand = GetQuotedCommand(currentExePath);
-            string normalizedCommand = NormalizePath(commandString);
-            string normalizedExpected = NormalizePath(expectedCommand);
-
-            if (string.Equals(normalizedCommand, normalizedExpected, StringComparison.OrdinalIgnoreCase))
+            // shortcut: fully registered only when every HKLM verb is current and no legacy key remains.
+            if (current == ContextMenuConstants.ShellKeyPaths.Length && !legacyPresent)
             {
                 return new ContextMenuDetectionResult(ContextMenuState.On, true);
             }
 
-            // Path doesn't match - stale/moved
             return new ContextMenuDetectionResult(ContextMenuState.Modified, true);
         }
         catch (UnauthorizedAccessException)
@@ -148,15 +138,12 @@ public static class ContextMenuService
             string exePath = GetCurrentExePath();
             if (string.IsNullOrWhiteSpace(exePath))
             {
-                ContextMenuDetectionResult errorState = DetectCurrentState();
-                return new ContextMenuOperationResult(false, "Could not determine executable path.", errorState);
+                return new ContextMenuOperationResult(false, "Could not determine executable path.", DetectCurrentState());
             }
 
-            // Check if already enabled with correct path
             ContextMenuDetectionResult currentState = DetectCurrentState();
             if (currentState.State == ContextMenuState.On)
             {
-                // Already enabled - no write needed
                 return new ContextMenuOperationResult(true, null, currentState);
             }
 
@@ -165,35 +152,32 @@ public static class ContextMenuService
                 return new ContextMenuOperationResult(false, "Cannot write: detection failed.", currentState);
             }
 
-            // Write the shell key with label and icon
+            foreach (string shellKey in ContextMenuConstants.ShellKeyPaths)
+            {
+                if (IsForeignKey(shellKey))
+                {
+                    return new ContextMenuOperationResult(false, "A context-menu key is owned by another application. SynToolkit left it unchanged.", DetectCurrentState());
+                }
+            }
+
             try
             {
-                RegistryHelper.SetValue(ContextMenuConstants.ShellKeyPath, string.Empty, ContextMenuConstants.LabelValue);
-                RegistryHelper.SetValue(ContextMenuConstants.ShellKeyPath, ContextMenuConstants.IconValueName, GetIconValue(exePath));
+                foreach (string shellKey in ContextMenuConstants.ShellKeyPaths)
+                {
+                    WriteShellKey(shellKey, exePath);
+                }
+
+                // Best-effort removal of the v1 HKCU key (folder-background only).
+                RegistryHelper.DeleteKey(ContextMenuConstants.LegacyShellKeyPath);
             }
             catch (Exception exception)
             {
-                App.logger.Warn(exception, "[ContextMenu] Failed to write shell key.");
-                ContextMenuDetectionResult failState = DetectCurrentState();
-                return new ContextMenuOperationResult(false, "Failed to write shell key.", failState);
+                App.logger.Warn(exception, "[ContextMenu] Failed to write shell keys.");
+                return new ContextMenuOperationResult(false, "Failed to write shell keys.", DetectCurrentState());
             }
 
-            // Write the command subkey
-            try
-            {
-                RegistryHelper.SetValue(ContextMenuConstants.CommandKeyPath, string.Empty, GetQuotedCommand(exePath));
-            }
-            catch (Exception exception)
-            {
-                App.logger.Warn(exception, "[ContextMenu] Failed to write command key.");
-                ContextMenuDetectionResult failState = DetectCurrentState();
-                return new ContextMenuOperationResult(false, "Failed to write command key.", failState);
-            }
-
-            // Notify shell of changes
             ShellNotifyHelper.NotifyAssocChanged();
 
-            // Read back and verify
             ContextMenuDetectionResult verifyState = DetectCurrentState();
             if (verifyState.State != ContextMenuState.On)
             {
@@ -207,26 +191,22 @@ public static class ContextMenuService
         catch (UnauthorizedAccessException exception)
         {
             App.logger.Warn(exception, "[ContextMenu] Access denied while enabling context menu.");
-            ContextMenuDetectionResult errorState = DetectCurrentState();
-            return new ContextMenuOperationResult(false, "Access denied.", errorState);
+            return new ContextMenuOperationResult(false, "Access denied.", DetectCurrentState());
         }
         catch (SecurityException exception)
         {
             App.logger.Warn(exception, "[ContextMenu] Security exception while enabling context menu.");
-            ContextMenuDetectionResult errorState = DetectCurrentState();
-            return new ContextMenuOperationResult(false, "Security exception.", errorState);
+            return new ContextMenuOperationResult(false, "Security exception.", DetectCurrentState());
         }
         catch (IOException exception)
         {
             App.logger.Warn(exception, "[ContextMenu] I/O error while enabling context menu.");
-            ContextMenuDetectionResult errorState = DetectCurrentState();
-            return new ContextMenuOperationResult(false, "I/O error.", errorState);
+            return new ContextMenuOperationResult(false, "I/O error.", DetectCurrentState());
         }
         catch (Exception exception)
         {
             App.logger.Warn(exception, "[ContextMenu] Unexpected error while enabling context menu.");
-            ContextMenuDetectionResult errorState = DetectCurrentState();
-            return new ContextMenuOperationResult(false, "Unexpected error.", errorState);
+            return new ContextMenuOperationResult(false, "Unexpected error.", DetectCurrentState());
         }
     }
 
@@ -237,11 +217,9 @@ public static class ContextMenuService
     {
         try
         {
-            // Check current state
             ContextMenuDetectionResult currentState = DetectCurrentState();
             if (currentState.State == ContextMenuState.Off)
             {
-                // Already disabled - no write needed
                 return new ContextMenuOperationResult(true, null, currentState);
             }
 
@@ -250,22 +228,31 @@ public static class ContextMenuService
                 return new ContextMenuOperationResult(false, "Cannot write: detection failed.", currentState);
             }
 
-            // Delete the entire SynToolkit subtree
+            foreach (string shellKey in ContextMenuConstants.ShellKeyPaths)
+            {
+                if (IsForeignKey(shellKey))
+                {
+                    return new ContextMenuOperationResult(false, "A context-menu key is owned by another application. SynToolkit left it unchanged.", DetectCurrentState());
+                }
+            }
+
             try
             {
-                RegistryHelper.DeleteKey(ContextMenuConstants.ShellKeyPath);
+                foreach (string shellKey in ContextMenuConstants.ShellKeyPaths)
+                {
+                    RegistryHelper.DeleteKey(shellKey);
+                }
+
+                RegistryHelper.DeleteKey(ContextMenuConstants.LegacyShellKeyPath);
             }
             catch (Exception exception)
             {
-                App.logger.Warn(exception, "[ContextMenu] Failed to delete shell key.");
-                ContextMenuDetectionResult failState = DetectCurrentState();
-                return new ContextMenuOperationResult(false, "Failed to delete shell key.", failState);
+                App.logger.Warn(exception, "[ContextMenu] Failed to delete shell keys.");
+                return new ContextMenuOperationResult(false, "Failed to delete shell keys.", DetectCurrentState());
             }
 
-            // Notify shell of changes
             ShellNotifyHelper.NotifyAssocChanged();
 
-            // Read back and verify
             ContextMenuDetectionResult verifyState = DetectCurrentState();
             if (verifyState.State != ContextMenuState.Off)
             {
@@ -279,26 +266,22 @@ public static class ContextMenuService
         catch (UnauthorizedAccessException exception)
         {
             App.logger.Warn(exception, "[ContextMenu] Access denied while disabling context menu.");
-            ContextMenuDetectionResult errorState = DetectCurrentState();
-            return new ContextMenuOperationResult(false, "Access denied.", errorState);
+            return new ContextMenuOperationResult(false, "Access denied.", DetectCurrentState());
         }
         catch (SecurityException exception)
         {
             App.logger.Warn(exception, "[ContextMenu] Security exception while disabling context menu.");
-            ContextMenuDetectionResult errorState = DetectCurrentState();
-            return new ContextMenuOperationResult(false, "Security exception.", errorState);
+            return new ContextMenuOperationResult(false, "Security exception.", DetectCurrentState());
         }
         catch (IOException exception)
         {
             App.logger.Warn(exception, "[ContextMenu] I/O error while disabling context menu.");
-            ContextMenuDetectionResult errorState = DetectCurrentState();
-            return new ContextMenuOperationResult(false, "I/O error.", errorState);
+            return new ContextMenuOperationResult(false, "I/O error.", DetectCurrentState());
         }
         catch (Exception exception)
         {
             App.logger.Warn(exception, "[ContextMenu] Unexpected error while disabling context menu.");
-            ContextMenuDetectionResult errorState = DetectCurrentState();
-            return new ContextMenuOperationResult(false, "Unexpected error.", errorState);
+            return new ContextMenuOperationResult(false, "Unexpected error.", DetectCurrentState());
         }
     }
 
@@ -307,6 +290,35 @@ public static class ContextMenuService
     /// Only call this when the state is <see cref="ContextMenuState.Modified"/>.
     /// </summary>
     public static ContextMenuOperationResult Repair() => Enable();
+
+    private static void WriteShellKey(string shellKey, string exePath)
+    {
+        // Ownership first: a later interruption still leaves a tree Disable can identify as ours.
+        RegistryHelper.SetValue(shellKey, ContextMenuConstants.OwnerValueName, ContextMenuConstants.OwnerValue);
+        RegistryHelper.SetValue(shellKey, "MUIVerb", ContextMenuConstants.LabelValue);
+        RegistryHelper.SetValue(shellKey, ContextMenuConstants.IconValueName, GetIconValue(exePath));
+        RegistryHelper.SetValue(shellKey, "Position", "Bottom");
+        RegistryHelper.SetValue(shellKey, "HasLUAShield", string.Empty); // app manifest requires elevation
+        RegistryHelper.SetValue(shellKey + @"\command", string.Empty, GetQuotedCommand(exePath));
+    }
+
+    private static bool IsKeyCurrent(string shellKey, string exePath)
+    {
+        return RegistryHelper.IsMatch(shellKey, "MUIVerb", ContextMenuConstants.LabelValue)
+            && RegistryHelper.IsMatch(shellKey + @"\command", string.Empty, GetQuotedCommand(exePath));
+    }
+
+    private static bool IsForeignKey(string shellKey)
+    {
+        if (!RegistryHelper.KeyExists(shellKey))
+        {
+            return false;
+        }
+
+        // Ours, or at least shaped like ours (older build without the owner tag).
+        return !RegistryHelper.IsMatch(shellKey, ContextMenuConstants.OwnerValueName, ContextMenuConstants.OwnerValue)
+            && !RegistryHelper.IsMatch(shellKey, "MUIVerb", ContextMenuConstants.LabelValue);
+    }
 
     /// <summary>
     /// Normalizes a path for comparison by removing quotes and trimming whitespace.

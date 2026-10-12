@@ -7,15 +7,26 @@ namespace SynToolkit.Services;
 internal static class ContextMenuConstants
 {
     /// <summary>
-    /// Registry path for the SynToolkit shell verb under Directory\Background.
-    /// HKCU is used so no admin elevation is required.
+    /// Verb name shared by all three shell locations.
     /// </summary>
-    public const string ShellKeyPath = @"HKCU\Software\Classes\Directory\Background\shell\SynToolkit";
+    public const string VerbName = "SynToolkit";
 
     /// <summary>
-    /// Registry path for the command subkey that holds the executable invocation.
+    /// Machine-wide shell locations: real desktop, folder icon, folder background.
+    /// HKLM matches every other context-menu toggle in this codebase and the
+    /// app already runs elevated, so there is no benefit to HKCU here.
     /// </summary>
-    public const string CommandKeyPath = ShellKeyPath + @"\command";
+    public static readonly string[] ShellKeyPaths =
+    [
+        @"HKLM\SOFTWARE\Classes\DesktopBackground\shell\SynToolkit",
+        @"HKLM\SOFTWARE\Classes\Directory\shell\SynToolkit",
+        @"HKLM\SOFTWARE\Classes\Directory\Background\shell\SynToolkit",
+    ];
+
+    /// <summary>
+    /// Leftover v1 key (HKCU, folder-background only). Removed on enable/disable.
+    /// </summary>
+    public const string LegacyShellKeyPath = @"HKCU\Software\Classes\Directory\Background\shell\SynToolkit";
 
     /// <summary>
     /// The label displayed in the context menu.
@@ -26,4 +37,14 @@ internal static class ContextMenuConstants
     /// Registry value name for the icon path on the shell key.
     /// </summary>
     public const string IconValueName = "Icon";
+
+    /// <summary>
+    /// Ownership tag so Disable never removes a foreign application's verb.
+    /// </summary>
+    public const string OwnerValueName = "SynToolkitOwner";
+
+    /// <summary>
+    /// Expected ownership tag value.
+    /// </summary>
+    public const string OwnerValue = "SynToolkit";
 }

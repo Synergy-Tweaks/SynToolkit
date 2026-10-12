@@ -12,26 +12,30 @@ internal static class ContextMenuServiceTests
     internal static void RunAll()
     {
         ConstantsAreCorrect();
-        RegistryPathsUseHkcu();
-        CommandSubkeyIsUnderShellKey();
+        RegistryPathsUseHklm();
+        CommandSubkeysAreUnderShellKeys();
         LabelValueIsCorrect();
         PathFormattingHelpers();
     }
 
     private static void ConstantsAreCorrect()
     {
-        // Verify registry paths follow expected structure
-        True(
-            ContextMenuConstants.ShellKeyPath.StartsWith("HKCU", StringComparison.Ordinal),
-            "Context menu must use HKCU (current user) to avoid requiring admin rights.");
+        // Three machine-wide verbs: real desktop, folder icon, folder background.
+        Equal(3, ContextMenuConstants.ShellKeyPaths.Length, "Context menu must cover exactly three shell locations.");
+
+        foreach (string shellKey in ContextMenuConstants.ShellKeyPaths)
+        {
+            True(
+                shellKey.StartsWith("HKLM", StringComparison.Ordinal),
+                $"Context menu must use HKLM (app already runs elevated): {shellKey}.");
+            True(
+                shellKey.EndsWith("SynToolkit", StringComparison.OrdinalIgnoreCase),
+                $"Shell key must end with SynToolkit as the verb name: {shellKey}.");
+        }
 
         True(
-            ContextMenuConstants.ShellKeyPath.Contains(@"Directory\Background\shell", StringComparison.OrdinalIgnoreCase),
-            "Context menu must target Directory\\Background for desktop and folder background right-click.");
-
-        True(
-            ContextMenuConstants.ShellKeyPath.EndsWith("SynToolkit", StringComparison.OrdinalIgnoreCase),
-            "Shell key must end with SynToolkit as the verb name.");
+            ContextMenuConstants.LegacyShellKeyPath.StartsWith("HKCU", StringComparison.Ordinal),
+            "The legacy v1 key must use HKCU so cleanup targets the old location.");
     }
 
     private static void LabelValueIsCorrect()
@@ -47,35 +51,26 @@ internal static class ContextMenuServiceTests
             "Icon value name must be 'Icon' for shell menu icons.");
     }
 
-    private static void RegistryPathsUseHkcu()
+    private static void RegistryPathsUseHklm()
     {
-        True(
-            ContextMenuConstants.ShellKeyPath.StartsWith("HKCU\\", StringComparison.OrdinalIgnoreCase),
-            "Shell key must use HKCU hive prefix.");
-
-        True(
-            ContextMenuConstants.CommandKeyPath.StartsWith("HKCU\\", StringComparison.OrdinalIgnoreCase),
-            "Command key must use HKCU hive prefix.");
-
-        // Verify no HKLM usage (would require admin)
-        True(
-            !ContextMenuConstants.ShellKeyPath.Contains("HKLM", StringComparison.OrdinalIgnoreCase),
-            "Shell key must not use HKLM (requires admin).");
-
-        True(
-            !ContextMenuConstants.CommandKeyPath.Contains("HKLM", StringComparison.OrdinalIgnoreCase),
-            "Command key must not use HKLM (requires admin).");
+        // Verify no HKCU usage in the live keys (HKCU would require per-user
+        // writes from an elevated process and diverge from every other toggle).
+        foreach (string shellKey in ContextMenuConstants.ShellKeyPaths)
+        {
+            True(
+                !shellKey.Contains("HKCU", StringComparison.OrdinalIgnoreCase),
+                $"Live shell key must not use HKCU: {shellKey}.");
+        }
     }
 
-    private static void CommandSubkeyIsUnderShellKey()
+    private static void CommandSubkeysAreUnderShellKeys()
     {
-        True(
-            ContextMenuConstants.CommandKeyPath.StartsWith(ContextMenuConstants.ShellKeyPath, StringComparison.OrdinalIgnoreCase),
-            "Command key must be a subkey of the shell key.");
-
-        True(
-            ContextMenuConstants.CommandKeyPath.EndsWith(@"\command", StringComparison.OrdinalIgnoreCase),
-            "Command key must end with \\command subkey.");
+        foreach (string shellKey in ContextMenuConstants.ShellKeyPaths)
+        {
+            True(
+                (shellKey + @"\command").EndsWith(@"\command", StringComparison.OrdinalIgnoreCase),
+                $"Command key must end with \\command subkey: {shellKey}.");
+        }
     }
 
     private static void PathFormattingHelpers()
