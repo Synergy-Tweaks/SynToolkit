@@ -6,7 +6,8 @@
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:local="using:SynToolkit.Views"
     xmlns:vm="using:SynToolkit.ViewModels"
-    Loaded="Page_Loaded">
+    Loaded="Page_Loaded"
+    NavigationCacheMode="Required">
 
     <Page.Resources>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />

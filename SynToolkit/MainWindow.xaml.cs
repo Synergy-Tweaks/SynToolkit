@@ -650,7 +650,9 @@ namespace SynToolkit
                 bool navigated = ContentFrame.Navigate(
                     type,
                     parameter ?? App.CurrentCategory,
-                    transitionInfo ?? new DrillInNavigationTransitionInfo());
+                    // Entrance is cheaper than DrillIn: no scaling pass over the new
+                    // content, so tab switches don't jank while layout settles.
+                    transitionInfo ?? new EntranceNavigationTransitionInfo());
                 if (navigated)
                 {
                     TrimMainFrameHistory();

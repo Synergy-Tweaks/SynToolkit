@@ -11,6 +11,7 @@
     d:DataContext="{d:DesignInstance Type=viewmodel:CleanerPageViewModel}"
     Loaded="Page_Loaded"
     Unloaded="Page_Unloaded"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Page.Resources>
