@@ -43,6 +43,20 @@
                         </controls:SettingsCard.HeaderIcon>
                         <ToggleSwitch x:Name="DiscordRpcToggle" />
                     </controls:SettingsCard>
+                    <!--  Context menu toggle  -->
+                    <controls:SettingsCard x:Name="ContextMenuCard" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        <controls:SettingsCard.HeaderIcon>
+                            <FontIcon Glyph="&#xE8C7;" />
+                        </controls:SettingsCard.HeaderIcon>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock
+                                x:Name="ContextMenuStatusText"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                Visibility="Collapsed" />
+                            <ToggleSwitch x:Name="ContextMenuToggle" />
+                        </StackPanel>
+                    </controls:SettingsCard>
                     <!--  SteamGridDB API key (optional; used by Games cover art)  -->
                     <controls:SettingsCard x:Name="SteamGridDbCard" Style="{StaticResource ConfigurationSettingsCardTemplate}">
                         <controls:SettingsCard.HeaderIcon>

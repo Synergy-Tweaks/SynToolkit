@@ -340,6 +340,59 @@ namespace SynToolkit
             logger.Info("[HOST]: Starting host");
         }
 
+        /// <summary>
+        /// Ensures the context menu entry is registered if it doesn't exist.
+        /// Called on startup to implement "Default: ON" behavior.
+        /// </summary>
+        private static void EnsureContextMenuRegistered()
+        {
+            try
+            {
+                ContextMenuDetectionResult detection = ContextMenuService.DetectCurrentState();
+
+                if (detection.State == ContextMenuState.Off)
+                {
+                    // Entry doesn't exist - auto-register it (Default: ON)
+                    logger.Info("[ContextMenu] Context menu entry not found, auto-registering (Default: ON).");
+                    ContextMenuOperationResult result = ContextMenuService.Enable();
+                    if (result.Success)
+                    {
+                        logger.Info("[ContextMenu] Context menu entry auto-registered successfully.");
+                    }
+                    else
+                    {
+                        logger.Warn("[ContextMenu] Context menu auto-registration failed: {0}", result.FailedStep);
+                    }
+                }
+                else if (detection.State == ContextMenuState.Modified)
+                {
+                    // Entry exists but is stale (app was moved) - auto-repair it
+                    logger.Info("[ContextMenu] Context menu entry is stale, auto-repairing.");
+                    ContextMenuOperationResult result = ContextMenuService.Repair();
+                    if (result.Success)
+                    {
+                        logger.Info("[ContextMenu] Context menu entry repaired successfully.");
+                    }
+                    else
+                    {
+                        logger.Warn("[ContextMenu] Context menu repair failed: {0}", result.FailedStep);
+                    }
+                }
+                else if (detection.State == ContextMenuState.On)
+                {
+                    logger.Debug("[ContextMenu] Context menu entry already registered and current.");
+                }
+                else
+                {
+                    logger.Debug("[ContextMenu] Context menu state detection returned Error, skipping auto-registration.");
+                }
+            }
+            catch (Exception exception)
+            {
+                logger.Warn(exception, "[ContextMenu] Context menu auto-registration encountered an error.");
+            }
+        }
+
         private void StartDiscordPresence()
         {
             // Check if Discord RPC is disabled in settings
@@ -682,6 +735,9 @@ namespace SynToolkit
                 logger.Info("Loading configuration services");
                 await Task.Run(() => _host.Services.GetRequiredService<ConfigPageViewModel>());
                 logger.Info("Configuration services loaded");
+
+                // Auto-register context menu entry if not already present (Default: ON)
+                _ = Task.Run(EnsureContextMenuRegistered);
 
                 m_window = new MainWindow();
                 try
