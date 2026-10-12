@@ -167,17 +167,20 @@ namespace SynToolkit.Services
 
         public async Task<PowerPlanSnapshot> GetStateAsync(CancellationToken cancellationToken = default)
         {
-            ProcessResult activeResult = await RunPowerCfgAsync(
+            // The two queries are independent reads: run them together so one
+            // slow powercfg spawn doesn't stack on top of the other.
+            Task<ProcessResult> activeTask = RunPowerCfgAsync(
                 cancellationToken,
                 "read the active power plan",
                 "/getactivescheme");
-            EnsureSuccess(activeResult, "read the active power plan");
-
-            ProcessResult listResult = await RunPowerCfgAsync(
+            Task<ProcessResult> listTask = RunPowerCfgAsync(
                 cancellationToken,
                 "list Windows power plans",
                 "/list");
-            EnsureSuccess(listResult, "list Windows power plans");
+            await Task.WhenAll(activeTask, listTask);
+            ProcessResult activeResult = await activeTask;
+            ProcessResult listResult = await listTask;
+            EnsureSuccess(activeResult, "read the active power plan");
 
             Guid? activeSchemeId = ExtractFirstGuid(activeResult.StandardOutput);
             if (activeSchemeId is null)

@@ -11,6 +11,7 @@
     xmlns:nvidia="using:SynToolkit.Services.NvidiaProfileInspector"
     xmlns:viewmodel="using:SynToolkit.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodel:GpuPageViewModel}"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Page.Resources>
