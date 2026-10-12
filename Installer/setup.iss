@@ -590,3 +590,16 @@ begin
     Result := CloseRunningSynToolkit();
   end;
 end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usPostUninstall then
+  begin
+    // "Open SynToolkit" Explorer verbs owned by the Settings toggle.
+    RegDeleteKeyIncludingSubkeys(HKLM, 'SOFTWARE\Classes\DesktopBackground\shell\SynToolkit');
+    RegDeleteKeyIncludingSubkeys(HKLM, 'SOFTWARE\Classes\Directory\shell\SynToolkit');
+    RegDeleteKeyIncludingSubkeys(HKLM, 'SOFTWARE\Classes\Directory\Background\shell\SynToolkit');
+    // Leftover v1 key (HKCU, folder-background only).
+    RegDeleteKeyIncludingSubkeys(HKCU, 'Software\Classes\Directory\Background\shell\SynToolkit');
+  end;
+end;

@@ -28,6 +28,7 @@ namespace SynToolkit.Views
 
         public bool KeepBackground_State { get; private set; }
         public bool DiscordRpc_State { get; private set; }
+        private ContextMenuState _contextMenuState;
 
         public string Version
         {
@@ -69,6 +70,10 @@ namespace SynToolkit.Views
 
             DiscordRpcToggle.IsOn = DiscordRpc_State;
             DiscordRpcToggle.Toggled += DiscordRpc_Toggled;
+
+            // Initialize context menu toggle state
+            RefreshContextMenuState();
+            ContextMenuToggle.Toggled += ContextMenuToggle_Toggled;
 
             SynergyOsUpdateNotifyToggle.IsOn = SynergyOsUpdateChecker.Default.Settings.IsEnabled;
             SynergyOsUpdateNotifyToggle.Toggled += SynergyOsUpdateNotifyToggle_Toggled;
@@ -114,6 +119,9 @@ namespace SynToolkit.Views
             }
 
             _isPageLoaded = true;
+
+            // Refresh context menu state when page regains focus
+            RefreshContextMenuState();
         }
 
         private void SettingsPage_Unloaded(object sender, RoutedEventArgs e)
@@ -132,6 +140,8 @@ namespace SynToolkit.Views
                 BackgroundDescription.Header = App.GetValueFromItemList("Settings_BackgroundDesc");
                 DiscordRpcCard.Header = App.GetValueFromItemList("Settings_DiscordRpc");
                 DiscordRpcCard.Description = App.GetValueFromItemList("Settings_DiscordRpcDesc");
+                ContextMenuCard.Header = App.GetValueFromItemList("Settings_ContextMenu");
+                ContextMenuCard.Description = App.GetValueFromItemList("Settings_ContextMenuDesc");
                 SteamGridDbCard.Header = App.GetValueFromItemList("Settings_SteamGridDb");
                 SteamGridDbCard.Description = App.GetValueFromItemList("Settings_SteamGridDbDesc");
                 SteamGridDbApiKeyBox.PlaceholderText = App.GetValueFromItemList("Settings_SteamGridDbPlaceholder");
@@ -232,6 +242,110 @@ namespace SynToolkit.Views
             catch (Exception ex)
             {
                 App.logger.Error($"Failed to save Discord RPC state: {ex.Message}");
+            }
+        }
+
+        private void RefreshContextMenuState()
+        {
+            ContextMenuDetectionResult detection = ContextMenuService.DetectCurrentState();
+            _contextMenuState = detection.State;
+
+            // Detach handler to prevent triggering during programmatic update
+            ContextMenuToggle.Toggled -= ContextMenuToggle_Toggled;
+
+            switch (detection.State)
+            {
+                case ContextMenuState.On:
+                    ContextMenuToggle.IsOn = true;
+                    ContextMenuToggle.IsEnabled = true;
+                    ContextMenuStatusText.Visibility = Visibility.Collapsed;
+                    break;
+
+                case ContextMenuState.Off:
+                    ContextMenuToggle.IsOn = false;
+                    ContextMenuToggle.IsEnabled = true;
+                    ContextMenuStatusText.Visibility = Visibility.Collapsed;
+                    break;
+
+                case ContextMenuState.Modified:
+                    // Show as "on" since something exists, but warn the user
+                    ContextMenuToggle.IsOn = true;
+                    ContextMenuToggle.IsEnabled = true;
+                    ContextMenuStatusText.Text = App.GetValueFromItemList("Settings_ContextMenuOutOfDate");
+                    ContextMenuStatusText.Visibility = Visibility.Visible;
+                    break;
+
+                case ContextMenuState.Error:
+                    ContextMenuToggle.IsOn = false;
+                    ContextMenuToggle.IsEnabled = false;
+                    ContextMenuStatusText.Text = App.GetValueFromItemList("Settings_ContextMenuUnknown");
+                    ContextMenuStatusText.Visibility = Visibility.Visible;
+                    break;
+            }
+
+            ContextMenuToggle.Toggled += ContextMenuToggle_Toggled;
+        }
+
+        private async void ContextMenuToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ToggleSwitch toggle)
+            {
+                return;
+            }
+
+            bool targetOn = toggle.IsOn;
+
+            // Disable toggle while processing
+            toggle.IsEnabled = false;
+            ContextMenuStatusText.Visibility = Visibility.Collapsed;
+
+            try
+            {
+                ContextMenuOperationResult result = await Task.Run(() =>
+                    targetOn ? ContextMenuService.Enable() : ContextMenuService.Disable());
+
+                if (!_isPageLoaded)
+                {
+                    return;
+                }
+
+                if (result.Success)
+                {
+                    _contextMenuState = result.DetectedState.State;
+                    ContextMenuStatusText.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    // Operation failed - revert toggle to detected state and show warning
+                    App.logger.Warn($"[ContextMenu] Toggle operation failed: {result.FailedStep}");
+
+                    _contextMenuState = result.DetectedState.State;
+
+                    // Detach to prevent re-triggering
+                    toggle.Toggled -= ContextMenuToggle_Toggled;
+                    toggle.IsOn = result.DetectedState.State is ContextMenuState.On or ContextMenuState.Modified;
+                    toggle.Toggled += ContextMenuToggle_Toggled;
+
+                    ContextMenuStatusText.Text = result.FailedStep ?? App.GetValueFromItemList("Settings_ContextMenuUnknown");
+                    ContextMenuStatusText.Visibility = Visibility.Visible;
+                }
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[ContextMenu] Unexpected error during toggle.");
+
+                if (_isPageLoaded)
+                {
+                    // Refresh to get actual state
+                    RefreshContextMenuState();
+                }
+            }
+            finally
+            {
+                if (_isPageLoaded)
+                {
+                    toggle.IsEnabled = _contextMenuState != ContextMenuState.Error;
+                }
             }
         }
 

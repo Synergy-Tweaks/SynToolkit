@@ -124,6 +124,7 @@ internal static class Program
         Run("SystemResponsiveness access denied is error", SystemResponsivenessTests.DetectionAccessDeniedIsErrorNotDefault);
         Run("SystemResponsiveness detection is fresh each call", SystemResponsivenessTests.DetectionAlwaysUsesFreshInput);
         Run("SystemResponsiveness uint conversion", SystemResponsivenessTests.UIntConversionHandlesSignedNegativeOne);
+        Run("Context menu service tests", ContextMenuServiceTests.RunAll);
 
         Console.WriteLine(_failures == 0
             ? "All SynToolkit service tests passed."

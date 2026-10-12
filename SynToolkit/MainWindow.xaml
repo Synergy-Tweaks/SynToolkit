@@ -234,6 +234,11 @@
                         </Border>
                     </StackPanel>
                 </NavigationViewItem>
+                <NavigationViewItem x:Name="Uninstaller" Tag="SynToolkit.Views.UninstallerPage">
+                    <NavigationViewItem.Icon>
+                        <ImageIcon Source="ms-appx:///assets/Icons/Uninstall.png" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem x:Name="PowerPlans" Tag="SynToolkit.Views.PowerPlansPage">
                     <NavigationViewItem.Icon>
                         <ImageIcon Source="ms-appx:///assets/Icons/Power.png" />
