@@ -240,6 +240,8 @@
   "SecurityHealthTrayDescription": "Show or hide the Security Health button in the task bar tray",
   "UAC": "User Account Control",
   "UACDescription": "Prompt for elevation when apps need administrator rights. Disabling removes UAC prompts (SynergyOS default) but lowers protection against unwanted system changes. Restart required.",
+  "UsernameRequirement": "Require username at sign-in",
+  "UsernameRequirementDescription": "Require typing a username at sign-in instead of showing the last signed-in user.",
   "FaultTolerantHeap": "Fault Tolerant Heap",
   "FaultTolerantHeapDescription": "Enable or disable the Fault Tolerant Heap mitigation",
   "Copilot": "Enable Microsoft Copilot",
