@@ -502,6 +502,9 @@ namespace SynToolkit.ViewModels
                                 portableStatus.InstalledVersion,
                                 portableStatus.AvailableVersion,
                                 isUpdateCheckComplete: true);
+                            installer.HasDesktopShortcut =
+                                installer.PortableAppDefinition != null &&
+                                _portableAppService.DesktopShortcutExists(installer.PortableAppDefinition);
                             continue;
                         }
 
@@ -598,6 +601,37 @@ namespace SynToolkit.ViewModels
 
             installer.IsSelected = true;
             await InstallInstallersAsync([installer]);
+        }
+
+        public async Task ToggleDesktopShortcutAsync(FeaturedInstallerViewModel installer)
+        {
+            ArgumentNullException.ThrowIfNull(installer);
+            if (!installer.CanManageDesktopShortcut || installer.PortableAppDefinition == null)
+            {
+                return;
+            }
+
+            HasError = false;
+            try
+            {
+                bool enable = !installer.HasDesktopShortcut;
+                bool ok = await Task.Run(() =>
+                    _portableAppService.SetDesktopShortcutEnabled(installer.PortableAppDefinition, enable));
+                if (!ok)
+                {
+                    ErrorMessage = $"Could not {(enable ? "create" : "remove")} the desktop shortcut for {installer.Name}.";
+                    HasError = true;
+                    return;
+                }
+
+                installer.HasDesktopShortcut = enable;
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[Installers] Unable to toggle desktop shortcut for {AppName}.", installer.Name);
+                ErrorMessage = $"Could not change the desktop shortcut for {installer.Name}: {exception.Message}";
+                HasError = true;
+            }
         }
 
         public async Task<WingetInstallResult> UninstallSingleAsync(FeaturedInstallerViewModel installer)

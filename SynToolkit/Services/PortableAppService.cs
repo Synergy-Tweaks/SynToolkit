@@ -234,12 +234,103 @@ namespace SynToolkit.Services
                     Directory.Delete(appDirectory, recursive: true);
                 }
 
+                TryDeleteDesktopShortcut(definition.AppName);
+
                 return Task.FromResult(new PortableAppInstallResult(true, $"Uninstalled {definition.AppName}"));
             }
             catch (Exception exception)
             {
                 App.logger.Error(exception, "[PortableApp] Failed to uninstall {AppName}", definition.AppName);
                 return Task.FromResult(new PortableAppInstallResult(false, exception.Message));
+            }
+        }
+
+        /// <summary>
+        /// Checks if a desktop shortcut exists for a portable app.
+        /// </summary>
+        public bool DesktopShortcutExists(PortableAppDefinition definition)
+        {
+            ArgumentNullException.ThrowIfNull(definition);
+            return File.Exists(GetDesktopShortcutPath(definition.AppName));
+        }
+
+        /// <summary>
+        /// Creates or removes the desktop shortcut for an installed portable app.
+        /// </summary>
+        public bool SetDesktopShortcutEnabled(PortableAppDefinition definition, bool enabled)
+        {
+            ArgumentNullException.ThrowIfNull(definition);
+
+            if (!enabled)
+            {
+                return TryDeleteDesktopShortcut(definition.AppName);
+            }
+
+            string executablePath = GetExecutablePath(definition);
+            if (!File.Exists(executablePath))
+            {
+                return false;
+            }
+
+            try
+            {
+                Type? shellType = Type.GetTypeFromProgID("WScript.Shell");
+                if (shellType is null)
+                {
+                    return false;
+                }
+
+                dynamic shell = Activator.CreateInstance(shellType)!;
+                try
+                {
+                    dynamic shortcut = shell.CreateShortcut(GetDesktopShortcutPath(definition.AppName));
+                    try
+                    {
+                        shortcut.TargetPath = executablePath;
+                        shortcut.WorkingDirectory = GetAppDirectory(definition.AppName);
+                        shortcut.IconLocation = executablePath;
+                        shortcut.Save();
+                    }
+                    finally
+                    {
+                        System.Runtime.InteropServices.Marshal.FinalReleaseComObject(shortcut);
+                    }
+                }
+                finally
+                {
+                    System.Runtime.InteropServices.Marshal.FinalReleaseComObject(shell);
+                }
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[PortableApp] Failed to create desktop shortcut for {AppName}", definition.AppName);
+                return false;
+            }
+        }
+
+        private static string GetDesktopShortcutPath(string appName) =>
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                $"{appName}.lnk");
+
+        private static bool TryDeleteDesktopShortcut(string appName)
+        {
+            try
+            {
+                string shortcutPath = GetDesktopShortcutPath(appName);
+                if (File.Exists(shortcutPath))
+                {
+                    File.Delete(shortcutPath);
+                }
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[PortableApp] Failed to remove desktop shortcut for {AppName}", appName);
+                return false;
             }
         }
 
