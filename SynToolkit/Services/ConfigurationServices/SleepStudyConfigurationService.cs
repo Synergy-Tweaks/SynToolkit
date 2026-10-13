@@ -67,8 +67,10 @@ namespace SynToolkit.Services.ConfigurationServices
                 return;
             }
 
+            // /q:true: Analytic channels prompt for confirmation (enabling clears
+            // the log), which hangs/fails without a console. Quiet answers yes.
             CommandPromptHelper.RunCommand(
-                $"wevtutil.exe set-log \"{SLEEP_STUDY_CHANNEL}\" /e:{(enabled ? "true" : "false")}");
+                $"wevtutil.exe set-log \"{SLEEP_STUDY_CHANNEL}\" /e:{(enabled ? "true" : "false")} /q:true");
         }
 
         private static void SetEfficiencyTaskEnabled(bool enabled)
