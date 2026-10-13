@@ -12,7 +12,9 @@
 #>
 param(
     [switch]$SkipBuild,
-    [switch]$SkipInstaller
+    [switch]$SkipInstaller,
+    [ValidateSet('Release', 'Debug')]
+    [string]$Configuration = 'Release'
 )
 
 $ErrorActionPreference = "Stop"
@@ -46,8 +48,8 @@ Write-Host ""
 if (-not $SkipBuild) {
     # Clean previous builds
     Write-Host "[1/4] Cleaning previous builds..." -ForegroundColor Yellow
-    $releaseDir = Join-Path $ProjectDir "bin\x64\Release"
-    $objReleaseDir = Join-Path $ProjectDir "obj\x64\Release"
+    $releaseDir = Join-Path $ProjectDir "bin\x64\$Configuration"
+    $objReleaseDir = Join-Path $ProjectDir "obj\x64\$Configuration"
     
     if (Test-Path $releaseDir) { Remove-Item $releaseDir -Recurse -Force }
     if (Test-Path $objReleaseDir) { Remove-Item $objReleaseDir -Recurse -Force }
@@ -69,9 +71,9 @@ if (-not $SkipBuild) {
     Write-Host ""
 
     # Build and publish
-    Write-Host "[3/4] Building and publishing SynToolkit (Release, x64)..." -ForegroundColor Yellow
+    Write-Host "[3/4] Building and publishing SynToolkit ($Configuration, x64)..." -ForegroundColor Yellow
     dotnet publish $ProjectFile `
-        -c Release `
+        -c $Configuration `
         -r win-x64 `
         -p:Platform=x64 `
         -p:PublishSingleFile=false `
@@ -110,7 +112,13 @@ if (-not $SkipInstaller) {
     
     if ($innoPath) {
         Write-Host "Found Inno Setup at: $innoPath" -ForegroundColor Green
-        & $innoPath $InstallerScript
+        [xml]$projectXml = Get-Content -Raw -LiteralPath $ProjectFile
+        $appVersion = @($projectXml.Project.PropertyGroup.Version | Where-Object { $_ })[0]
+        if ([string]::IsNullOrWhiteSpace($appVersion)) {
+            Write-Host "ERROR: Version not found in project file." -ForegroundColor Red
+            exit 1
+        }
+        & $innoPath $InstallerScript "/DMyAppVersion=$appVersion"
         
         if ($LASTEXITCODE -eq 0) {
             Write-Host ""
@@ -119,7 +127,7 @@ if (-not $SkipInstaller) {
             Write-Host "============================================" -ForegroundColor Green
             Write-Host ""
             Write-Host "Installer created at:" -ForegroundColor Cyan
-            Write-Host "  $OutputDir\SynToolkit-Setup-1.7.0-Stable.exe" -ForegroundColor White
+            Write-Host "  $OutputDir\SynToolkit-Setup-$appVersion-Stable.exe" -ForegroundColor White
             Write-Host ""
             Write-Host "Published files at:" -ForegroundColor Cyan
             Write-Host "  $PublishDir" -ForegroundColor White
