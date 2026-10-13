@@ -83,8 +83,16 @@ namespace SynToolkit.Services.ConfigurationServices
                 return;
             }
 
-            CommandPromptHelper.RunCommand(
-                $"schtasks /Change /TN \"{POWER_EFFICIENCY_TASK}\" /{(enabled ? "Enable" : "Disable")}");
+            // Direct spawn, not cmd.exe: the task path contains spaces and
+            // cmd's quote-stripping splits it (schtasks sees 'Efficiency').
+            CommandResult result = CommandPromptHelper.RunProcessResult(
+                "schtasks.exe",
+                ["/Change", "/TN", POWER_EFFICIENCY_TASK, enabled ? "/Enable" : "/Disable"]);
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException(
+                    $"schtasks failed with exit code {result.ExitCode}: {result.CombinedOutput}");
+            }
         }
 
         /// <summary>Exit code is locale-independent; error text is not.</summary>
