@@ -116,6 +116,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<ConfigurationStore>("AmdDisplayPower");
                 services.AddKeyedSingleton<ConfigurationStore>("AmdSpreadSpectrum");
                 services.AddKeyedSingleton<ConfigurationStore>("AmdCrashDefender");
+                services.AddKeyedSingleton<ConfigurationStore>("XhciImod");
                 services.AddKeyedSingleton<MultiOptionConfigurationStore>("ContextMenuTerminals");
                 services.AddKeyedSingleton<MultiOptionConfigurationStore>("ShortcutIcon");
                 services.AddKeyedSingleton<MultiOptionConfigurationStore>("Mitigations");
