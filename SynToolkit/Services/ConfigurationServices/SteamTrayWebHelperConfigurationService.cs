@@ -293,10 +293,11 @@ namespace SynToolkit.Services.ConfigurationServices
             {
                 using HttpResponseMessage response = Http
                     .GetAsync(SteamTrayWebHelperConstants.DllDownloadUrl)
+                    .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
                 response.EnsureSuccessStatusCode();
-                byte[] bytes = response.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
+                byte[] bytes = response.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
                 File.WriteAllBytes(destinationPath, bytes);
             }
             catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or IOException)
@@ -338,6 +339,7 @@ namespace SynToolkit.Services.ConfigurationServices
             {
                 using HttpResponseMessage response = Http
                     .GetAsync(SteamTrayWebHelperConstants.Sha256DownloadUrl)
+                    .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
                 if (!response.IsSuccessStatusCode)
@@ -348,7 +350,7 @@ namespace SynToolkit.Services.ConfigurationServices
                     return null;
                 }
 
-                string body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                string body = response.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
                 return SteamTrayWebHelperPaths.TryParseSha256FileContents(body);
             }
             catch (Exception exception)
@@ -405,7 +407,10 @@ namespace SynToolkit.Services.ConfigurationServices
 
             if (queue.HasThreadAccess)
             {
-                return ShowConfirmDialogAsync(title, content, primaryText).GetAwaiter().GetResult();
+                // Blocking the UI thread on its own dialog deadlocks (the dialog
+                // can never pump). Callers run on a pool thread; fail fast otherwise.
+                throw new InvalidOperationException(
+                    "The Steam confirmation must be requested from a background thread.");
             }
 
             TaskCompletionSource<bool> completion = new();

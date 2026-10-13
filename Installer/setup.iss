@@ -385,6 +385,25 @@ begin
   DeleteFile(ScriptPath);
 end;
 
+function GetInstalledAppPath(): String;
+var
+  Location: String;
+begin
+  // The user may change {app} on upgrade: resolve the running install from
+  // the uninstall registration, falling back to the new folder.
+  if RegQueryStringValue(
+      HKLM64,
+      'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{FE4CD776-C158-49D7-8B5F-F73D3D342E8C}_is1',
+      'InstallLocation',
+      Location) and (Location <> '') then
+  begin
+    Result := AddBackslash(Location) + '{#MyAppExeName}';
+    exit;
+  end;
+
+  Result := ExpandConstant('{app}\{#MyAppExeName}');
+end;
+
 function CloseRunningSynToolkit(): Boolean;
 var
   ResultCode: Integer;
@@ -397,7 +416,7 @@ begin
     exit;
   end;
 
-  AppPath := ExpandConstant('{app}\{#MyAppExeName}');
+  AppPath := GetInstalledAppPath();
   if FileExists(AppPath) then
   begin
     Log('Requesting a graceful SynToolkit shutdown.');

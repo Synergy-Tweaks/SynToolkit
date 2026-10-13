@@ -145,8 +145,10 @@ namespace SynToolkit.Services.ConfigurationServices
         {
             if (!HasSnapshot(serviceName))
             {
-                // SynergyOS Enable Bluetooth sets Start=2 (Automatic).
-                return new ServiceSnapshot(ServiceStartMode.Automatic, false, false);
+                // Never invent Automatic: NaturalAuthentication and per-user
+                // BluetoothUserService_* ship as Manual on stock Windows.
+                throw new InvalidOperationException(
+                    $"No saved state exists for Bluetooth service '{serviceName}', so SynToolkit will not guess its startup type. Disable then re-enable through the app to record one.");
             }
 
             object storedMode = RegistryHelper.GetValue(

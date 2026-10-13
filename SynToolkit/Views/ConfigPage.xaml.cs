@@ -77,16 +77,61 @@ public sealed partial class ConfigPage : Page
 
     private void RefreshVisibleConfigurationStates()
     {
-        foreach (IConfigurationItem item in _viewModel.ConfigurationItems)
+        // Probes run off the UI thread (registry/powercfg/WMI); applying touches
+        // bound properties and must stay on the UI thread.
+        _ = RefreshVisibleConfigurationStatesAsync();
+    }
+
+    private async System.Threading.Tasks.Task RefreshVisibleConfigurationStatesAsync()
+    {
+        if (_viewModel is null)
         {
-            if (item is ConfigurationItemViewModel configurationItem)
+            return;
+        }
+
+        System.Collections.Generic.List<System.Action> applies =
+            await System.Threading.Tasks.Task.Run(() =>
             {
-                configurationItem.RefreshCurrentSetting();
-            }
-            else if (item is MultiOptionConfigurationItemViewModel multiOptionItem)
-            {
-                multiOptionItem.RefreshCurrentSetting();
-            }
+                var list = new System.Collections.Generic.List<System.Action>();
+                foreach (IConfigurationItem item in _viewModel.ConfigurationItems)
+                {
+                    if (item is ConfigurationItemViewModel configurationItem)
+                    {
+                        try
+                        {
+                            bool detected = configurationItem.ProbeCurrentSetting();
+                            list.Add(() => configurationItem.ApplyProbedSetting(detected));
+                        }
+                        catch (Exception exception)
+                        {
+                            list.Add(() => configurationItem.ApplyProbeFailure(exception));
+                        }
+                    }
+                    else if (item is MultiOptionConfigurationItemViewModel multiOptionItem)
+                    {
+                        try
+                        {
+                            string detected = multiOptionItem.ProbeCurrentSetting();
+                            list.Add(() => multiOptionItem.ApplyProbedSetting(detected));
+                        }
+                        catch (Exception exception)
+                        {
+                            list.Add(() => multiOptionItem.ApplyProbeFailure(exception));
+                        }
+                    }
+                }
+
+                return list;
+            });
+
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        foreach (System.Action apply in applies)
+        {
+            apply();
         }
     }
 
