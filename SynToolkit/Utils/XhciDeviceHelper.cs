@@ -1,5 +1,7 @@
 using System.Management;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json.Nodes;
 using Microsoft.Win32;
 using SynToolkit.Utils.ReadWrite;
@@ -24,7 +26,19 @@ public class XhciDeviceInfo
 public static class XhciDeviceHelper
 {
     private const string IMOD_REGISTRY_PATH = @"SOFTWARE\SynToolkit\XhciImod";
-    private const string IMOD_INTERVALS_VALUE = "SavedIntervals";
+
+    // Windows xHCI driver service names: Intel/inbox use USBXHCI, AMD uses AMDXHCI.
+    private static readonly string[] XhciServiceNames = ["USBXHCI", "AMDXHCI"];
+
+    /// <summary>
+    /// Stable per-device id for registry names. string.GetHashCode is random
+    /// per process and must never persist across runs.
+    /// </summary>
+    internal static string StableDeviceId(string pnpDeviceId)
+    {
+        byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(pnpDeviceId.ToUpperInvariant()));
+        return Convert.ToHexString(hash)[..16];
+    }
 
     // Win32 API declarations for device enumeration
     [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -105,8 +119,8 @@ public static class XhciDeviceHelper
                 {
                     string service = GetDeviceProperty(deviceInfoSet, ref deviceInfoData, SPDRP_SERVICE);
 
-                    // Only include XHCI controllers
-                    if (!string.Equals(service, "USBXHCI", StringComparison.OrdinalIgnoreCase))
+                    // Intel/inbox (USBXHCI) and AMD (AMDXHCI) controllers.
+                    if (!XhciServiceNames.Any(s => string.Equals(service, s, StringComparison.OrdinalIgnoreCase)))
                         continue;
 
                     string pnpDeviceId = GetDeviceInstanceId(deviceInfoSet, ref deviceInfoData);
@@ -303,15 +317,26 @@ public static class XhciDeviceHelper
         {
             // Restore saved intervals
             var savedIntervals = LoadSavedIntervals(device.PnpDeviceId);
-            if (savedIntervals != null)
+            if (savedIntervals is null)
             {
-                foreach (var kvp in savedIntervals)
+                // Nothing recorded: if the controller is already moderated there
+                // is nothing to do, otherwise restoring is impossible.
+                if (GetImodState(device, hw))
                 {
-                    if (ulong.TryParse(kvp.Key, out ulong addr) && uint.TryParse(kvp.Value?.ToString(), out uint val))
-                    {
-                        if (!hw.WriteMemory32(addr, val))
-                            throw new Exception($"Failed to write memory address 0x{addr:X}");
-                    }
+                    SaveImodState(device.PnpDeviceId, true);
+                    return;
+                }
+
+                throw new InvalidOperationException(
+                    $"No saved IMOD values exist for '{device.FriendlyName}'. Disable IMOD first so the originals are recorded, then re-enable.");
+            }
+
+            foreach (var kvp in savedIntervals)
+            {
+                if (ulong.TryParse(kvp.Key, out ulong addr) && uint.TryParse(kvp.Value?.ToString(), out uint val))
+                {
+                    if (!hw.WriteMemory32(addr, val))
+                        throw new Exception($"Failed to write memory address 0x{addr:X}");
                 }
             }
         }
@@ -346,7 +371,7 @@ public static class XhciDeviceHelper
         try
         {
             using var key = Registry.LocalMachine.CreateSubKey(IMOD_REGISTRY_PATH);
-            key?.SetValue($"Intervals_{device.PnpDeviceId.GetHashCode():X8}", intervals.ToJsonString(), RegistryValueKind.String);
+            key?.SetValue($"Intervals_{StableDeviceId(device.PnpDeviceId)}", intervals.ToJsonString(), RegistryValueKind.String);
         }
         catch (Exception ex)
         {
@@ -359,7 +384,7 @@ public static class XhciDeviceHelper
         try
         {
             using var key = Registry.LocalMachine.OpenSubKey(IMOD_REGISTRY_PATH);
-            var json = key?.GetValue($"Intervals_{pnpDeviceId.GetHashCode():X8}")?.ToString();
+            var json = key?.GetValue($"Intervals_{StableDeviceId(pnpDeviceId)}")?.ToString();
             if (!string.IsNullOrEmpty(json))
             {
                 return JsonNode.Parse(json)?.AsObject();
@@ -377,7 +402,7 @@ public static class XhciDeviceHelper
         try
         {
             using var key = Registry.LocalMachine.CreateSubKey(IMOD_REGISTRY_PATH);
-            key?.SetValue($"State_{pnpDeviceId.GetHashCode():X8}", enabled ? 1 : 0, RegistryValueKind.DWord);
+            key?.SetValue($"State_{StableDeviceId(pnpDeviceId)}", enabled ? 1 : 0, RegistryValueKind.DWord);
         }
         catch (Exception ex)
         {
@@ -386,29 +411,9 @@ public static class XhciDeviceHelper
     }
 
     /// <summary>
-    /// Gets the persisted IMOD state from registry (used to check if user disabled IMOD)
-    /// Returns null if no state is saved
-    /// </summary>
-    public static bool? GetPersistedImodState(string pnpDeviceId)
-    {
-        try
-        {
-            using var key = Registry.LocalMachine.OpenSubKey(IMOD_REGISTRY_PATH);
-            var value = key?.GetValue($"State_{pnpDeviceId.GetHashCode():X8}");
-            if (value != null)
-            {
-                return Convert.ToInt32(value) == 1;
-            }
-        }
-        catch
-        {
-            // Ignore errors
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// Checks if IMOD is currently disabled for any XHCI controller
+    /// Checks if IMOD is currently disabled for any XHCI controller.
+    /// Hardware is truth: a stale persisted record (e.g. registers reset by a
+    /// reboot) must never report the tweak as active.
     /// </summary>
     public static bool IsAnyImodDisabled()
     {
@@ -417,11 +422,6 @@ public static class XhciDeviceHelper
             var controllers = GetXhciControllers();
             foreach (var controller in controllers)
             {
-                // Check persisted state first
-                var persistedState = GetPersistedImodState(controller.PnpDeviceId);
-                if (persistedState == false)
-                    return true;
-
                 // Check actual hardware state
                 if (!controller.IsImodEnabled)
                     return true;
@@ -435,11 +435,45 @@ public static class XhciDeviceHelper
     }
 
     /// <summary>
+    /// Enumerates controllers and proves their registers are readable. Throws
+    /// with an actionable message when the access driver is blocked (Secure
+    /// Boot / Memory Integrity) instead of letting callers "succeed" silently.
+    /// </summary>
+    private static List<XhciDeviceInfo> RequireAccessibleControllers()
+    {
+        var controllers = GetXhciControllers();
+        if (controllers.Count == 0)
+        {
+            throw new NotSupportedException(
+                "No XHCI USB controllers were found. This tweak needs an Intel (USBXHCI) or AMD (AMDXHCI) USB controller.");
+        }
+
+        using var hw = new ReadWriteHelper();
+        foreach (var controller in controllers)
+        {
+            try
+            {
+                GetImodState(controller, hw);
+            }
+            catch (Exception exception)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot access '{controller.FriendlyName}' registers. The inpoutx64 access driver is likely blocked " +
+                    "(Secure Boot or Memory Integrity/VBS must be off for this tweak). " +
+                    $"Details: {exception.Message}");
+            }
+        }
+
+        return controllers;
+    }
+
+    /// <summary>
     /// Disables IMOD for all XHCI controllers
     /// </summary>
     public static void DisableAllImod()
     {
-        var controllers = GetXhciControllers();
+        var controllers = RequireAccessibleControllers();
+        var failures = new List<string>();
         foreach (var controller in controllers)
         {
             try
@@ -449,8 +483,11 @@ public static class XhciDeviceHelper
             catch (Exception ex)
             {
                 App.logger.Error($"[XHCI] Failed to disable IMOD for {controller.FriendlyName}: {ex.Message}");
+                failures.Add(controller.FriendlyName);
             }
         }
+
+        VerifyAllImod(GetXhciControllers(), expectEnabled: false, failures);
     }
 
     /// <summary>
@@ -458,7 +495,8 @@ public static class XhciDeviceHelper
     /// </summary>
     public static void EnableAllImod()
     {
-        var controllers = GetXhciControllers();
+        var controllers = RequireAccessibleControllers();
+        var failures = new List<string>();
         foreach (var controller in controllers)
         {
             try
@@ -468,7 +506,34 @@ public static class XhciDeviceHelper
             catch (Exception ex)
             {
                 App.logger.Error($"[XHCI] Failed to enable IMOD for {controller.FriendlyName}: {ex.Message}");
+                failures.Add(controller.FriendlyName);
             }
+        }
+
+        VerifyAllImod(GetXhciControllers(), expectEnabled: true, failures);
+    }
+
+    /// <summary>
+    /// Re-reads hardware after an apply: success is reported only when every
+    /// controller actually holds the requested state.
+    /// </summary>
+    private static void VerifyAllImod(
+        List<XhciDeviceInfo> controllers,
+        bool expectEnabled,
+        List<string> failures)
+    {
+        foreach (var controller in controllers)
+        {
+            if (controller.IsImodEnabled != expectEnabled)
+            {
+                failures.Add($"{controller.FriendlyName} (verification)");
+            }
+        }
+
+        if (failures.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"IMOD change did not take effect on: {string.Join(", ", failures.Distinct())}.");
         }
     }
 }
