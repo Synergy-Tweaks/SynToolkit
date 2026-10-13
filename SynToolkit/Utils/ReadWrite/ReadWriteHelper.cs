@@ -2,6 +2,11 @@ using System.Runtime.InteropServices;
 
 namespace SynToolkit.Utils.ReadWrite;
 
+/// <summary>
+/// Physical-memory read/write via inpoutx64. Only the memory surface is
+/// exposed: the MSR/PCI/IO surface was removed because its driver was never
+/// initialized and never called.
+/// </summary>
 public partial class ReadWriteHelper : IDisposable
 {
     [DllImport("kernel32.dll")]
@@ -9,89 +14,7 @@ public partial class ReadWriteHelper : IDisposable
 
     public ReadWriteHelper()
     {
-        // Initialization handled by native DLLs
-    }
-
-    // MSR
-    public static bool ReadMsr(uint index, out ulong value)
-    {
-        uint eax = 0, edx = 0;
-        if (WinRing.Rdmsr(index, ref eax, ref edx) != 0)
-        {
-            value = ((ulong)edx << 32) | eax;
-            return true;
-        }
-        value = 0;
-        return false;
-    }
-
-    public static bool WriteMsr(uint index, ulong value)
-    {
-        uint eax = (uint)(value & 0xFFFFFFFF);
-        uint edx = (uint)(value >> 32);
-        return WinRing.Wrmsr(index, eax, edx) != 0;
-    }
-
-    // PMC
-    public static ulong ReadPmc(uint index)
-    {
-        uint eax = 0, edx = 0;
-        WinRing.Rdpmc(index, ref eax, ref edx);
-        return ((ulong)edx << 32) | eax;
-    }
-
-    public static ulong ReadPmcTx(uint index, UIntPtr threadAffinityMask)
-    {
-        uint eax = 0, edx = 0;
-        WinRing.RdpmcTx(index, ref eax, ref edx, threadAffinityMask);
-        return ((ulong)edx << 32) | eax;
-    }
-
-    // PCI
-    public static bool ReadPci(uint bus, uint dev, uint func, byte offset, int size, out uint value)
-    {
-        uint address = WinRing.PciBusDevFunc(bus, dev, func);
-        value = size switch
-        {
-            8 => WinRing.ReadPciConfigByte(address, offset),
-            16 => WinRing.ReadPciConfigWord(address, offset),
-            32 => WinRing.ReadPciConfigDword(address, offset),
-            _ => 0
-        };
-        return true;
-    }
-
-    public static void WritePci(uint bus, uint dev, uint func, byte offset, uint value, int size)
-    {
-        uint address = WinRing.PciBusDevFunc(bus, dev, func);
-        switch (size)
-        {
-            case 8: WinRing.WritePciConfigByte(address, offset, (byte)value); break;
-            case 16: WinRing.WritePciConfigWord(address, offset, (ushort)value); break;
-            case 32: WinRing.WritePciConfigDword(address, offset, value); break;
-        }
-    }
-
-    // IO Port
-    public static uint ReadIo(ushort port, int size)
-    {
-        return size switch
-        {
-            8 => WinRing.ReadIoPortByte(port),
-            16 => WinRing.ReadIoPortWord(port),
-            32 => WinRing.ReadIoPortDword(port),
-            _ => 0
-        };
-    }
-
-    public static void WriteIo(ushort port, uint value, int size)
-    {
-        switch (size)
-        {
-            case 8: WinRing.WriteIoPortByte(port, (byte)value); break;
-            case 16: WinRing.WriteIoPortWord(port, (ushort)value); break;
-            case 32: WinRing.WriteIoPortDword(port, value); break;
-        }
+        // Initialization handled by the native DLL.
     }
 
     // Physical Memory
@@ -166,7 +89,6 @@ public partial class ReadWriteHelper : IDisposable
 
     public void Dispose()
     {
-        WinRing.DeinitializeOls();
         GC.SuppressFinalize(this);
     }
 }
