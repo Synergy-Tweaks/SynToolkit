@@ -195,7 +195,7 @@ internal static class GpuDriverRemovalService
 
         return new GpuRemovalResult
         {
-            Completed = true,
+            Completed = failed == 0,
             StepsSucceeded = ok,
             StepsFailed = failed,
             Summary = summary
@@ -226,19 +226,43 @@ internal static class GpuDriverRemovalService
                 using (var instance = classKey.OpenSubKey(name))
                 {
                     if (instance is null) continue;
-                    var marker = string.Join(' ',
-                        (instance.GetValue("ProviderName") as string) ?? string.Empty,
-                        (instance.GetValue("DriverDesc") as string) ?? string.Empty,
-                        (instance.GetValue("MatchingDeviceId") as string) ?? string.Empty);
-                    belongsToVendor = profile.ProviderTokens.Any(t =>
-                        marker.Contains(t, StringComparison.OrdinalIgnoreCase));
+                    // Exact provider match or PCI vendor id: a substring hit on
+                    // DriverDesc (e.g. "Intel(R) UHD Graphics") must never qualify,
+                    // or a hybrid laptop loses the wrong adapter's binding.
+                    var provider = (instance.GetValue("ProviderName") as string) ?? string.Empty;
+                    var matchingId = (instance.GetValue("MatchingDeviceId") as string) ?? string.Empty;
+                    belongsToVendor =
+                        profile.ExactProviderNames.Any(p =>
+                            provider.Equals(p, StringComparison.OrdinalIgnoreCase)) ||
+                        matchingId.Contains(profile.PciVendorId, StringComparison.OrdinalIgnoreCase);
                 }
 
                 if (!belongsToVendor) continue;
 
-                classKey.DeleteSubKeyTree(name, throwOnMissingSubKey: false);
-                success($"Reset adapter class key: ...\\Class\\{{Display}}\\{name}");
-                cleared++;
+                // Never delete the adapter key itself: it holds InfPath and the
+                // driver binding. Remove only tweak values this app is known to write.
+                int removed = 0;
+                using (var instance = classKey.OpenSubKey(name, writable: true))
+                {
+                    if (instance is null) continue;
+                    foreach (var valueName in profile.TweakValueNames)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        try
+                        {
+                            if (instance.GetValue(valueName) is null) continue;
+                            instance.DeleteValue(valueName, throwOnMissingValue: false);
+                            removed++;
+                        }
+                        catch (Exception ex) { warn($"Adapter key {name}\\{valueName}: {ex.Message}"); }
+                    }
+                }
+
+                if (removed > 0)
+                {
+                    success($"Reset {removed} tweak value(s): ...\\Class\\{{Display}}\\{name}");
+                    cleared++;
+                }
             }
             catch (Exception ex) { warn($"Adapter key {name}: {ex.Message}"); }
         }
@@ -327,6 +351,12 @@ internal static class GpuDriverRemovalService
     private sealed class VendorProfile
     {
         public string[] ProviderTokens { get; init; } = [];
+        /// <summary>Exact ProviderName values owning an adapter. Substring hits don't qualify.</summary>
+        public string[] ExactProviderNames { get; init; } = [];
+        /// <summary>PCI vendor id fragment in MatchingDeviceId, e.g. VEN_10DE.</summary>
+        public string PciVendorId { get; init; } = string.Empty;
+        /// <summary>Only these values are ever deleted under an adapter 000N key.</summary>
+        public string[] TweakValueNames { get; init; } = [];
         public string[] Services { get; init; } = [];
         public string[] Folders { get; init; } = [];
         public (RegistryHive Hive, string SubKey)[] RegistryKeys { get; init; } = [];
@@ -343,6 +373,27 @@ internal static class GpuDriverRemovalService
         private static readonly VendorProfile Nvidia = new()
         {
             ProviderTokens = ["NVIDIA"],
+            ExactProviderNames = ["NVIDIA"],
+            PciVendorId = "VEN_10DE",
+            // Mirrors the ClassDword values NvidiaPerformanceTweaksService writes.
+            TweakValueNames =
+            [
+                "EnableRuntimePowerManagement", "RmDisableHwFaultBuffer",
+                "RMDisablePerIntrDPCQueueing", "RMElcg", "RMBlcg", "RMElpg",
+                "RMSlcg", "RMFspg", "RMGC6Feature", "RMGC6Parameters",
+                "RMDidleFeatureGC5", "RMHotPlugSupportDisable", "RmFbsrPagedDMA",
+                "RMDisablePostL2Compression", "RmRcWatchdog", "RmLogonRC",
+                "RMIntrDetailedLogs", "RMCtxswLog", "RMNvLog",
+                "RMSuppressGPIOIntrErrLog", "RMUsbcDebugMode",
+                "RMDisableFeatureDisablement", "RmBreakonRC", "RMDebugSetSMCMode",
+                "RMDisableLRCCoalescing", "RmDisableRegistryCaching",
+                "D3PCLatency", "EnableMsHybrid",
+                "RMDisableIntrIllegalCompstatAccess", "SetPanelRefreshRate",
+                "RMDisableNoncontigAlloc", "RmPowerFeature", "RmPowerFeature2",
+                "RMEnableL1ECC", "RMEnableSMECC", "RMEnableSHMECC",
+                "RMAssertOnEccErrors", "RM1441072", "RMHdcpKeyglobZero",
+                "RmDisableHdcp22"
+            ],
             Services =
             [
                 "nvlddmkm", "nvagent", "NVDisplay.ContainerLocalSystem", "NvContainerLocalSystem",
@@ -356,9 +407,7 @@ internal static class GpuDriverRemovalService
                 @"%ProgramData%\NVIDIA",
                 @"%LocalAppData%\NVIDIA",
                 @"%LocalAppData%\NVIDIA Corporation",
-                @"%AppData%\NVIDIA",
-                @"%SystemRoot%\System32\DriverStore\Temp",
-                @"C:\NVIDIA"
+                @"%AppData%\NVIDIA"
             ],
             RegistryKeys =
             [
@@ -375,6 +424,9 @@ internal static class GpuDriverRemovalService
         private static readonly VendorProfile Amd = new()
         {
             ProviderTokens = ["Advanced Micro Devices", "AMD", "ATI Technologies"],
+            ExactProviderNames = ["Advanced Micro Devices, Inc.", "ATI Technologies Inc."],
+            PciVendorId = "VEN_1002",
+            // No known app-written class values: adapter keys are left untouched.
             Services =
             [
                 "amdkmdag", "amdwddmg", "AMD External Events Utility", "amdfendr", "amdlog", "AMDRyzenMasterDriverV"
@@ -386,8 +438,7 @@ internal static class GpuDriverRemovalService
                 @"%ProgramFiles%\ATI Technologies",
                 @"%ProgramFiles(x86)%\ATI Technologies",
                 @"%ProgramData%\AMD",
-                @"%LocalAppData%\AMD",
-                @"C:\AMD"
+                @"%LocalAppData%\AMD"
             ],
             RegistryKeys =
             [
@@ -406,6 +457,9 @@ internal static class GpuDriverRemovalService
         private static readonly VendorProfile Intel = new()
         {
             ProviderTokens = ["Intel"],
+            ExactProviderNames = ["Intel Corporation"],
+            PciVendorId = "VEN_8086",
+            // No known app-written class values: adapter keys are left untouched.
             Services = ["igfxCUIService2.0.0.0", "Intel(R) Graphics Command Center Service"],
             Folders =
             [

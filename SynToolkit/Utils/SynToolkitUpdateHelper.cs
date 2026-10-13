@@ -97,8 +97,6 @@ namespace SynToolkit.Utils
             }
         }
 
-        public static bool CheckUpdates() => CheckUpdatesAsync().GetAwaiter().GetResult().IsUpdateAvailable;
-
         public static async Task<bool> InstallUpdateAsync(CancellationToken cancellationToken = default)
         {
             SynToolkitUpdateStatus status = await CheckUpdatesAsync(cancellationToken: cancellationToken);

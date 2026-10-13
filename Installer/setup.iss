@@ -385,6 +385,25 @@ begin
   DeleteFile(ScriptPath);
 end;
 
+function GetInstalledAppPath(): String;
+var
+  Location: String;
+begin
+  // The user may change {app} on upgrade: resolve the running install from
+  // the uninstall registration, falling back to the new folder.
+  if RegQueryStringValue(
+      HKLM64,
+      'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{FE4CD776-C158-49D7-8B5F-F73D3D342E8C}_is1',
+      'InstallLocation',
+      Location) and (Location <> '') then
+  begin
+    Result := AddBackslash(Location) + '{#MyAppExeName}';
+    exit;
+  end;
+
+  Result := ExpandConstant('{app}\{#MyAppExeName}');
+end;
+
 function CloseRunningSynToolkit(): Boolean;
 var
   ResultCode: Integer;
@@ -397,7 +416,7 @@ begin
     exit;
   end;
 
-  AppPath := ExpandConstant('{app}\{#MyAppExeName}');
+  AppPath := GetInstalledAppPath();
   if FileExists(AppPath) then
   begin
     Log('Requesting a graceful SynToolkit shutdown.');
@@ -453,6 +472,8 @@ begin
   RequireInstalledFile(AppRoot + '\{#MyAppExeName}', MissingFiles);
   RequireInstalledFile(AppRoot + '\LICENSE.txt', MissingFiles);
   RequireInstalledFile(AppRoot + '\assets\Fonts\OFL-Archivo.txt', MissingFiles);
+  RequireInstalledFile(AppRoot + '\inpoutx64.dll', MissingFiles);
+  RequireInstalledFile(AppRoot + '\inpoutx64.sys', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Assets\SynToolkit.ico', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Assets\Blank.ico', MissingFiles);
 
@@ -473,6 +494,8 @@ begin
   RequireInstalledFile(SynergyRoot + '\Scripts\toggleDefender.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\vbsCurrentConfig.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\viewBootValues.cmd', MissingFiles);
+  RequireInstalledFile(SynergyRoot + '\Scripts\VBS\Disable VBS (default).bat', MissingFiles);
+  RequireInstalledFile(SynergyRoot + '\Scripts\VBS\Enable VBS.bat', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\NVidia\DisableNVIDIADisplayContainerLS.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\NVidia\EnableNVIDIADisplayContainerLS.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\NVidia\NVIDIADisplayContainerState.ps1', MissingFiles);
@@ -574,10 +597,42 @@ begin
   end;
 end;
 
+function IsSafeBootSet(): Boolean;
+var
+  ResultCode: Integer;
+  OutputFile: String;
+  Output: AnsiString;
+begin
+  Result := False;
+  OutputFile := ExpandConstant('{tmp}\SynToolkit-SafeBootCheck.txt');
+  DeleteFile(OutputFile);
+  // Fail open: if bcdedit cannot run, do not block the uninstall.
+  if Exec(ExpandConstant('{sys}\cmd.exe'),
+      '/c bcdedit.exe /enum {current} > "' + OutputFile + '" 2>&1',
+      ExpandConstant('{tmp}'), SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+  begin
+    if LoadStringFromFile(OutputFile, Output) then
+      Result := Pos('safeboot', LowerCase(Output)) > 0;
+  end;
+  DeleteFile(OutputFile);
+end;
+
 function InitializeUninstall(): Boolean;
 var
   Response: Integer;
 begin
+  // A safeboot flag survives uninstall while its revert script does not.
+  if IsSafeBootSet() then
+  begin
+    MsgBox(
+      'This computer is set to boot into Safe Mode.' + #13#10 + #13#10 +
+      'Uninstalling now would remove the SynToolkit entry that reverts it.' + #13#10 + #13#10 +
+      'Open SynToolkit, apply the Normal Startup entry first, then uninstall.',
+      mbError, MB_OK);
+    Result := False;
+    exit;
+  end;
+
   Result := CloseRunningSynToolkit();
   while not Result do
   begin
@@ -592,6 +647,8 @@ begin
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  ShellIcon29: String;
 begin
   if CurUninstallStep = usPostUninstall then
   begin
@@ -601,5 +658,18 @@ begin
     RegDeleteKeyIncludingSubkeys(HKLM, 'SOFTWARE\Classes\Directory\Background\shell\SynToolkit');
     // Leftover v1 key (HKCU, folder-background only).
     RegDeleteKeyIncludingSubkeys(HKCU, 'Software\Classes\Directory\Background\shell\SynToolkit');
+    // Shortcut-arrow override: remove only when it points at our own icons.
+    if RegQueryStringValue(
+        HKLM,
+        'SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Icons',
+        '29',
+        ShellIcon29) then
+    begin
+      if (CompareText(ShellIcon29, ExpandConstant('{commonappdata}\Synergy\Assets\SynToolkit.ico,0')) = 0) or
+         (CompareText(ShellIcon29, ExpandConstant('{commonappdata}\Synergy\Assets\Blank.ico,0')) = 0) then
+      begin
+        RegDeleteValue(HKLM, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Icons', '29');
+      end;
+    end;
   end;
 end;

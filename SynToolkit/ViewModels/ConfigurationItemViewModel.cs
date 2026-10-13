@@ -119,9 +119,8 @@ namespace SynToolkit.ViewModels
 
             try
             {
-                bool currentSetting = _configurationService.IsEnabled();
-                _configurationStore.CurrentSetting = currentSetting;
-                IsStateAvailable = true;
+                bool currentSetting = ProbeCurrentSetting();
+                ApplyProbedSetting(currentSetting);
 
                 if (_configurationService is HagsConfigurationService hags
                     && hags.GetDetectionStatus() is string hagsStatus
@@ -130,26 +129,44 @@ namespace SynToolkit.ViewModels
                     _statusMessage = hagsStatus;
                     OnPropertyChanged(nameof(DisplayDescription));
                 }
-                else
-                {
-                    ClearStatus();
-                }
 
                 return currentSetting;
             }
             catch (Exception exception)
             {
-                IsStateAvailable = false;
-                SetStatus(
-                    App.GetValueFromItemList("ConfigurationStatus_Unavailable"),
-                    exception);
-                App.logger.Warn(exception, $"Unable to detect current state for {Key}.");
+                ApplyProbeFailure(exception);
                 return false;
             }
             finally
             {
                 IsBusy = false;
             }
+        }
+
+        /// <summary>
+        /// Probes the live state without touching UI-bound properties. Thread-safe.
+        /// </summary>
+        public bool ProbeCurrentSetting() => _configurationService.IsEnabled();
+
+        /// <summary>Applies a probed state. Must run on the UI thread.</summary>
+        public void ApplyProbedSetting(bool detectedSetting)
+        {
+            IsStateAvailable = true;
+            ClearStatus();
+            SetProperty(ref _currentSetting, detectedSetting, nameof(CurrentSetting));
+            _configurationStore.CurrentSetting = detectedSetting;
+        }
+
+        /// <summary>Applies a probe failure. Must run on the UI thread.</summary>
+        public void ApplyProbeFailure(Exception exception)
+        {
+            IsStateAvailable = false;
+            SetStatus(
+                App.GetValueFromItemList("ConfigurationStatus_Unavailable"),
+                exception);
+            App.logger.Warn(exception, $"Unable to detect current state for {Key}.");
+            SetProperty(ref _currentSetting, false, nameof(CurrentSetting));
+            _configurationStore.CurrentSetting = false;
         }
 
         public void RefreshCurrentSetting()

@@ -155,19 +155,59 @@ namespace SynToolkit.Views
 
         private void RefreshVisibleConfigurationStates()
         {
+            // Probes run off the UI thread (registry/powercfg/WMI); applying touches
+            // bound properties and must stay on the UI thread.
+            _ = RefreshVisibleConfigurationStatesAsync();
+        }
+
+        private async System.Threading.Tasks.Task RefreshVisibleConfigurationStatesAsync()
+        {
             if (_viewModel is null)
             {
                 return;
             }
 
-            foreach (ConfigurationItemViewModel item in _viewModel.ConfigurationItems)
+            System.Collections.Generic.List<System.Action> applies =
+                await System.Threading.Tasks.Task.Run(() =>
+                {
+                    var list = new System.Collections.Generic.List<System.Action>();
+                    foreach (ConfigurationItemViewModel item in _viewModel.ConfigurationItems)
+                    {
+                        try
+                        {
+                            bool detected = item.ProbeCurrentSetting();
+                            list.Add(() => item.ApplyProbedSetting(detected));
+                        }
+                        catch (Exception exception)
+                        {
+                            list.Add(() => item.ApplyProbeFailure(exception));
+                        }
+                    }
+
+                    foreach (MultiOptionConfigurationItemViewModel item in _viewModel.MultiOptionConfigurationItems)
+                    {
+                        try
+                        {
+                            string detected = item.ProbeCurrentSetting();
+                            list.Add(() => item.ApplyProbedSetting(detected));
+                        }
+                        catch (Exception exception)
+                        {
+                            list.Add(() => item.ApplyProbeFailure(exception));
+                        }
+                    }
+
+                    return list;
+                });
+
+            if (!IsLoaded)
             {
-                item.RefreshCurrentSetting();
+                return;
             }
 
-            foreach (MultiOptionConfigurationItemViewModel item in _viewModel.MultiOptionConfigurationItems)
+            foreach (System.Action apply in applies)
             {
-                item.RefreshCurrentSetting();
+                apply();
             }
         }
 

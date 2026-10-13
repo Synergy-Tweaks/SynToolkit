@@ -134,27 +134,51 @@ namespace SynToolkit.ViewModels
 
             try
             {
-                string currentSetting = _configurationService.Status();
-                _configurationStore.CurrentSetting = currentSetting;
-                IsStateAvailable = true;
+                string currentSetting = ProbeCurrentSetting();
+                ApplyProbedSetting(currentSetting);
                 return currentSetting;
             }
             catch (Exception exception)
             {
-                const string unavailableState = "State unavailable";
-                if (!_configurationStore.Options.Contains(unavailableState))
-                {
-                    _configurationStore.Options.Add(unavailableState);
-                }
-
-                IsStateAvailable = false;
-                App.logger.Warn(exception, $"Unable to detect current state for {Key}.");
-                return unavailableState;
+                ApplyProbeFailure(exception);
+                return "State unavailable";
             }
             finally
             {
                 IsBusy = false;
             }
+        }
+
+        /// <summary>
+        /// Probes the live state without touching UI-bound properties. Thread-safe.
+        /// </summary>
+        public string ProbeCurrentSetting() => _configurationService.Status();
+
+        /// <summary>Applies a probed state. Must run on the UI thread.</summary>
+        public void ApplyProbedSetting(string detectedSetting)
+        {
+            IsStateAvailable = true;
+            SetProperty(ref _currentSetting, detectedSetting, nameof(CurrentSetting));
+            _configurationStore.CurrentSetting = detectedSetting;
+            if (_configurationService is IWarnedMultiOptionConfigurationService warned)
+            {
+                ApplyStatusWarning(warned.GetStatusWarning());
+            }
+        }
+
+        /// <summary>Applies a probe failure. Must run on the UI thread.</summary>
+        public void ApplyProbeFailure(Exception exception)
+        {
+            const string unavailableState = "State unavailable";
+            if (!_configurationStore.Options.Contains(unavailableState))
+            {
+                _configurationStore.Options.Add(unavailableState);
+            }
+
+            IsStateAvailable = false;
+            App.logger.Warn(exception, $"Unable to detect current state for {Key}.");
+            SetProperty(ref _currentSetting, unavailableState, nameof(CurrentSetting));
+            _configurationStore.CurrentSetting = unavailableState;
         }
 
         public void RefreshCurrentSetting()

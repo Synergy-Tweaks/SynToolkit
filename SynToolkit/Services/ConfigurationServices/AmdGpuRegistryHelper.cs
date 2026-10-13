@@ -20,6 +20,8 @@ namespace SynToolkit.Services.ConfigurationServices
         private const string DisplayClassKey =
             @"HKLM\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}";
 
+        private const string SnapshotStoreKey = @"HKLM\SOFTWARE\SynToolkit\Services\AmdGpu";
+
         private const string AmdProviderFragment = "Advanced Micro Devices";
 
         public static void EnsureAmdGpuPresent()
@@ -78,8 +80,10 @@ namespace SynToolkit.Services.ConfigurationServices
         public static void ApplyValues(IReadOnlyList<AmdRegistryValue> values)
         {
             string keyPath = RequireAmdAdapterKeyPath();
+            string adapter = AdapterSubName(keyPath);
             foreach (AmdRegistryValue value in values)
             {
+                SnapshotOnce(adapter, keyPath, value.Name);
                 RegistryHelper.SetValue(keyPath, value.Name, value.Data, value.Kind);
             }
         }
@@ -87,8 +91,15 @@ namespace SynToolkit.Services.ConfigurationServices
         public static void RevertValues(IReadOnlyList<AmdRegistryValue> values)
         {
             string keyPath = RequireAmdAdapterKeyPath();
+            string adapter = AdapterSubName(keyPath);
             foreach (AmdRegistryValue value in values)
             {
+                if (RestoreSnapshot(adapter, keyPath, value.Name))
+                {
+                    continue;
+                }
+
+                // No snapshot (written by an older build): legacy delete.
                 RegistryHelper.DeleteValue(keyPath, value.Name);
             }
         }
@@ -106,9 +117,82 @@ namespace SynToolkit.Services.ConfigurationServices
                 return false;
             }
 
-            // Marker check: first value must match; avoids brittle all-or-nothing on partial packs.
-            AmdRegistryValue marker = values[0];
-            return RegistryHelper.IsMatch(keyPath, marker.Name, marker.Data);
+            // Every value must match: a partial pack is not "applied".
+            return values.All(value => RegistryHelper.IsMatch(keyPath, value.Name, value.Data));
+        }
+
+        private static string AdapterSubName(string keyPath) =>
+            keyPath.Split('\\').Last();
+
+        private sealed record SnapshotEntry(int Kind, string? Data, bool WasAbsent);
+
+        private static string SnapshotValueName(string adapter, string valueName) => $"{adapter}_{valueName}";
+
+        /// <summary>
+        /// Records the pre-tweak (kind, data) once; later applies must not
+        /// overwrite the original with our own values.
+        /// </summary>
+        private static void SnapshotOnce(string adapter, string keyPath, string valueName)
+        {
+            string snapshotName = SnapshotValueName(adapter, valueName);
+            if (RegistryHelper.GetValue(SnapshotStoreKey, snapshotName) is string)
+            {
+                return;
+            }
+
+            object? current = RegistryHelper.GetValue(keyPath, valueName);
+            SnapshotEntry entry = current switch
+            {
+                int i => new SnapshotEntry((int)RegistryValueKind.DWord, i.ToString(), false),
+                string s => new SnapshotEntry((int)RegistryValueKind.String, s, false),
+                null => new SnapshotEntry(0, null, true),
+                _ => new SnapshotEntry(0, null, true), // unknown kind: restore = delete
+            };
+
+            RegistryHelper.SetValue(
+                SnapshotStoreKey,
+                snapshotName,
+                Newtonsoft.Json.JsonConvert.SerializeObject(entry));
+        }
+
+        /// <summary>Restores a snapshotted value. Returns false when no snapshot exists.</summary>
+        private static bool RestoreSnapshot(string adapter, string keyPath, string valueName)
+        {
+            string snapshotName = SnapshotValueName(adapter, valueName);
+            if (RegistryHelper.GetValue(SnapshotStoreKey, snapshotName) is not string json)
+            {
+                return false;
+            }
+
+            try
+            {
+                SnapshotEntry? entry = Newtonsoft.Json.JsonConvert.DeserializeObject<SnapshotEntry>(json);
+                if (entry is null)
+                {
+                    return false;
+                }
+
+                if (entry.WasAbsent || entry.Data is null)
+                {
+                    RegistryHelper.DeleteValue(keyPath, valueName);
+                }
+                else if (entry.Kind == (int)RegistryValueKind.String)
+                {
+                    RegistryHelper.SetValue(keyPath, valueName, entry.Data, RegistryValueKind.String);
+                }
+                else
+                {
+                    RegistryHelper.SetValue(keyPath, valueName, int.Parse(entry.Data), RegistryValueKind.DWord);
+                }
+
+                RegistryHelper.DeleteValue(SnapshotStoreKey, snapshotName);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                App.logger.Warn(exception, $"[AMD] Could not restore snapshot for {valueName}; leaving current value.");
+                return true; // snapshot unusable: do not fall through to delete
+            }
         }
     }
 
