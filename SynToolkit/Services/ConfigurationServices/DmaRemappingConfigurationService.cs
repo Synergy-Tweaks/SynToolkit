@@ -122,16 +122,28 @@ namespace SynToolkit.Services.ConfigurationServices
 
         private static RegistryKey? OpenServicesSubKey(string? relativePath, bool writable)
         {
-            using RegistryKey baseKey = RegistryKey.OpenBaseKey(
+            // Ownership transfers to the caller: never dispose here. Child keys
+            // hold independent handles and stay valid after the parent closes.
+            RegistryKey baseKey = RegistryKey.OpenBaseKey(
                 RegistryHive.LocalMachine,
                 System.Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
-            using RegistryKey? services = baseKey.OpenSubKey(SERVICES_ROOT, writable);
-            if (services is null || string.IsNullOrEmpty(relativePath))
+            try
             {
-                return services;
-            }
+                RegistryKey? services = baseKey.OpenSubKey(SERVICES_ROOT, writable);
+                if (services is null || string.IsNullOrEmpty(relativePath))
+                {
+                    return services;
+                }
 
-            return services.OpenSubKey(relativePath, writable);
+                using (services)
+                {
+                    return services.OpenSubKey(relativePath, writable);
+                }
+            }
+            finally
+            {
+                baseKey.Dispose();
+            }
         }
 
         private static List<BackupEntry>? LoadBackup()
