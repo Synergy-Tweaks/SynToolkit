@@ -492,6 +492,8 @@ begin
   RequireInstalledFile(SynergyRoot + '\Scripts\toggleDefender.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\vbsCurrentConfig.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\viewBootValues.cmd', MissingFiles);
+  RequireInstalledFile(SynergyRoot + '\Scripts\VBS\Disable VBS (default).bat', MissingFiles);
+  RequireInstalledFile(SynergyRoot + '\Scripts\VBS\Enable VBS.bat', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\NVidia\DisableNVIDIADisplayContainerLS.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\NVidia\EnableNVIDIADisplayContainerLS.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\NVidia\NVIDIADisplayContainerState.ps1', MissingFiles);
@@ -643,6 +645,8 @@ begin
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  ShellIcon29: String;
 begin
   if CurUninstallStep = usPostUninstall then
   begin
@@ -652,5 +656,18 @@ begin
     RegDeleteKeyIncludingSubkeys(HKLM, 'SOFTWARE\Classes\Directory\Background\shell\SynToolkit');
     // Leftover v1 key (HKCU, folder-background only).
     RegDeleteKeyIncludingSubkeys(HKCU, 'Software\Classes\Directory\Background\shell\SynToolkit');
+    // Shortcut-arrow override: remove only when it points at our own icons.
+    if RegQueryStringValue(
+        HKLM,
+        'SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Icons',
+        '29',
+        ShellIcon29) then
+    begin
+      if (CompareText(ShellIcon29, ExpandConstant('{commonappdata}\Synergy\Assets\SynToolkit.ico,0')) = 0) or
+         (CompareText(ShellIcon29, ExpandConstant('{commonappdata}\Synergy\Assets\Blank.ico,0')) = 0) then
+      begin
+        RegDeleteValue(HKLM, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Icons', '29');
+      end;
+    end;
   end;
 end;

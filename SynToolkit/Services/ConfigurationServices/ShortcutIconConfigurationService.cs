@@ -54,6 +54,17 @@ namespace SynToolkit.Services.ConfigurationServices
 
             RegistryHelper.MergeRegFile(payloadPath);
 
+            if (status == 1 || status == 2)
+            {
+                // The payload hardcodes C:\ProgramData: rewrite with the real
+                // path so relocated ProgramData still resolves (and Status verifies it).
+                string iconFile = status == 1 ? "SynToolkit.ico" : "Blank.ico";
+                string iconPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                    "Synergy", "Assets", iconFile) + ",0";
+                RegistryHelper.SetValue(SHELL_ICONS_KEY_NAME, SHORTCUT_ICON_VALUE_NAME, iconPath);
+            }
+
             string detectedStatus = Status();
             _shortcutIconConfigurationService.CurrentSetting = detectedStatus;
 
