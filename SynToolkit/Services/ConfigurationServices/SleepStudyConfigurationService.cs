@@ -18,6 +18,8 @@ namespace SynToolkit.Services.ConfigurationServices
         private const string WDF_KEY = @"HKLM\SYSTEM\CurrentControlSet\Control\Wdf";
 
         private const string SLEEP_STUDY_CHANNEL = "Microsoft-Windows-SleepStudy/Diagnostic";
+        private const string CHANNEL_REG_KEY =
+            @"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WINEVT\Channels\Microsoft-Windows-SleepStudy/Diagnostic";
         private const string POWER_EFFICIENCY_TASK = @"\Microsoft\Windows\Power Efficiency Diagnostics\AnalyzeSystem";
 
         private readonly ConfigurationStore _store;
@@ -61,16 +63,16 @@ namespace SynToolkit.Services.ConfigurationServices
 
         private static void SetEventChannelEnabled(bool enabled)
         {
-            if (!EventChannelExists())
+            // wevtutil prompts on Analytic channels and rejects set-log with
+            // 15000 when there is no console: the Enabled flag is the same
+            // switch it flips, so write it directly.
+            if (!RegistryHelper.KeyExists(CHANNEL_REG_KEY))
             {
                 App.logger.Info($"[SleepStudy] Event channel '{SLEEP_STUDY_CHANNEL}' not present; skipping.");
                 return;
             }
 
-            // /q:true: Analytic channels prompt for confirmation (enabling clears
-            // the log), which hangs/fails without a console. Quiet answers yes.
-            CommandPromptHelper.RunCommand(
-                $"wevtutil.exe set-log \"{SLEEP_STUDY_CHANNEL}\" /e:{(enabled ? "true" : "false")} /q:true");
+            RegistryHelper.SetValue(CHANNEL_REG_KEY, "Enabled", enabled ? 1 : 0, RegistryValueKind.DWord);
         }
 
         private static void SetEfficiencyTaskEnabled(bool enabled)
@@ -86,14 +88,6 @@ namespace SynToolkit.Services.ConfigurationServices
         }
 
         /// <summary>Exit code is locale-independent; error text is not.</summary>
-        private static bool EventChannelExists()
-        {
-            CommandResult result = CommandPromptHelper.RunProcessResult(
-                "wevtutil.exe",
-                ["get-log", SLEEP_STUDY_CHANNEL]);
-            return result.Succeeded;
-        }
-
         private static bool EfficiencyTaskExists()
         {
             CommandResult result = CommandPromptHelper.RunProcessResult(
