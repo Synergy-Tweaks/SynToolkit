@@ -898,6 +898,8 @@
   "DynamicTickDescription": "Keep timer dynamic tick enabled, or disable it as SynergyOS does (requires restart).",
   "DmaRemapping": "DMA Remapping",
   "DmaRemappingDescription": "Allow DMA remapping, or force DmaRemappingCompatible off as SynergyOS does for latency-focused setups.",
+  "XhciImod": "XHCI Interrupt Moderation (IMOD)",
+  "XhciImodDescription": "IMOD batches USB interrupts. Disable for high polling rate mice/keyboards to prevent data loss.",
   "SleepStudy": "Sleep Study",
   "SleepStudyDescription": "Keep Sleep Study and power efficiency diagnostics, or disable them as SynergyOS does.",
   "NetworkLatency": "Network Latency Tweaks",

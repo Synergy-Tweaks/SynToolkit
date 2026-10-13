@@ -158,6 +158,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, ForegroundAppBoostConfigurationService>("ProgramPriority");
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, MmcssOptimizationConfigurationService>("MmcssOptimization");
                 services.AddKeyedTransient<IMultiOptionConfigurationServices, TaskbarAlignmentConfigurationService>("TaskbarAlignment");
+                services.AddKeyedTransient<IConfigurationService, XhciImodConfigurationService>("XhciImod");
             });
             App.logger.Info($"[SERVICES] Added services to host");
             return host;

@@ -368,6 +368,7 @@ namespace SynToolkit.HostBuilder
                 ["NtfsOptimization"] = new(App.GetValueFromItemList("NtfsOptimization"), "NtfsOptimization", ConfigurationType.TweaksPerformanceSubMenu),
                 ["DynamicTick"] = new(App.GetValueFromItemList("DynamicTick"), "DynamicTick", ConfigurationType.TweaksPerformanceSubMenu),
                 ["DmaRemapping"] = new(App.GetValueFromItemList("DmaRemapping"), "DmaRemapping", ConfigurationType.TweaksPerformanceSubMenu),
+                ["XhciImod"] = new(App.GetValueFromItemList("XhciImod"), "XhciImod", ConfigurationType.TweaksPerformanceSubMenu, "ms-appx:///assets/Icons/Devices.png"),
                 ["SleepStudy"] = new(App.GetValueFromItemList("SleepStudy"), "SleepStudy", ConfigurationType.TweaksPerformanceSubMenu),
                 ["NetworkLatency"] = new(App.GetValueFromItemList("NetworkLatency"), "NetworkLatency", ConfigurationType.TweaksNetworkPowerSubMenu),
                 ["PowerSaving"] = new(App.GetValueFromItemList("PowerSaving"), "PowerSaving", ConfigurationType.TweaksNetworkPowerSubMenu),
