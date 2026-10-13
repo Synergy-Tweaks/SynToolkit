@@ -472,6 +472,8 @@ begin
   RequireInstalledFile(AppRoot + '\{#MyAppExeName}', MissingFiles);
   RequireInstalledFile(AppRoot + '\LICENSE.txt', MissingFiles);
   RequireInstalledFile(AppRoot + '\assets\Fonts\OFL-Archivo.txt', MissingFiles);
+  RequireInstalledFile(AppRoot + '\inpoutx64.dll', MissingFiles);
+  RequireInstalledFile(AppRoot + '\inpoutx64.sys', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Assets\SynToolkit.ico', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Assets\Blank.ico', MissingFiles);
 
