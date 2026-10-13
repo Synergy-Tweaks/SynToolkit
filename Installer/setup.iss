@@ -574,10 +574,42 @@ begin
   end;
 end;
 
+function IsSafeBootSet(): Boolean;
+var
+  ResultCode: Integer;
+  OutputFile: String;
+  Output: AnsiString;
+begin
+  Result := False;
+  OutputFile := ExpandConstant('{tmp}\SynToolkit-SafeBootCheck.txt');
+  DeleteFile(OutputFile);
+  // Fail open: if bcdedit cannot run, do not block the uninstall.
+  if Exec(ExpandConstant('{sys}\cmd.exe'),
+      '/c bcdedit.exe /enum {current} > "' + OutputFile + '" 2>&1',
+      ExpandConstant('{tmp}'), SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+  begin
+    if LoadStringFromFile(OutputFile, Output) then
+      Result := Pos('safeboot', LowerCase(Output)) > 0;
+  end;
+  DeleteFile(OutputFile);
+end;
+
 function InitializeUninstall(): Boolean;
 var
   Response: Integer;
 begin
+  // A safeboot flag survives uninstall while its revert script does not.
+  if IsSafeBootSet() then
+  begin
+    MsgBox(
+      'This computer is set to boot into Safe Mode.' + #13#10 + #13#10 +
+      'Uninstalling now would remove the SynToolkit entry that reverts it.' + #13#10 + #13#10 +
+      'Open SynToolkit, apply the Normal Startup entry first, then uninstall.',
+      mbError, MB_OK);
+    Result := False;
+    exit;
+  end;
+
   Result := CloseRunningSynToolkit();
   while not Result do
   begin

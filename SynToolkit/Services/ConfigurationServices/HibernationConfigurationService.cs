@@ -44,6 +44,17 @@ namespace SynToolkit.Services.ConfigurationServices
 
         public void Enable()
         {
+            // /type full alone leaves HibernateEnabled=0 when hibernation is off:
+            // turn it on first, then select the full hiberfile.
+            CommandResult enableResult = CommandPromptHelper.RunProcessResult(
+                "powercfg.exe",
+                ["/hibernate", "on"]);
+
+            if (!enableResult.Succeeded)
+            {
+                throw new InvalidOperationException($"Windows could not enable hibernation: {enableResult.CombinedOutput}");
+            }
+
             CommandResult result = CommandPromptHelper.RunProcessResult(
                 "powercfg.exe",
                 ["/hibernate", "/type", "full"]);
@@ -66,9 +77,11 @@ namespace SynToolkit.Services.ConfigurationServices
             object enabledValue = RegistryHelper.GetValue(POWER_KEY_NAME, HIBERNATE_ENABLED_VALUE_NAME);
             object hiberFileTypeValue = RegistryHelper.GetValue(POWER_KEY_NAME, HIBERFILE_TYPE_VALUE_NAME);
 
+            // Absent keys (e.g. Modern Standby machines) mean hibernation is
+            // off, not unreadable: only access failures throw (via GetValueKind).
             if (enabledValue is null || hiberFileTypeValue is null)
             {
-                throw new InvalidOperationException("Windows hibernation state is unavailable on this installation.");
+                return false;
             }
 
             return Convert.ToInt32(enabledValue) != 0

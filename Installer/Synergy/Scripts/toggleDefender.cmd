@@ -5,5 +5,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
 if errorlevel 1 (
     echo Microsoft Defender rejected the change. Check Tamper Protection and administrator permissions.
 )
+set "SYNTK_ERR=%errorlevel%"
 pause
-exit /b %errorlevel%
+exit /b %SYNTK_ERR%

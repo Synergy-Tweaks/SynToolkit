@@ -28,6 +28,14 @@ namespace SynToolkit.Services.ConfigurationServices
 
         public void Enable()
         {
+            // Deleting an absent element exits non-zero (the stock default),
+            // so skip the call when there is nothing to restore.
+            if (IsEnabled())
+            {
+                _store.CurrentSetting = true;
+                return;
+            }
+
             CommandPromptHelper.RunCommand("bcdedit /deletevalue disabledynamictick");
             App.ContentDialogCaller("restart");
             _store.CurrentSetting = IsEnabled();

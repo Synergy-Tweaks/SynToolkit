@@ -50,7 +50,11 @@ namespace SynToolkit.Utils
             string jsonString = System.Text.Json.JsonSerializer.Serialize(profileModel);
 
             string profilePath = Path.Combine(profileDirectory, $"{profileName}.json");
-            File.WriteAllText(profilePath, jsonString);
+            // Atomic write: a kill (e.g. installer force-close) between open
+            // and flush must never leave a half-written profile behind.
+            string tempPath = profilePath + ".tmp";
+            File.WriteAllText(tempPath, jsonString);
+            File.Move(tempPath, profilePath, overwrite: true);
             return DeserializeProfile(profilePath);
         }
 
