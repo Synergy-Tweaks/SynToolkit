@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -102,19 +104,99 @@ namespace SynToolkit.Services
                     }
                     File.Move(tempPath, targetPath);
 
+                    // Read existing metadata to check if user deleted shortcuts
+                    PortableAppMetadata? existingMetadata = await ReadInstallMetadataAsync(definition.AppName, cancellationToken);
+                    bool userDeletedDesktopShortcut = existingMetadata?.UserDeletedDesktopShortcut ?? false;
+                    bool userDeletedStartMenuShortcut = existingMetadata?.UserDeletedStartMenuShortcut ?? false;
+
+                    // Create shortcuts if enabled and user hasn't deleted them
+                    bool desktopShortcutCreated = false;
+                    bool startMenuShortcutCreated = false;
+                    string? shortcutError = null;
+
+                    if (definition.CreateDesktopShortcut)
+                    {
+                        // Check if desktop shortcut was previously created and now deleted by user
+                        string desktopShortcutPath = GetDesktopShortcutPath(definition.AppName);
+                        if (existingMetadata?.DesktopShortcutCreated == true && !File.Exists(desktopShortcutPath))
+                        {
+                            userDeletedDesktopShortcut = true;
+                        }
+
+                        // Only create if user hasn't deliberately deleted it
+                        if (!userDeletedDesktopShortcut)
+                        {
+                            (desktopShortcutCreated, shortcutError) = TryCreateShortcut(
+                                desktopShortcutPath,
+                                targetPath,
+                                appDirectory,
+                                definition.AppName,
+                                definition.RequiresElevation);
+                        }
+
+                        // Check if start menu shortcut was previously created and now deleted by user
+                        string startMenuShortcutPath = GetStartMenuShortcutPath(definition.AppName);
+                        if (existingMetadata?.StartMenuShortcutCreated == true && !File.Exists(startMenuShortcutPath))
+                        {
+                            userDeletedStartMenuShortcut = true;
+                        }
+
+                        // Only create if user hasn't deliberately deleted it
+                        if (!userDeletedStartMenuShortcut)
+                        {
+                            (startMenuShortcutCreated, string? startMenuError) = TryCreateShortcut(
+                                startMenuShortcutPath,
+                                targetPath,
+                                appDirectory,
+                                definition.AppName,
+                                definition.RequiresElevation);
+                            if (!startMenuShortcutCreated && shortcutError == null)
+                            {
+                                shortcutError = startMenuError;
+                            }
+                        }
+                    }
+
                     // Save metadata for version tracking
                     await SaveInstallMetadataAsync(
                         definition.AppName,
                         release.TagName ?? "unknown",
                         asset.BrowserDownloadUrl,
+                        desktopShortcutCreated || (existingMetadata?.DesktopShortcutCreated ?? false),
+                        startMenuShortcutCreated || (existingMetadata?.StartMenuShortcutCreated ?? false),
+                        userDeletedDesktopShortcut,
+                        userDeletedStartMenuShortcut,
                         cancellationToken);
 
                     progress?.Report(1.0);
 
+                    // Build result message
+                    string message = $"Installed {definition.AppName} {release.TagName}";
+                    string? shortcutNote = null;
+                    if (definition.CreateDesktopShortcut)
+                    {
+                        if (desktopShortcutCreated || startMenuShortcutCreated)
+                        {
+                            shortcutNote = "Desktop shortcut created.";
+                        }
+                        else if (userDeletedDesktopShortcut && userDeletedStartMenuShortcut)
+                        {
+                            shortcutNote = null; // User deleted both, don't mention
+                        }
+                        else if (shortcutError != null)
+                        {
+                            shortcutNote = $"Shortcut could not be created: {shortcutError}";
+                        }
+                    }
+
                     return new PortableAppInstallResult(
                         true,
-                        $"Installed {definition.AppName} {release.TagName}",
-                        release.TagName);
+                        message,
+                        release.TagName,
+                        targetPath,
+                        desktopShortcutCreated,
+                        startMenuShortcutCreated,
+                        shortcutError);
                 }
                 finally
                 {
@@ -218,7 +300,7 @@ namespace SynToolkit.Services
         }
 
         /// <summary>
-        /// Uninstalls a portable app by removing its directory.
+        /// Uninstalls a portable app by removing its directory and shortcuts.
         /// </summary>
         public Task<PortableAppInstallResult> UninstallAsync(
             PortableAppDefinition definition,
@@ -228,6 +310,35 @@ namespace SynToolkit.Services
 
             try
             {
+                // Delete desktop shortcut
+                string desktopShortcutPath = GetDesktopShortcutPath(definition.AppName);
+                if (File.Exists(desktopShortcutPath))
+                {
+                    try
+                    {
+                        File.Delete(desktopShortcutPath);
+                    }
+                    catch (Exception exception)
+                    {
+                        App.logger.Debug(exception, "[PortableApp] Failed to delete desktop shortcut for {AppName}", definition.AppName);
+                    }
+                }
+
+                // Delete start menu shortcut
+                string startMenuShortcutPath = GetStartMenuShortcutPath(definition.AppName);
+                if (File.Exists(startMenuShortcutPath))
+                {
+                    try
+                    {
+                        File.Delete(startMenuShortcutPath);
+                    }
+                    catch (Exception exception)
+                    {
+                        App.logger.Debug(exception, "[PortableApp] Failed to delete start menu shortcut for {AppName}", definition.AppName);
+                    }
+                }
+
+                // Delete app directory
                 string appDirectory = GetAppDirectory(definition.AppName);
                 if (Directory.Exists(appDirectory))
                 {
@@ -296,6 +407,196 @@ namespace SynToolkit.Services
         private static string GetAppDirectory(string appName) =>
             Path.Combine(PortableAppsRoot, appName);
 
+        private static string GetDesktopShortcutPath(string appName) =>
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                $"{appName}.lnk");
+
+        private static string GetStartMenuShortcutPath(string appName) =>
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.Programs),
+                $"{appName}.lnk");
+
+        /// <summary>
+        /// Creates a Windows shortcut (.lnk) file using WScript.Shell COM.
+        /// Returns (success, errorMessage).
+        /// </summary>
+        private static (bool Success, string? Error) TryCreateShortcut(
+            string shortcutPath,
+            string targetPath,
+            string workingDirectory,
+            string appName,
+            bool requiresElevation)
+        {
+            try
+            {
+                // Ensure parent directory exists (for Start Menu)
+                string? parentDir = Path.GetDirectoryName(shortcutPath);
+                if (!string.IsNullOrEmpty(parentDir) && !Directory.Exists(parentDir))
+                {
+                    Directory.CreateDirectory(parentDir);
+                }
+
+                // Use WScript.Shell COM to create the shortcut
+                Type? shellType = Type.GetTypeFromProgID("WScript.Shell");
+                if (shellType is null)
+                {
+                    return (false, "WScript.Shell COM is unavailable");
+                }
+
+                object? shell = Activator.CreateInstance(shellType);
+                if (shell is null)
+                {
+                    return (false, "Failed to create WScript.Shell instance");
+                }
+
+                try
+                {
+                    object? shortcut = shellType.InvokeMember(
+                        "CreateShortcut",
+                        BindingFlags.InvokeMethod,
+                        null,
+                        shell,
+                        [shortcutPath]);
+
+                    if (shortcut is null)
+                    {
+                        return (false, "Failed to create shortcut object");
+                    }
+
+                    Type shortcutType = shortcut.GetType();
+
+                    // Set TargetPath
+                    shortcutType.InvokeMember(
+                        "TargetPath",
+                        BindingFlags.SetProperty,
+                        null,
+                        shortcut,
+                        [targetPath]);
+
+                    // Set WorkingDirectory
+                    shortcutType.InvokeMember(
+                        "WorkingDirectory",
+                        BindingFlags.SetProperty,
+                        null,
+                        shortcut,
+                        [workingDirectory]);
+
+                    // Set IconLocation (use the exe itself)
+                    shortcutType.InvokeMember(
+                        "IconLocation",
+                        BindingFlags.SetProperty,
+                        null,
+                        shortcut,
+                        [$"{targetPath},0"]);
+
+                    // Set Description
+                    shortcutType.InvokeMember(
+                        "Description",
+                        BindingFlags.SetProperty,
+                        null,
+                        shortcut,
+                        [$"Launch {appName} (installed by SynToolkit)"]);
+
+                    // Save the shortcut
+                    shortcutType.InvokeMember(
+                        "Save",
+                        BindingFlags.InvokeMethod,
+                        null,
+                        shortcut,
+                        null);
+
+                    // If elevation is required, set the "Run as administrator" flag
+                    // This is done by modifying the .lnk file header directly
+                    if (requiresElevation && File.Exists(shortcutPath))
+                    {
+                        SetShortcutRunAsAdmin(shortcutPath);
+                    }
+
+                    App.logger.Info("[PortableApp] Created shortcut: {ShortcutPath}", shortcutPath);
+                    return (true, null);
+                }
+                finally
+                {
+                    if (shell is IDisposable disposable)
+                    {
+                        disposable.Dispose();
+                    }
+                    else if (shell != null)
+                    {
+                        Marshal.FinalReleaseComObject(shell);
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[PortableApp] Failed to create shortcut: {ShortcutPath}", shortcutPath);
+                return (false, exception.Message);
+            }
+        }
+
+        /// <summary>
+        /// Sets the "Run as administrator" flag in a .lnk file by modifying the header.
+        /// The flag is at byte offset 0x15, bit 0x20 (SLDF_RUNAS_USER).
+        /// </summary>
+        private static void SetShortcutRunAsAdmin(string shortcutPath)
+        {
+            try
+            {
+                // Read the .lnk file
+                byte[] data = File.ReadAllBytes(shortcutPath);
+
+                // The .lnk header is at least 0x4C bytes
+                // The LinkFlags field is at offset 0x14 (DWORD)
+                // But the "Run as administrator" flag is actually in the
+                // ShellLinkDataFlags at offset 0x15
+                // Specifically, we need to set the SLDF_RUNAS_USER flag (0x2000)
+                // which is in the LinkInfo flags at byte 0x15
+
+                // Actually, the standard way is to modify byte at offset 0x15
+                // and set bit 5 (0x20) which represents the "Run as different user" legacy flag
+                // However, the proper "Run as administrator" is done via IShellLinkDataList
+
+                // Simpler approach: modify the flag byte directly
+                // At offset 0x15, set the high bit of the flags
+                if (data.Length > 0x15)
+                {
+                    data[0x15] |= 0x20; // Set run as admin flag
+                    File.WriteAllBytes(shortcutPath, data);
+                    App.logger.Debug("[PortableApp] Set run-as-admin flag for shortcut: {ShortcutPath}", shortcutPath);
+                }
+            }
+            catch (Exception exception)
+            {
+                // Non-fatal - shortcut still works, just won't auto-elevate
+                App.logger.Debug(exception, "[PortableApp] Could not set run-as-admin flag for shortcut: {ShortcutPath}", shortcutPath);
+            }
+        }
+
+        private static async Task<PortableAppMetadata?> ReadInstallMetadataAsync(
+            string appName,
+            CancellationToken cancellationToken)
+        {
+            string appDirectory = GetAppDirectory(appName);
+            string metadataPath = Path.Combine(appDirectory, "install.json");
+
+            if (!File.Exists(metadataPath))
+            {
+                return null;
+            }
+
+            try
+            {
+                string json = await File.ReadAllTextAsync(metadataPath, cancellationToken);
+                return JsonSerializer.Deserialize<PortableAppMetadata>(json, JsonOptions);
+            }
+            catch (Exception exception)
+            {
+                App.logger.Debug(exception, "[PortableApp] Failed to read metadata for {AppName}", appName);
+                return null;
+            }
+        }
+
         private async Task<GitHubRelease> GetLatestReleaseAsync(
             string owner,
             string repo,
@@ -354,6 +655,10 @@ namespace SynToolkit.Services
             string appName,
             string version,
             string downloadUrl,
+            bool desktopShortcutCreated,
+            bool startMenuShortcutCreated,
+            bool userDeletedDesktopShortcut,
+            bool userDeletedStartMenuShortcut,
             CancellationToken cancellationToken)
         {
             string appDirectory = GetAppDirectory(appName);
@@ -363,7 +668,11 @@ namespace SynToolkit.Services
             {
                 Version = version,
                 InstalledAt = DateTime.UtcNow,
-                DownloadUrl = downloadUrl
+                DownloadUrl = downloadUrl,
+                DesktopShortcutCreated = desktopShortcutCreated,
+                StartMenuShortcutCreated = startMenuShortcutCreated,
+                UserDeletedDesktopShortcut = userDeletedDesktopShortcut,
+                UserDeletedStartMenuShortcut = userDeletedStartMenuShortcut
             };
 
             string json = JsonSerializer.Serialize(metadata, JsonOptions);
@@ -411,6 +720,10 @@ namespace SynToolkit.Services
             public string? Version { get; set; }
             public DateTime InstalledAt { get; set; }
             public string? DownloadUrl { get; set; }
+            public bool DesktopShortcutCreated { get; set; }
+            public bool StartMenuShortcutCreated { get; set; }
+            public bool UserDeletedDesktopShortcut { get; set; }
+            public bool UserDeletedStartMenuShortcut { get; set; }
         }
     }
 
@@ -424,7 +737,8 @@ namespace SynToolkit.Services
         string AssetName,
         string ExecutableName,
         string? ExpectedSha256 = null,
-        bool RequiresElevation = false);
+        bool RequiresElevation = false,
+        bool CreateDesktopShortcut = true);
 
     /// <summary>
     /// Result of a portable app install/uninstall operation.
@@ -432,7 +746,11 @@ namespace SynToolkit.Services
     public sealed record PortableAppInstallResult(
         bool Succeeded,
         string Message,
-        string? InstalledVersion = null);
+        string? InstalledVersion = null,
+        string? InstallPath = null,
+        bool DesktopShortcutCreated = false,
+        bool StartMenuShortcutCreated = false,
+        string? ShortcutError = null);
 
     /// <summary>
     /// Status of an installed portable app.

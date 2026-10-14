@@ -1,5 +1,6 @@
 #nullable enable
 
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace SynToolkit.ViewModels
@@ -46,7 +47,41 @@ namespace SynToolkit.ViewModels
         [ObservableProperty]
         public partial double Progress { get; set; }
 
+        /// <summary>
+        /// Path to the installed portable app executable. Set after successful install.
+        /// </summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanLaunchOrOpenFolder))]
+        [NotifyPropertyChangedFor(nameof(InstallDirectory))]
+        public partial string? InstallPath { get; set; }
+
+        /// <summary>
+        /// Whether this is an installed portable app (enables Launch/Open folder buttons).
+        /// </summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanLaunchOrOpenFolder))]
+        public partial bool IsPortableAppInstalled { get; set; }
+
         public bool IsInstalling => State == InstallerQueueState.Installing;
+
+        /// <summary>
+        /// Whether the Launch and Open folder buttons should be visible.
+        /// </summary>
+        public bool CanLaunchOrOpenFolder => IsPortableAppInstalled &&
+            State == InstallerQueueState.Completed &&
+            !string.IsNullOrWhiteSpace(InstallPath);
+
+        /// <summary>
+        /// The directory containing the installed portable app.
+        /// </summary>
+        public string? InstallDirectory => string.IsNullOrWhiteSpace(InstallPath)
+            ? null
+            : Path.GetDirectoryName(InstallPath);
+
+        /// <summary>
+        /// Whether the portable app requires elevation to run.
+        /// </summary>
+        public bool RequiresElevation => Installer.PortableAppDefinition?.RequiresElevation ?? false;
 
         public string StateGlyph => State switch
         {

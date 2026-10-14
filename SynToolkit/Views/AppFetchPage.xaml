@@ -261,6 +261,7 @@
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <Border
                                             Width="34"
@@ -278,6 +279,7 @@
                                                 FontSize="12"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="{Binding Detail}"
+                                                TextTrimming="CharacterEllipsis"
                                                 ToolTipService.ToolTip="{Binding DetailToolTip}" />
                                             <ProgressBar
                                                 Height="3"
@@ -287,8 +289,34 @@
                                                 Value="{Binding Progress}"
                                                 Visibility="{Binding IsInstalling, Converter={StaticResource BoolToVisibilityConverter}}" />
                                         </StackPanel>
-                                        <Grid
+                                        <!--  Portable app actions (Launch / Open folder)  -->
+                                        <StackPanel
                                             Grid.Column="2"
+                                            Orientation="Horizontal"
+                                            Spacing="4"
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding CanLaunchOrOpenFolder, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <Button
+                                                Padding="6,4"
+                                                Click="PortableAppLaunch_Click"
+                                                ToolTipService.ToolTip="Launch this app">
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <FontIcon FontSize="12" Glyph="&#xE768;" />
+                                                    <TextBlock FontSize="12" Text="Launch" local:LocalizedText.TextKey="PortableApp_Launch" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button
+                                                Padding="6,4"
+                                                Click="PortableAppOpenFolder_Click"
+                                                ToolTipService.ToolTip="Open the install folder in File Explorer">
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <FontIcon FontSize="12" Glyph="&#xE838;" />
+                                                    <TextBlock FontSize="12" Text="Open folder" local:LocalizedText.TextKey="PortableApp_OpenFolder" />
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                        <Grid
+                                            Grid.Column="3"
                                             Width="28"
                                             Height="28"
                                             VerticalAlignment="Center"

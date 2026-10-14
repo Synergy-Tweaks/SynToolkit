@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -192,6 +194,64 @@ namespace SynToolkit.Views
                 XamlRoot = this.XamlRoot
             };
             await errorDialog.ShowAsync();
+        }
+
+        private void PortableAppLaunch_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement element ||
+                element.DataContext is not InstallerQueueItemViewModel queueItem ||
+                string.IsNullOrWhiteSpace(queueItem.InstallPath))
+            {
+                return;
+            }
+
+            try
+            {
+                ProcessStartInfo startInfo = new(queueItem.InstallPath)
+                {
+                    UseShellExecute = true,
+                    WorkingDirectory = queueItem.InstallDirectory ?? Path.GetDirectoryName(queueItem.InstallPath)
+                };
+
+                // Use runas verb if the app requires elevation
+                if (queueItem.RequiresElevation)
+                {
+                    startInfo.Verb = "runas";
+                }
+
+                Process.Start(startInfo);
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[Installers] Failed to launch portable app: {AppName}", queueItem.Name);
+            }
+        }
+
+        private void PortableAppOpenFolder_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement element ||
+                element.DataContext is not InstallerQueueItemViewModel queueItem ||
+                string.IsNullOrWhiteSpace(queueItem.InstallDirectory))
+            {
+                return;
+            }
+
+            try
+            {
+                // Open the folder and select the executable
+                if (!string.IsNullOrWhiteSpace(queueItem.InstallPath) && File.Exists(queueItem.InstallPath))
+                {
+                    Process.Start("explorer.exe", $"/select,\"{queueItem.InstallPath}\"");
+                }
+                else if (Directory.Exists(queueItem.InstallDirectory))
+                {
+                    Process.Start("explorer.exe", queueItem.InstallDirectory);
+                }
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[Installers] Failed to open install folder: {Folder}", queueItem.InstallDirectory);
+            }
         }
 
         private void SearchButton_Click(object sender, RoutedEventArgs e) => _ = RunSearchAsync(SearchBox.Text);

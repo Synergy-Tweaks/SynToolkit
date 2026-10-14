@@ -968,5 +968,7 @@
   "AmdCrashDefenderDescription": "Disable AMD Crash Defender and related logging services (amdfendr/amdlog). Restart required.",
   "GpuPage_TabTweaks": "Tweaks",
   "GpuPage_AmdTweaksDescription": "AMD Radeon driver DWORD optimizations based on imribiy's amd-gpu-tweaks. Apply only on AMD systems; a restart is required for most changes.",
-  "GpuPage_AmdTweaksUnavailableTitle": "No AMD GPU Detected"
+  "GpuPage_AmdTweaksUnavailableTitle": "No AMD GPU Detected",
+  "PortableApp_Launch": "Launch",
+  "PortableApp_OpenFolder": "Open folder"
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -713,8 +714,35 @@ namespace SynToolkit.ViewModels
                         if (portableResult.Succeeded)
                         {
                             queueItem.State = InstallerQueueState.Completed;
-                            queueItem.Detail = wasUpdate ? "Updated" : "Installed";
-                            queueItem.DetailToolTip = portableResult.Message;
+
+                            // Build detail text with shortcut status
+                            string statusText = wasUpdate ? "Updated" : "Installed";
+                            if (portableResult.DesktopShortcutCreated || portableResult.StartMenuShortcutCreated)
+                            {
+                                statusText += ". Desktop shortcut created.";
+                            }
+                            else if (!string.IsNullOrWhiteSpace(portableResult.ShortcutError))
+                            {
+                                statusText += $". Shortcut failed: {portableResult.ShortcutError}";
+                            }
+                            queueItem.Detail = statusText;
+
+                            // Build tooltip with install path
+                            string tooltipText = portableResult.Message;
+                            if (!string.IsNullOrWhiteSpace(portableResult.InstallPath))
+                            {
+                                string? installDir = Path.GetDirectoryName(portableResult.InstallPath);
+                                if (!string.IsNullOrWhiteSpace(installDir))
+                                {
+                                    tooltipText += $"\n\nInstalled to:\n{installDir}";
+                                }
+                            }
+                            queueItem.DetailToolTip = tooltipText;
+
+                            // Store install path for Launch/Open folder actions
+                            queueItem.InstallPath = portableResult.InstallPath;
+                            queueItem.IsPortableAppInstalled = true;
+
                             queueItem.Installer.ApplyAvailabilityState(
                                 InstallerAvailabilityState.Installed,
                                 portableResult.InstalledVersion,

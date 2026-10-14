@@ -68,7 +68,8 @@ namespace SynToolkit.ViewModels
             bool isEssential = false,
             bool requiresElevation = false,
             string? expectedSha256 = null,
-            string? warningMessage = null)
+            string? warningMessage = null,
+            bool createDesktopShortcut = true)
         {
             PortableAppDefinition definition = new(
                 name,
@@ -77,7 +78,8 @@ namespace SynToolkit.ViewModels
                 assetName,
                 executableName,
                 expectedSha256,
-                requiresElevation);
+                requiresElevation,
+                createDesktopShortcut);
 
             return new FeaturedInstallerViewModel(
                 name,
