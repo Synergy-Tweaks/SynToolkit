@@ -338,17 +338,13 @@
                 </StackPanel>
             </Border>
 
-            <ScrollViewer
-                MaxHeight="720"
-                MinHeight="320"
-                HorizontalScrollBarVisibility="Disabled"
-                HorizontalScrollMode="Disabled"
-                VerticalScrollBarVisibility="Auto"
-                VerticalScrollMode="Auto"
-                Visibility="{Binding HasNoCatalogResults, Mode=OneWay, Converter={StaticResource BoolToVisibilityInverseConverter}}">
+            <!--  No nested scroller: the repeater virtualizes against the outer
+              MainScrollViewer. A capped inner viewport broke scroll chaining
+              (bottom unreachable) and mismeasured the edge rows.  -->
                 <ItemsRepeater
                     x:Name="FeaturedInstallersRepeater"
-                    ItemsSource="{Binding FeaturedInstallers, Mode=OneWay}">
+                    ItemsSource="{Binding FeaturedInstallers, Mode=OneWay}"
+                    Visibility="{Binding HasNoCatalogResults, Mode=OneWay, Converter={StaticResource BoolToVisibilityInverseConverter}}">
                     <ItemsRepeater.Layout>
                         <UniformGridLayout
                             ItemsJustification="Start"
@@ -556,7 +552,6 @@
                     </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
-            </ScrollViewer>
 
             <Border
                 Padding="32"
