@@ -101,7 +101,6 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<ConfigurationStore>("StartRecommended");
                 services.AddKeyedSingleton<ConfigurationStore>("ShowFileExtensions");
                 services.AddKeyedSingleton<ConfigurationStore>("AeroShake");
-                services.AddKeyedSingleton<ConfigurationStore>("WallpaperQuality");
                 services.AddKeyedSingleton<ConfigurationStore>("NetworkLatency");
                 services.AddKeyedSingleton<ConfigurationStore>("PowerSaving");
                 services.AddKeyedSingleton<ConfigurationStore>("TelemetryOptimizations");

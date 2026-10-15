@@ -83,6 +83,9 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}
 ; Retired files from earlier FE4 SynToolkit builds. These are exact
 ; installer-owned paths only; Profiles, snapshots, and unknown legacy folders
 ; are never removed.
+Type: files; Name: "{app}\assets\PowerPlans\Khorvie.pow"
+Type: files; Name: "{app}\assets\PowerPlans\Core.pow"
+Type: files; Name: "{app}\assets\Wallpapers\Khorvie.png"
 Type: files; Name: "{app}\BcdSharp.dll"
 Type: files; Name: "{commonappdata}\Synergy\PostInstall.cmd"
 Type: files; Name: "{commonappdata}\Synergy\PostInstall\PrepareDirectories.cmd"

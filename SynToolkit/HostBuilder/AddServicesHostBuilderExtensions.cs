@@ -136,7 +136,6 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationService, StartRecommendedConfigurationService>("StartRecommended");
                 services.AddKeyedTransient<IConfigurationService, ShowFileExtensionsConfigurationService>("ShowFileExtensions");
                 services.AddKeyedTransient<IConfigurationService, AeroShakeConfigurationService>("AeroShake");
-                services.AddKeyedTransient<IConfigurationService, WallpaperQualityConfigurationService>("WallpaperQuality");
                 services.AddKeyedTransient<IConfigurationService, NetworkLatencyConfigurationService>("NetworkLatency");
                 services.AddKeyedTransient<IConfigurationService, PowerSavingConfigurationService>("PowerSaving");
                 services.AddKeyedTransient<IConfigurationService, TelemetryOptimizationsConfigurationService>("TelemetryOptimizations");

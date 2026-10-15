@@ -848,7 +848,6 @@
     "StartRecommended":  "Start Recommended Section",
     "ShowFileExtensions":  "Show File Extensions",
     "AeroShake":  "Aero Shake",
-    "WallpaperQuality":  "Full Wallpaper Quality",
     "GpuPage_TabTweaks":  "Tweaks",
     "GpuPage_AmdTweaksDescription":  "AMD Radeon driver DWORD optimizations based on imribiy\u0027s amd-gpu-tweaks. Apply only on AMD systems; a restart is required for most changes.",
     "GpuPage_AmdTweaksUnavailableTitle":  "No AMD GPU Detected",

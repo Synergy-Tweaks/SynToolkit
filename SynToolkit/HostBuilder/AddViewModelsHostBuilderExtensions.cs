@@ -388,7 +388,6 @@ namespace SynToolkit.HostBuilder
                 ["StartRecommended"] = new(App.GetValueFromItemList("StartRecommended"), "StartRecommended", ConfigurationType.TweaksInterfaceSubMenu),
                 ["ShowFileExtensions"] = new(App.GetValueFromItemList("ShowFileExtensions"), "ShowFileExtensions", ConfigurationType.TweaksInterfaceSubMenu),
                 ["AeroShake"] = new(App.GetValueFromItemList("AeroShake"), "AeroShake", ConfigurationType.TweaksInterfaceSubMenu),
-                ["WallpaperQuality"] = new(App.GetValueFromItemList("WallpaperQuality"), "WallpaperQuality", ConfigurationType.TweaksInterfaceSubMenu),
                 ["AmdDriverTelemetry"] = new(App.GetValueFromItemList("AmdDriverTelemetry"), "AmdDriverTelemetry", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
                 ["AmdFeatureLatency"] = new(App.GetValueFromItemList("AmdFeatureLatency"), "AmdFeatureLatency", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
                 ["AmdPowerPlay"] = new(App.GetValueFromItemList("AmdPowerPlay"), "AmdPowerPlay", ConfigurationType.AmdGpuTweaksSubMenu, "ms-appx:///assets/Icons/Gpu.png"),
