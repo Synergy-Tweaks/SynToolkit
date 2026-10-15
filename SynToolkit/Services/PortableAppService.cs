@@ -498,11 +498,6 @@ namespace SynToolkit.Services
         private static string GetAppDirectory(string appName) =>
             Path.Combine(PortableAppsRoot, appName);
 
-        private static string GetDesktopShortcutPath(string appName) =>
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                $"{appName}.lnk");
-
         private static string GetStartMenuShortcutPath(string appName) =>
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.Programs),
