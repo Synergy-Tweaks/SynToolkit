@@ -3,6 +3,7 @@ using SynToolkit.HostBuilder;
 using Microsoft.Extensions.Hosting;
 using SynToolkit.Services.AudioMixer;
 using SynToolkit.Services.SynergyOsUpdate;
+using SynToolkit.Services.SynToolkitUpdate;
 using SynToolkit.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
@@ -302,6 +303,8 @@ namespace SynToolkit
             StartHost();
             SynergyOsUpdateChecker.InstalledVersionProvider =
                 SynergyOsInstalledVersion.GetInstalledSynergyOSVersion;
+            SynToolkitUpdateChecker.InstalledVersionProvider =
+                SynToolkitInstalledVersion.GetInstalledSynToolkitVersion;
             StartDiscordPresence();
 
             bool wasRanWithArgs = false;
@@ -718,6 +721,7 @@ namespace SynToolkit
                     {
                         mainWindow.ApplyWindowPlacement();
                         mainWindow.StartSynergyOsUpdateChecks();
+                        mainWindow.StartSynToolkitUpdateChecks();
                     });
                 }
             }

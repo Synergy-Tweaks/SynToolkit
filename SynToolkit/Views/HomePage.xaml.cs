@@ -139,14 +139,8 @@ namespace SynToolkit.Views
 
         private async void ReadMoreButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_latestRelease is not null && !string.IsNullOrWhiteSpace(_latestRelease.HtmlUrl))
-            {
-                await Windows.System.Launcher.LaunchUriAsync(new Uri(_latestRelease.HtmlUrl));
-            }
-            else
-            {
-                await Windows.System.Launcher.LaunchUriAsync(new Uri(GitHubReleaseService.ReleasesUrl));
-            }
+            // Always open the fixed releases list — never a tag-pinned html_url.
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(GitHubReleaseService.ReleasesUrl));
         }
 
         private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)

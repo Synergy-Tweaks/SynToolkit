@@ -113,6 +113,7 @@ internal static class Program
         Run("Win32PrioritySeparation custom validation", Win32PrioritySeparationTests.CustomValidation);
         Run("Win32PrioritySeparation helper text uses allowed values", Win32PrioritySeparationTests.HelperTextUsesAllowedValues);
         Run("SynergyOS update checks", SynergyOsUpdateTests.RunAll);
+        Run("SynToolkit update checks", SynToolkitUpdateTests.RunAll);
         Run("Win32PrioritySeparation custom dialog prefill", Win32PrioritySeparationTests.PrefillUsesAllowedRawOrFallsBackTo36);
         Run("SystemResponsiveness preset values are unique", SystemResponsivenessTests.PresetValuesAreUnique);
         Run("SystemResponsiveness preset mapping and hex", SystemResponsivenessTests.PresetMappingAndHex);

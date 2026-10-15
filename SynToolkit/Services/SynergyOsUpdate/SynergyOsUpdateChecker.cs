@@ -412,10 +412,8 @@ namespace SynToolkit.Services.SynergyOsUpdate
                     }
                 }
 
-                string? htmlUrl = root.TryGetProperty("html_url", out JsonElement urlElement)
-                    ? urlElement.GetString()
-                    : null;
-                string safeUrl = SynergyOsReleaseUrl.ResolveSafeOpenUrl(htmlUrl);
+                // Navigation never uses API html_url (tag-pinned). Always store the list page.
+                string safeUrl = SynergyOsReleaseUrl.ResolveSafeOpenUrl();
 
                 DateTimeOffset? publishedAt = null;
                 if (root.TryGetProperty("published_at", out JsonElement publishedElement) &&

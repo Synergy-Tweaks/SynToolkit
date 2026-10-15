@@ -53,6 +53,14 @@
     <Compile Include="..\SynToolkit\Services\SynergyOsUpdate\SynergyOsUpdateSettingsStore.cs" Link="Services\SynergyOsUpdate\SynergyOsUpdateSettingsStore.cs" />
     <Compile Include="..\SynToolkit\Services\SynergyOsUpdate\SynergyOsUpdateChecker.cs" Link="Services\SynergyOsUpdate\SynergyOsUpdateChecker.cs" />
     <Compile Include="..\SynToolkit\Services\SynergyOsUpdate\SynergyOsUpdateNotice.cs" Link="Services\SynergyOsUpdate\SynergyOsUpdateNotice.cs" />
+    <Compile Include="..\SynToolkit\Services\SynToolkitUpdate\SynToolkitUpdateConstants.cs" Link="Services\SynToolkitUpdate\SynToolkitUpdateConstants.cs" />
+    <Compile Include="..\SynToolkit\Services\SynToolkitUpdate\SynToolkitReleaseUrl.cs" Link="Services\SynToolkitUpdate\SynToolkitReleaseUrl.cs" />
+    <Compile Include="..\SynToolkit\Services\SynToolkitUpdate\SynToolkitUpdateDecision.cs" Link="Services\SynToolkitUpdate\SynToolkitUpdateDecision.cs" />
+    <Compile Include="..\SynToolkit\Services\SynToolkitUpdate\SynToolkitUpdateSettingsStore.cs" Link="Services\SynToolkitUpdate\SynToolkitUpdateSettingsStore.cs" />
+    <Compile Include="..\SynToolkit\Services\SynToolkitUpdate\SynToolkitUpdateChecker.cs" Link="Services\SynToolkitUpdate\SynToolkitUpdateChecker.cs" />
+    <Compile Include="..\SynToolkit\Services\SynToolkitUpdate\SynToolkitUpdateNotice.cs" Link="Services\SynToolkitUpdate\SynToolkitUpdateNotice.cs" />
+    <Compile Include="..\SynToolkit\Services\SynToolkitUpdate\SynToolkitInstalledVersion.cs" Link="Services\SynToolkitUpdate\SynToolkitInstalledVersion.cs" />
+    <Compile Include="..\SynToolkit\Utils\SynToolkitUpdateHelper.cs" Link="Utils\SynToolkitUpdateHelper.cs" />
     <Compile Include="..\SynToolkit\Services\ContextMenuConstants.cs" Link="Services\ContextMenuConstants.cs" />
   </ItemGroup>
 </Project>

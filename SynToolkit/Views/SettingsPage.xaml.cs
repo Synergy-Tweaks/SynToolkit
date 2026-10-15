@@ -1,6 +1,7 @@
 using SynToolkit.Models;
 using SynToolkit.Services;
 using SynToolkit.Services.SynergyOsUpdate;
+using SynToolkit.Services.SynToolkitUpdate;
 using SynToolkit.Utils;
 using SynToolkit.ViewModels;
 using CommunityToolkit.WinUI;
@@ -78,6 +79,10 @@ namespace SynToolkit.Views
             SynergyOsUpdateNotifyToggle.IsOn = SynergyOsUpdateChecker.Default.Settings.IsEnabled;
             SynergyOsUpdateNotifyToggle.Toggled += SynergyOsUpdateNotifyToggle_Toggled;
             RefreshSynergyOsUpdateStatusText();
+
+            SynToolkitUpdateNotifyToggle.IsOn = SynToolkitUpdateChecker.Default.Settings.IsEnabled;
+            SynToolkitUpdateNotifyToggle.Toggled += SynToolkitUpdateNotifyToggle_Toggled;
+            RefreshSynToolkitUpdateStatusText();
 
             try
             {
@@ -161,6 +166,13 @@ namespace SynToolkit.Views
                 SynergyOsCheckUpdateButton.Content = App.GetValueFromItemList("SynergyOsUpdate_CheckNowBtn");
                 SynergyOsViewReleaseButton.Content = App.GetValueFromItemList("SynergyOsUpdate_ViewRelease");
                 RefreshSynergyOsUpdateStatusText();
+                SynToolkitUpdateNotifyCard.Header = App.GetValueFromItemList("SynToolkitUpdate_NotifyToggle");
+                SynToolkitUpdateNotifyCard.Description = App.GetValueFromItemList("SynToolkitUpdate_NotifyToggleDesc");
+                SynToolkitUpdateCheckCard.Header = App.GetValueFromItemList("SynToolkitUpdate_CheckNow");
+                SynToolkitUpdateCheckCard.Description = App.GetValueFromItemList("SynToolkitUpdate_CheckNowDesc");
+                SynToolkitCheckUpdateButton.Content = App.GetValueFromItemList("SynToolkitUpdate_CheckNowBtn");
+                SynToolkitViewReleaseButton.Content = App.GetValueFromItemList("SynToolkitUpdate_ViewRelease");
+                RefreshSynToolkitUpdateStatusText();
                 SystemInfo.Header = App.GetValueFromItemList("SystemInfo");
                 SystemInfo.Description = App.GetValueFromItemList("SystemInfo_ReadOnly");
 
@@ -480,9 +492,7 @@ namespace SynToolkit.Views
 
         private async void SynergyOsViewReleaseButton_Click(object sender, RoutedEventArgs e)
         {
-            SynergyOsCachedRelease cached = SynergyOsUpdateChecker.Default.Settings.Snapshot().CachedRelease;
-            string url = SynergyOsReleaseUrl.ResolveSafeOpenUrl(cached?.HtmlUrl);
-            await CommunityLinks.LaunchUriAsync(url);
+            await CommunityLinks.LaunchUriAsync(SynergyOsReleaseUrl.ResolveSafeOpenUrl());
         }
 
         private void RefreshSynergyOsUpdateStatusText()
@@ -551,6 +561,158 @@ namespace SynToolkit.Views
                     ? Visibility.Visible
                     : Visibility.Collapsed;
         }
+
+        private void SynToolkitUpdateNotifyToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ToggleSwitch toggle)
+            {
+                return;
+            }
+
+            try
+            {
+                SynToolkitUpdateChecker.Default.Settings.IsEnabled = toggle.IsOn;
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error($"Failed to save SynToolkit update preference: {exception.Message}");
+            }
+        }
+
+        private async void SynToolkitCheckUpdateButton_Click(object sender, RoutedEventArgs e)
+        {
+            SynToolkitUpdateStatusText.Text = string.Empty;
+            SynToolkitViewReleaseButton.Visibility = Visibility.Collapsed;
+            SynToolkitUpdateProgressRing.Visibility = Visibility.Visible;
+            SynToolkitCheckUpdateButton.IsEnabled = false;
+            CancellationToken cancellationToken = _lifetimeCancellation.Token;
+
+            try
+            {
+                SynToolkitUpdateCheckResult result;
+                if (App.m_window is MainWindow mainWindow)
+                {
+                    result = await mainWindow.CheckSynToolkitUpdatesFromSettingsAsync(cancellationToken);
+                }
+                else
+                {
+                    result = await SynToolkitUpdateChecker.Default.CheckAsync(
+                        forceRefresh: true,
+                        ignoreSessionGate: true,
+                        cancellationToken);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!_isPageLoaded)
+                {
+                    return;
+                }
+
+                ApplySynToolkitStatusFromCheckResult(result);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception exception)
+            {
+                App.logger.Debug(exception, "Manual SynToolkit update check failed.");
+                if (_isPageLoaded)
+                {
+                    SynToolkitUpdateStatusText.Text = App.GetValueFromItemList("SynToolkitUpdate_CouldNotCheck");
+                    SynToolkitViewReleaseButton.Visibility = Visibility.Collapsed;
+                }
+            }
+            finally
+            {
+                if (_isPageLoaded && !cancellationToken.IsCancellationRequested)
+                {
+                    SynToolkitUpdateProgressRing.Visibility = Visibility.Collapsed;
+                    SynToolkitCheckUpdateButton.IsEnabled = true;
+                }
+            }
+        }
+
+        private async void SynToolkitViewReleaseButton_Click(object sender, RoutedEventArgs e)
+        {
+            await CommunityLinks.LaunchUriAsync(SynToolkitReleaseUrl.ResolveSafeOpenUrl());
+        }
+
+        private void RefreshSynToolkitUpdateStatusText()
+        {
+            SynToolkitUpdateSettingsDocument snapshot = SynToolkitUpdateChecker.Default.Settings.Snapshot();
+            string installed = SynToolkitUpdateChecker.InstalledVersionProvider();
+
+            if (snapshot.CachedRelease is null && snapshot.LastSuccessfulCheckUtc is null)
+            {
+                SynToolkitUpdateStatusText.Text = App.GetValueFromItemList("SynToolkitUpdate_NeverChecked");
+                SynToolkitViewReleaseButton.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            SynToolkitUpdateAvailability status = SynToolkitUpdateDecision.GetUpdateStatus(
+                installed,
+                snapshot.CachedRelease);
+            bool skipped = SynToolkitUpdateDecision.IsVersionSkipped(snapshot.CachedRelease, snapshot);
+            string statusText = SynToolkitUpdateDecision.FormatSettingsStatusText(
+                status,
+                installed,
+                snapshot.CachedRelease,
+                skipped,
+                key => App.GetValueFromItemList(key));
+            SynToolkitUpdateStatusText.Text = AppendLastChecked(statusText, snapshot.LastSuccessfulCheckUtc);
+            SynToolkitViewReleaseButton.Visibility =
+                status == SynToolkitUpdateAvailability.UpdateAvailable
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+        private void ApplySynToolkitStatusFromCheckResult(SynToolkitUpdateCheckResult result)
+        {
+            SynToolkitUpdateSettingsDocument snapshot = SynToolkitUpdateChecker.Default.Settings.Snapshot();
+
+            if (result.Outcome is SynToolkitUpdateCheckOutcome.Failed
+                or SynToolkitUpdateCheckOutcome.SkippedRateLimited)
+            {
+                SynToolkitUpdateStatusText.Text = AppendLastChecked(
+                    App.GetValueFromItemList("SynToolkitUpdate_CouldNotCheck"),
+                    snapshot.LastSuccessfulCheckUtc);
+                SynToolkitViewReleaseButton.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            SynToolkitCachedRelease latest = result.Latest ?? snapshot.CachedRelease;
+            SynToolkitUpdateAvailability status = result.Outcome switch
+            {
+                SynToolkitUpdateCheckOutcome.NoReleases => SynToolkitUpdateAvailability.Unknown,
+                _ => SynToolkitUpdateDecision.GetUpdateStatus(result.InstalledVersion, latest),
+            };
+
+            bool skipped = SynToolkitUpdateDecision.IsVersionSkipped(latest, snapshot);
+            string statusText = SynToolkitUpdateDecision.FormatSettingsStatusText(
+                status,
+                result.InstalledVersion,
+                latest,
+                skipped,
+                key => App.GetValueFromItemList(key));
+            SynToolkitUpdateStatusText.Text = AppendLastChecked(statusText, snapshot.LastSuccessfulCheckUtc);
+            SynToolkitViewReleaseButton.Visibility =
+                status == SynToolkitUpdateAvailability.UpdateAvailable
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+        private static string AppendLastChecked(string statusText, DateTimeOffset? lastCheckedUtc)
+        {
+            string prefix = App.GetValueFromItemList("SynToolkitUpdate_LastCheckedPrefix");
+            if (lastCheckedUtc is DateTimeOffset when)
+            {
+                string stamp = when.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+                return statusText + "  " + prefix + " " + stamp;
+            }
+
+            return statusText + "  " + prefix + " " + App.GetValueFromItemList("SynToolkitUpdate_NeverChecked");
+        }
+
         #region experiments
         private void IsExperimentEnabled(object sender, RoutedEventArgs e)
         {

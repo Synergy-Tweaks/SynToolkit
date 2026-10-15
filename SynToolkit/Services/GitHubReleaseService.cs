@@ -14,7 +14,7 @@ namespace SynToolkit.Services
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private const string ReleasesApiUrl = "https://api.github.com/repos/Synergy-Tweaks/SynergyOS/releases";
-        private const string ReleasesPageUrl = "https://github.com/Synergy-Tweaks/SynergyOS/releases";
+        private const string ReleasesPageUrl = "https://github.com/synergy-tweaks/synergyos/releases";
         private static readonly HttpClient Client = CreateHttpClient();
 
         public static string ReleasesUrl => ReleasesPageUrl;
@@ -87,7 +87,7 @@ namespace SynToolkit.Services
                 string? tagName = element.GetProperty("tag_name").GetString();
                 string? name = element.GetProperty("name").GetString();
                 string? body = element.GetProperty("body").GetString();
-                string? htmlUrl = element.GetProperty("html_url").GetString();
+                _ = element.TryGetProperty("html_url", out _);
                 string? publishedAt = element.GetProperty("published_at").GetString();
                 bool isPrerelease = element.GetProperty("prerelease").GetBoolean();
 
@@ -107,7 +107,8 @@ namespace SynToolkit.Services
                     TagName = tagName,
                     Name = string.IsNullOrWhiteSpace(name) ? tagName : name,
                     Body = body ?? string.Empty,
-                    HtmlUrl = htmlUrl ?? ReleasesPageUrl,
+                    // Never store a tag-pinned API url for navigation.
+                    HtmlUrl = ReleasesPageUrl,
                     PublishedAt = publishedDate,
                     IsPrerelease = isPrerelease
                 };

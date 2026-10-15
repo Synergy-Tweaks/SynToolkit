@@ -8,6 +8,8 @@ namespace SynToolkit;
 internal static class App
 {
     internal static TestLogger logger { get; } = new();
+
+    internal static void ShutdownApplication() { }
 }
 
 internal sealed class TestLogger

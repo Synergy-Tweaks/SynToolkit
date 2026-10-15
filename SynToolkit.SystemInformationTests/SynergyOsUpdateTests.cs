@@ -44,7 +44,9 @@ internal static class SynergyOsUpdateTests
     {
         AssertEqual(0, SynergyOsSemVer.CompareVersions("v1.4.0", "1.4.0"));
         AssertTrue(SynergyOsSemVer.CompareVersions("1.10.0", "1.9.0") > 0);
+        AssertTrue(SynergyOsSemVer.CompareVersions("v1.10", "v1.9") > 0);
         AssertEqual(0, SynergyOsSemVer.CompareVersions("1.4", "1.4.0"));
+        AssertEqual(0, SynergyOsSemVer.CompareVersions("1.7.0.0", "v1.7.0"));
         AssertTrue(SynergyOsSemVer.CompareVersions("1.4.0-beta.1", "1.4.0") < 0);
         AssertTrue(SynergyOsSemVer.CompareVersions("1.5.0", "1.4.9") > 0);
         AssertNull(SynergyOsSemVer.CompareVersions("not-a-version", "1.0.0"));
@@ -295,6 +297,8 @@ internal static class SynergyOsUpdateTests
             SampleReleaseJson("1.6", name: "SynergyOS v0.6"));
         AssertTrue(release is not null);
         AssertEqual("1.6", release!.Version);
+        AssertEqual(SynergyOsUpdateConstants.ReleasesPageUrl, release.HtmlUrl);
+        AssertFalse(release.HtmlUrl.Contains("/tag/", StringComparison.OrdinalIgnoreCase));
     }
 
     private static void TestLegacyCachedNotesIgnored()
@@ -331,23 +335,24 @@ internal static class SynergyOsUpdateTests
 
     private static void TestReleaseUrlValidation()
     {
-        AssertTrue(SynergyOsReleaseUrl.TryValidateReleaseUrl(
-            "https://github.com/Synergy-Tweaks/SynergyOS/releases/tag/1.7.0",
-            out string? valid));
-        AssertEqual("https://github.com/Synergy-Tweaks/SynergyOS/releases/tag/1.7.0", valid);
+        string fixedUrl = SynergyOsUpdateConstants.ReleasesPageUrl;
+        AssertFalse(fixedUrl.Contains("/tag/", StringComparison.OrdinalIgnoreCase));
+        AssertFalse(fixedUrl.Contains("/latest", StringComparison.OrdinalIgnoreCase));
 
-        AssertEqual(
-            SynergyOsUpdateConstants.ReleasesLatestPageUrl,
-            SynergyOsReleaseUrl.ResolveSafeOpenUrl("http://github.com/Synergy-Tweaks/SynergyOS/releases/tag/1"));
-        AssertEqual(
-            SynergyOsUpdateConstants.ReleasesLatestPageUrl,
-            SynergyOsReleaseUrl.ResolveSafeOpenUrl("https://evil.com/Synergy-Tweaks/SynergyOS/releases/tag/1"));
-        AssertEqual(
-            SynergyOsUpdateConstants.ReleasesLatestPageUrl,
-            SynergyOsReleaseUrl.ResolveSafeOpenUrl("https://github.com/other/repo/releases/tag/1"));
-        AssertEqual(
-            SynergyOsUpdateConstants.ReleasesLatestPageUrl,
-            SynergyOsReleaseUrl.ResolveSafeOpenUrl("not a url"));
+        // Always returns the fixed list page — never a tag-pinned API url.
+        AssertEqual(fixedUrl, SynergyOsReleaseUrl.ResolveSafeOpenUrl(
+            "https://github.com/Synergy-Tweaks/SynergyOS/releases/tag/1.7.0"));
+        AssertEqual(fixedUrl, SynergyOsReleaseUrl.ResolveSafeOpenUrl(
+            "http://github.com/Synergy-Tweaks/SynergyOS/releases/tag/1"));
+        AssertEqual(fixedUrl, SynergyOsReleaseUrl.ResolveSafeOpenUrl(
+            "https://evil.com/Synergy-Tweaks/SynergyOS/releases/tag/1"));
+        AssertEqual(fixedUrl, SynergyOsReleaseUrl.ResolveSafeOpenUrl(
+            "https://github.com/other/repo/releases/tag/1"));
+        AssertEqual(fixedUrl, SynergyOsReleaseUrl.ResolveSafeOpenUrl("not a url"));
+        AssertEqual(fixedUrl, SynergyOsReleaseUrl.ResolveSafeOpenUrl(null));
+
+        AssertTrue(SynergyOsReleaseUrl.TryValidateReleaseUrl(fixedUrl, out string? valid));
+        AssertEqual(fixedUrl, valid);
     }
 
     private static void TestSettingsPersistenceDefaults()
@@ -564,7 +569,7 @@ internal static class SynergyOsUpdateTests
         new()
         {
             Version = version,
-            HtmlUrl = SynergyOsUpdateConstants.ReleasesLatestPageUrl,
+            HtmlUrl = SynergyOsUpdateConstants.ReleasesPageUrl,
             PublishedAtUtc = DateTimeOffset.Parse("2026-09-01T00:00:00Z")
         };
 

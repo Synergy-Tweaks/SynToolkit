@@ -30,8 +30,13 @@ namespace SynToolkit.Utils
         public const string SynToolkitBugTemplateUrl =
             "https://github.com/Synergy-Tweaks/SynToolkit/issues/new?template=syntoolkit-issues.md";
 
-        public const string SynergyOsReleasesUrl = "https://github.com/Synergy-Tweaks/SynergyOS/releases";
-        public const string SynergyOsReleasesLatestUrl = "https://github.com/Synergy-Tweaks/SynergyOS/releases/latest";
+        public const string SynergyOsReleasesUrl = "https://github.com/synergy-tweaks/synergyos/releases";
+        public const string SynToolkitReleasesUrl = "https://github.com/synergy-tweaks/syntoolkit/releases";
+
+        /// <summary>
+        /// Obsolete name kept so older call sites compile; always the releases list page.
+        /// </summary>
+        public const string SynergyOsReleasesLatestUrl = SynergyOsReleasesUrl;
 
         public const string DiscordInviteUrl = "https://dsc.gg/kwanteks";
         public const string KwanteksYouTubeUrl = "https://www.youtube.com/@Kwanteks";

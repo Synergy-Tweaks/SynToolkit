@@ -148,7 +148,18 @@ namespace SynToolkit.Services.SynergyOsUpdate
                 string json = File.ReadAllText(_settingsPath);
                 SynergyOsUpdateSettingsDocument? document =
                     JsonSerializer.Deserialize<SynergyOsUpdateSettingsDocument>(json, SerializerOptions);
-                return document ?? new SynergyOsUpdateSettingsDocument();
+                if (document is null)
+                {
+                    return new SynergyOsUpdateSettingsDocument();
+                }
+
+                // Migrate legacy cached tag-pinned urls so they can never be opened.
+                if (document.CachedRelease is not null)
+                {
+                    document.CachedRelease.HtmlUrl = SynergyOsUpdateConstants.ReleasesPageUrl;
+                }
+
+                return document;
             }
             catch
             {
@@ -195,7 +206,7 @@ namespace SynToolkit.Services.SynergyOsUpdate
                 : new SynergyOsCachedRelease
                 {
                     Version = source.Version,
-                    HtmlUrl = source.HtmlUrl,
+                    HtmlUrl = SynergyOsUpdateConstants.ReleasesPageUrl,
                     PublishedAtUtc = source.PublishedAtUtc
                 };
     }

@@ -138,6 +138,37 @@
                             <Button x:Name="SynergyOsCheckUpdateButton" Click="SynergyOsCheckUpdateButton_Click" />
                         </StackPanel>
                     </controls:SettingsCard>
+                    <!--  SynToolkit update settings  -->
+                    <controls:SettingsCard x:Name="SynToolkitUpdateNotifyCard" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        <controls:SettingsCard.HeaderIcon>
+                            <ImageIcon Source="ms-appx:///assets/Icons/Update.png" />
+                        </controls:SettingsCard.HeaderIcon>
+                        <ToggleSwitch x:Name="SynToolkitUpdateNotifyToggle" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Name="SynToolkitUpdateCheckCard" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                        <controls:SettingsCard.HeaderIcon>
+                            <ImageIcon Source="ms-appx:///assets/Icons/Update.png" />
+                        </controls:SettingsCard.HeaderIcon>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock
+                                x:Name="SynToolkitUpdateStatusText"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap"
+                                MaxWidth="360" />
+                            <ProgressRing
+                                x:Name="SynToolkitUpdateProgressRing"
+                                Width="20"
+                                Height="20"
+                                IsActive="True"
+                                Visibility="Collapsed" />
+                            <Button
+                                x:Name="SynToolkitViewReleaseButton"
+                                Click="SynToolkitViewReleaseButton_Click"
+                                Visibility="Collapsed" />
+                            <Button x:Name="SynToolkitCheckUpdateButton" Click="SynToolkitCheckUpdateButton_Click" />
+                        </StackPanel>
+                    </controls:SettingsCard>
                 </StackPanel>
                 <!--  Experiments  -->
                 <StackPanel Visibility="Collapsed">

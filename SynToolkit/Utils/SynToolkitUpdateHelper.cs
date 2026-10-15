@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using SynToolkit.Services.SynergyOsUpdate;
 
 namespace SynToolkit.Utils
 {
@@ -18,9 +19,14 @@ namespace SynToolkit.Utils
         Version? AvailableVersion,
         string? DownloadUrl)
     {
-        public bool IsUpdateAvailable => AvailableVersion is not null &&
-            AvailableVersion > CurrentVersion &&
-            !string.IsNullOrWhiteSpace(DownloadUrl);
+        /// <summary>
+        /// Uses the same SemVer comparison as the SynToolkit update notice
+        /// (4-part assembly versions vs 3-part tags compare correctly).
+        /// </summary>
+        public bool IsUpdateAvailable =>
+            AvailableVersion is not null &&
+            !string.IsNullOrWhiteSpace(DownloadUrl) &&
+            SynergyOsSemVer.IsNewer(AvailableVersion.ToString(), CurrentVersion.ToString());
     }
 
     public static class SynToolkitUpdateHelper
@@ -69,12 +75,11 @@ namespace SynToolkit.Utils
                     .Where(asset => IsSetupExecutable(asset.Item1) && !string.IsNullOrWhiteSpace(asset.Item2))
                     .FirstOrDefault();
 
-                Version? version = TryGetSetupVersion(assetName, out Version? assetVersion)
-                    ? assetVersion
-                    : TryGetReleaseTagVersion(release.RootElement, out Version? tagVersion)
-                        ? tagVersion
-                        : null;
+                Version? version = TryResolveReleaseVersion(release.RootElement, out Version? resolved)
+                    ? resolved
+                    : null;
 
+                _ = assetName;
                 _cachedStatus = new SynToolkitUpdateStatus(currentVersion, version, downloadUrl);
                 _cacheExpiresUtc = DateTimeOffset.UtcNow.Add(CacheDuration);
                 return _cachedStatus;
@@ -156,6 +161,47 @@ namespace SynToolkit.Utils
             }
         }
 
+        /// <summary>
+        /// Resolves the release version the same way Needs Attention does:
+        /// installer asset name first, then the release tag. Shared with the
+        /// SynToolkit update notice so both signals agree.
+        /// </summary>
+        public static bool TryResolveReleaseVersion(JsonElement release, out Version? version)
+        {
+            version = null;
+
+            if (release.TryGetProperty("assets", out JsonElement assets) &&
+                assets.ValueKind == JsonValueKind.Array)
+            {
+                foreach (JsonElement asset in assets.EnumerateArray())
+                {
+                    string? name = asset.TryGetProperty("name", out JsonElement nameProperty)
+                        ? nameProperty.GetString()
+                        : null;
+                    if (TryGetSetupVersion(name, out Version? assetVersion) && assetVersion is not null)
+                    {
+                        version = assetVersion;
+                        return true;
+                    }
+                }
+            }
+
+            return TryGetReleaseTagVersion(release, out version) && version is not null;
+        }
+
+        /// <summary>
+        /// Normalized display string for the same rules as <see cref="TryResolveReleaseVersion"/>.
+        /// </summary>
+        public static string? TryResolveReleaseVersionDisplay(JsonElement release)
+        {
+            if (!TryResolveReleaseVersion(release, out Version? version) || version is null)
+            {
+                return null;
+            }
+
+            return SynergyOsSemVer.NormalizeDisplay(version.ToString());
+        }
+
         private static bool IsSetupExecutable(string? assetName) =>
             !string.IsNullOrWhiteSpace(assetName) &&
             assetName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) &&
@@ -173,7 +219,13 @@ namespace SynToolkit.Utils
                 assetName,
                 @"(?<!\d)(?<version>\d+\.\d+(?:\.\d+){0,2})(?!\d)",
                 RegexOptions.CultureInvariant);
-            return versionMatch.Success && Version.TryParse(versionMatch.Groups["version"].Value, out version);
+            if (!versionMatch.Success)
+            {
+                return false;
+            }
+
+            string? normalized = SynergyOsSemVer.NormalizeDisplay(versionMatch.Groups["version"].Value);
+            return normalized is not null && Version.TryParse(normalized, out version);
         }
 
         private static bool TryGetReleaseTagVersion(JsonElement release, out Version? version)
@@ -182,7 +234,8 @@ namespace SynToolkit.Utils
             string? tag = release.TryGetProperty("tag_name", out JsonElement tagProperty)
                 ? tagProperty.GetString()
                 : null;
-            return Version.TryParse(tag?.Trim().TrimStart('v', 'V'), out version);
+            string? normalized = SynergyOsSemVer.NormalizeDisplay(tag);
+            return normalized is not null && Version.TryParse(normalized, out version);
         }
 
         private static HttpClient CreateHttpClient()

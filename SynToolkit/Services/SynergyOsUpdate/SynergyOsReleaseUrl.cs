@@ -6,14 +6,20 @@ namespace SynToolkit.Services.SynergyOsUpdate
 {
     public static class SynergyOsReleaseUrl
     {
-        public static string ResolveSafeOpenUrl(string? htmlUrl)
+        /// <summary>
+        /// Always returns the fixed SynergyOS releases list URL.
+        /// API/cached <c>html_url</c> values (including tag-pinned pages) are ignored.
+        /// </summary>
+        public static string ResolveSafeOpenUrl(string? htmlUrl = null)
         {
-            if (TryValidateReleaseUrl(htmlUrl, out string? validated) && validated is not null)
+            _ = htmlUrl;
+            string constant = SynergyOsUpdateConstants.ReleasesPageUrl;
+            if (TryValidateReleaseUrl(constant, out string? validated) && validated is not null)
             {
                 return validated;
             }
 
-            return SynergyOsUpdateConstants.ReleasesLatestPageUrl;
+            return constant;
         }
 
         public static bool TryValidateReleaseUrl(string? htmlUrl, out string? validated)
@@ -34,20 +40,19 @@ namespace SynToolkit.Services.SynergyOsUpdate
                 return false;
             }
 
-            string path = uri.AbsolutePath;
-            if (!path.StartsWith(
+            string path = uri.AbsolutePath.TrimEnd('/');
+            if (!path.Equals(
                     SynergyOsUpdateConstants.ReleasesPathPrefix,
+                    StringComparison.OrdinalIgnoreCase) &&
+                !path.StartsWith(
+                    SynergyOsUpdateConstants.ReleasesPathPrefix + "/",
                     StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            validated = uri.GetLeftPart(UriPartial.Path);
-            if (!string.IsNullOrEmpty(uri.Query))
-            {
-                // Drop query/fragment — release pages do not need them.
-            }
-
+            // Navigation always uses the list page, never a tag-specific path.
+            validated = SynergyOsUpdateConstants.ReleasesPageUrl;
             return true;
         }
     }

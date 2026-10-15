@@ -1,6 +1,7 @@
 using SynToolkit.Enums;
 using SynToolkit.Services;
 using SynToolkit.Services.SynergyOsUpdate;
+using SynToolkit.Services.SynToolkitUpdate;
 using SynToolkit.Utils;
 using SynToolkit.ViewModels;
 using SynToolkit.Views;
@@ -46,6 +47,8 @@ namespace SynToolkit
 
         private SynergyOsCachedRelease _pendingSynergyOsRelease;
         private int _synergyOsUpdateCheckRunning;
+        private SynToolkitCachedRelease _pendingSynToolkitRelease;
+        private int _synToolkitUpdateCheckRunning;
 
         public MainWindow()
         {
@@ -109,6 +112,7 @@ namespace SynToolkit
             _ = RefreshNeedsAttentionBadgeAsync();
             Activated += OnMainWindowActivated;
             Activated += OnMainWindowActivatedForSynergyOsUpdate;
+            Activated += OnMainWindowActivatedForSynToolkitUpdate;
             this.Closed += AppBehaviorHelper.HandleMainWindowClosed;
 
             SubscribeToConfigurationChanges();
@@ -135,6 +139,16 @@ namespace SynToolkit
             _ = RunSynergyOsUpdateCheckAsync(forceRefresh: false, ignoreSessionGate: false);
         }
 
+        private void OnMainWindowActivatedForSynToolkitUpdate(object sender, WindowActivatedEventArgs e)
+        {
+            if (e.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                return;
+            }
+
+            _ = RunSynToolkitUpdateCheckAsync(forceRefresh: false, ignoreSessionGate: false);
+        }
+
         internal void ApplyWindowPlacement()
         {
             SetWindowPosSize();
@@ -145,12 +159,27 @@ namespace SynToolkit
             _ = RunSynergyOsUpdateCheckAsync(forceRefresh: false, ignoreSessionGate: false);
         }
 
+        internal void StartSynToolkitUpdateChecks()
+        {
+            _ = RunSynToolkitUpdateCheckAsync(forceRefresh: false, ignoreSessionGate: false);
+        }
+
         /// <summary>
         /// Manual Settings check: always refreshes availability status and never re-opens the notice.
         /// </summary>
         internal Task<SynergyOsUpdateCheckResult> CheckSynergyOsUpdatesFromSettingsAsync(
             CancellationToken cancellationToken = default) =>
             SynergyOsUpdateChecker.Default.CheckAsync(
+                forceRefresh: true,
+                ignoreSessionGate: true,
+                cancellationToken);
+
+        /// <summary>
+        /// Manual Settings check for SynToolkit: refreshes status without re-opening the notice.
+        /// </summary>
+        internal Task<SynToolkitUpdateCheckResult> CheckSynToolkitUpdatesFromSettingsAsync(
+            CancellationToken cancellationToken = default) =>
+            SynToolkitUpdateChecker.Default.CheckAsync(
                 forceRefresh: true,
                 ignoreSessionGate: true,
                 cancellationToken);
@@ -250,8 +279,7 @@ namespace SynToolkit
 
         private async void SynergyOsViewReleaseButton_Click(object sender, RoutedEventArgs e)
         {
-            string url = SynergyOsReleaseUrl.ResolveSafeOpenUrl(_pendingSynergyOsRelease?.HtmlUrl);
-            await CommunityLinks.LaunchUriAsync(url);
+            await CommunityLinks.LaunchUriAsync(SynergyOsReleaseUrl.ResolveSafeOpenUrl());
         }
 
         private void SynergyOsRemindLaterButton_Click(object sender, RoutedEventArgs e)
@@ -274,6 +302,126 @@ namespace SynToolkit
 
             SynergyOsUpdateInfoBar.IsOpen = false;
             _pendingSynergyOsRelease = null;
+        }
+
+        private async Task<SynToolkitUpdateCheckResult> RunSynToolkitUpdateCheckAsync(
+            bool forceRefresh,
+            bool ignoreSessionGate,
+            CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.CompareExchange(ref _synToolkitUpdateCheckRunning, 1, 0) != 0)
+            {
+                return new SynToolkitUpdateCheckResult(
+                    SynToolkitUpdateCheckOutcome.SkippedThrottled,
+                    null,
+                    null,
+                    SynToolkitUpdateNotifyReason.NotNewer,
+                    ShouldNotify: false,
+                    null);
+            }
+
+            try
+            {
+                SynToolkitUpdateCheckResult result = await SynToolkitUpdateChecker.Default
+                    .CheckAsync(forceRefresh, ignoreSessionGate, cancellationToken)
+                    .ConfigureAwait(false);
+
+                bool showBanner = result.Latest is not null &&
+                    (result.ShouldNotify ||
+                     (ignoreSessionGate && result.Outcome == SynToolkitUpdateCheckOutcome.UpdateAvailable));
+
+                if (showBanner)
+                {
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        ShowSynToolkitUpdateInfoBar(result);
+                        SynToolkitUpdateChecker.Default.MarkNotifiedThisSession();
+                    });
+                }
+
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                App.logger.Debug(exception, "SynToolkit update UI check failed.");
+                return new SynToolkitUpdateCheckResult(
+                    SynToolkitUpdateCheckOutcome.Failed,
+                    null,
+                    null,
+                    SynToolkitUpdateNotifyReason.LatestUnknown,
+                    ShouldNotify: false,
+                    "SynToolkitUpdate_CouldNotCheck");
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _synToolkitUpdateCheckRunning, 0);
+            }
+        }
+
+        private void ShowSynToolkitUpdateInfoBar(SynToolkitUpdateCheckResult result)
+        {
+            if (result.Latest is null || result.InstalledVersion is null)
+            {
+                return;
+            }
+
+            _pendingSynToolkitRelease = result.Latest;
+
+            SynToolkitUpdateNoticeModel notice = SynToolkitUpdateNotice.Create(
+                result.Latest.Version,
+                result.InstalledVersion,
+                result.Latest.PublishedAtUtc,
+                key => App.GetValueFromItemList(key),
+                CultureInfo.CurrentCulture);
+
+            SynToolkitUpdateInfoBar.Title = notice.Title;
+            SynToolkitUpdateInfoBar.Message = notice.BodyLine;
+            if (notice.HasPublishedLine)
+            {
+                SynToolkitUpdatePublished.Text = notice.PublishedLine;
+                SynToolkitUpdatePublished.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SynToolkitUpdatePublished.Text = string.Empty;
+                SynToolkitUpdatePublished.Visibility = Visibility.Collapsed;
+            }
+
+            SynToolkitViewReleaseButton.Content = notice.ViewReleaseLabel;
+            SynToolkitRemindLaterButton.Content = notice.RemindLaterLabel;
+            SynToolkitSkipVersionButton.Content = notice.SkipVersionLabel;
+            SynToolkitUpdateInfoBar.IsOpen = true;
+        }
+
+        private async void SynToolkitViewReleaseButton_Click(object sender, RoutedEventArgs e)
+        {
+            await CommunityLinks.LaunchUriAsync(SynToolkitReleaseUrl.ResolveSafeOpenUrl());
+        }
+
+        private void SynToolkitRemindLaterButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pendingSynToolkitRelease is not null)
+            {
+                SynToolkitUpdateChecker.Default.RemindLater(_pendingSynToolkitRelease);
+            }
+
+            SynToolkitUpdateInfoBar.IsOpen = false;
+            _pendingSynToolkitRelease = null;
+        }
+
+        private void SynToolkitSkipVersionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pendingSynToolkitRelease is not null)
+            {
+                SynToolkitUpdateChecker.Default.SkipVersion(_pendingSynToolkitRelease);
+            }
+
+            SynToolkitUpdateInfoBar.IsOpen = false;
+            _pendingSynToolkitRelease = null;
         }
 
         private void InitializeAccountHeader()
