@@ -169,6 +169,7 @@ namespace SynToolkit.ViewModels
                 OnPropertyChanged(nameof(IsCheckingStatus));
                 OnPropertyChanged(nameof(CanSelect));
                 OnPropertyChanged(nameof(CanUninstall));
+                OnPropertyChanged(nameof(CanManageDesktopShortcut));
                 OnPropertyChanged(nameof(IsUninstallButtonEnabled));
                 OnPropertyChanged(nameof(PrimaryActionText));
             }
@@ -253,6 +254,15 @@ namespace SynToolkit.ViewModels
 
         public bool CanUninstall => AvailabilityState is
             InstallerAvailabilityState.Installed or InstallerAvailabilityState.UpdateAvailable;
+
+        public bool CanManageDesktopShortcut => IsPortableApp && CanUninstall;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DesktopShortcutActionText))]
+        public partial bool HasDesktopShortcut { get; set; }
+
+        public string DesktopShortcutActionText =>
+            HasDesktopShortcut ? "Remove desktop shortcut" : "Desktop shortcut";
 
         private bool _isUninstalling;
 

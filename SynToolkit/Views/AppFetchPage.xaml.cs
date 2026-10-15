@@ -155,6 +155,25 @@ namespace SynToolkit.Views
                 : _installerListLayout;
         }
 
+        private async void InstallerShortcut_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement element ||
+                element.DataContext is not FeaturedInstallerViewModel installer ||
+                !installer.CanManageDesktopShortcut)
+            {
+                return;
+            }
+
+            try
+            {
+                await _viewModel.ToggleDesktopShortcutAsync(installer);
+            }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "[Installers] The shortcut action failed for {AppName}.", installer.Name);
+            }
+        }
+
         private async void InstallerUninstall_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not FrameworkElement element ||

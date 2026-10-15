@@ -542,6 +542,12 @@
                                                 IsEnabled="{Binding IsUninstallButtonEnabled, Mode=OneWay}"
                                                 ToolTipService.ToolTip="Uninstall this app"
                                                 Visibility="{Binding CanUninstall, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            <Button
+                                                HorizontalAlignment="Right"
+                                                Click="InstallerShortcut_Click"
+                                                Content="{Binding DesktopShortcutActionText, Mode=OneWay}"
+                                                ToolTipService.ToolTip="Add or remove a desktop shortcut for this portable app"
+                                                Visibility="{Binding CanManageDesktopShortcut, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
