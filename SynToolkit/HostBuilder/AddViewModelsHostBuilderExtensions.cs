@@ -352,6 +352,7 @@ namespace SynToolkit.HostBuilder
                 ["RecentItems"] = new(App.GetValueFromItemList("RecentItems"), "RecentItems", ConfigurationType.Interface),
                 ["VerboseStatusMessage"] = new(App.GetValueFromItemList("VerboseStatusMessage"), "VerboseStatusMessage", ConfigurationType.Interface),
                 ["UAC"] = new(App.GetValueFromItemList("UAC"), "UAC", ConfigurationType.Security, "ms-appx:///assets/Icons/UserAccount.png"),
+                ["UsernameRequirement"] = new(App.GetValueFromItemList("UsernameRequirement"), "UsernameRequirement", ConfigurationType.Security, "ms-appx:///assets/Icons/UserAccount.png"),
                 ["HideAppBrowserControl"] = new(App.GetValueFromItemList("HideAppBrowserControl"), "HideAppBrowserControl", ConfigurationType.DefenderSubMenu),
                 ["SecurityHealthTray"] = new(App.GetValueFromItemList("SecurityHealthTray"), "SecurityHealthTray", ConfigurationType.DefenderSubMenu),
                 ["DefenderRealtimeProtection"] = new(App.GetValueFromItemList("DefenderRealtimeProtection"), "DefenderRealtimeProtection", ConfigurationType.DefenderSubMenu),
