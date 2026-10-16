@@ -4,7 +4,7 @@
       "fileName": "adamx.pow",
       "displayName": "AdamX",
       "description": "AdamX's optimized power plan for balanced performance and low latency.",
-      "activeSchemeNameHints": ["Adamx Tweaking Utility Power Plan"]
+      "activeSchemeNameHints": ["AdamX Tweaking Utility Power Plan"]
     },
     {
       "fileName": "AMD Ryzen Ultimate HighPower.pow",
@@ -16,7 +16,7 @@
       "fileName": "Amit.pow",
       "displayName": "Amit",
       "description": "Amit's low-latency plan that reduces Windows power-saving features.",
-      "activeSchemeNameHints": ["amit's low latency powerplan", "amit"]
+      "activeSchemeNameHints": ["Amit's Low Latency PowerPlan", "Amit"]
     },
     {
       "fileName": "Ancel.pow",
@@ -40,7 +40,7 @@
       "fileName": "Beyond.pow",
       "displayName": "Beyond",
       "description": "Beyond performance plan tuned for AMD and Intel gaming systems.",
-      "activeSchemeNameHints": ["BEYOND PERFORMANCE AMD/INTEL V1"]
+      "activeSchemeNameHints": ["Beyond Performance AMD/Intel V1"]
     },
     {
       "fileName": "bitsum.pow",
@@ -52,7 +52,7 @@
       "fileName": "BlitzOS.pow",
       "displayName": "BlitzOS",
       "description": "BlitzOS high-performance power plan.",
-      "activeSchemeNameHints": ["BLITZOSv1.1", "BlitzOS"]
+      "activeSchemeNameHints": ["BlitzOSv1.1", "BlitzOS"]
     },
     {
       "fileName": "CactusOS_AMD.pow",
@@ -63,13 +63,13 @@
     {
       "fileName": "CactusOS_Intel_ECores.pow",
       "displayName": "CactusOS Intel (E-Cores)",
-      "description": "Optimized for Intel processors that have E-Cores enabled.",
+      "description": "Optimized for Intel processors that have E-cores enabled.",
       "activeSchemeNameHints": ["CactusOS Intel (E-Cores)"]
     },
     {
       "fileName": "CactusOS_Intel_No_ECores.pow",
       "displayName": "CactusOS Intel (No E-Cores)",
-      "description": "Optimized for Intel processors that either have E-Cores disabled or lack E-Cores entirely.",
+      "description": "Optimized for Intel processors that either have E-cores disabled or lack E-cores entirely.",
       "activeSchemeNameHints": ["CactusOS Intel (No E-Cores)"]
     },
     {
@@ -87,7 +87,7 @@
     {
       "fileName": "DTOS Pineapple Squad OLED.pow",
       "displayName": "DTOS Pineapple Squad OLED",
-      "description": "Pineapple Squad DTOS power plan tuned for Setups with OLED Monitors.",
+      "description": "Pineapple Squad DTOS power plan tuned for setups with OLED monitors.",
       "activeSchemeNameHints": ["Pineapple OLED", "Pineapple Squad"]
     },
     {
@@ -100,11 +100,11 @@
       "fileName": "EnvyOS.pow",
       "displayName": "EnvyOS",
       "description": "EnvyOS community performance power plan.",
-      "activeSchemeNameHints": ["EnvyOS", "envy"]
+      "activeSchemeNameHints": ["EnvyOS", "Envy"]
     },
     {
       "fileName": "exmfree.pow",
-      "displayName": "ExmFree",
+      "displayName": "EXM Free",
       "description": "EXM Free V6 plan for higher performance and lower latency.",
       "activeSchemeNameHints": ["EXM Free Power Plan V6"]
     },
@@ -112,13 +112,13 @@
       "fileName": "EXO.pow",
       "displayName": "EXO",
       "description": "IIIEXOIII low-latency power plan.",
-      "activeSchemeNameHints": ["IIIEXOIII LOW LATENCY", "EXO"]
+      "activeSchemeNameHints": ["IIIEXOIII Low Latency", "EXO"]
     },
     {
       "fileName": "FrameSyncBoost.pow",
       "displayName": "FrameSync Boost",
       "description": "FrameSync Labs Boost plan optimized for smooth frame delivery.",
-      "activeSchemeNameHints": ["FRAMESYNC Labs Boost"]
+      "activeSchemeNameHints": ["FrameSync Labs Boost"]
     },
     {
       "fileName": "hybred.pow",
@@ -130,7 +130,7 @@
       "fileName": "IIIEXOIII_LOW_LATENCY.pow",
       "displayName": "IIIEXOIII Low Latency",
       "description": "IIIEXOIII dedicated low-latency power plan.",
-      "activeSchemeNameHints": ["IIIEXOIII LOW LATENCY"]
+      "activeSchemeNameHints": ["IIIEXOIII Low Latency"]
     },
     {
       "fileName": "Intel Core Ultimate Performance Win11.pow",
@@ -142,7 +142,7 @@
       "fileName": "IrisOS.pow",
       "displayName": "IrisOS",
       "description": "IrisOS low-latency power plan.",
-      "activeSchemeNameHints": ["Iris low latency powerplan", "Iris"]
+      "activeSchemeNameHints": ["Iris Low Latency PowerPlan", "Iris"]
     },
     {
       "fileName": "JackpotOS.pow",
@@ -154,18 +154,18 @@
       "fileName": "JDN.pow",
       "displayName": "JDN",
       "description": "JDN community power plan.",
-      "activeSchemeNameHints": ["JDN community plan.", "JDN"]
+      "activeSchemeNameHints": ["JDN Community Plan.", "JDN"]
     },
     {
       "fileName": "Kaisen.pow",
       "displayName": "Kaisen",
       "description": "Kaisen V5 low-latency performance-tuned power configuration.",
-      "activeSchemeNameHints": ["Kaisen V5 lowlatency"]
+      "activeSchemeNameHints": ["Kaisen V5 Lowlatency"]
     },
     {
       "fileName": "kirby.pow",
       "displayName": "Kirby",
-      "description": "Kirby PowerPlan v1.2 for maximum performance.",
+      "description": "Kirby power plan v1.2 for maximum performance.",
       "activeSchemeNameHints": ["Kirby PowerPlan v1.2", "Kirby"]
     },
     {
@@ -184,19 +184,19 @@
       "fileName": "lawliet.pow",
       "displayName": "Lawliet",
       "description": "Lawliet's custom power scheme from Tweak Zone.",
-      "activeSchemeNameHints": ["Lawliet's power plan"]
+      "activeSchemeNameHints": ["Lawliet's Power Plan"]
     },
     {
       "fileName": "LLG-CΞRT1F1ΞD-FOR-NON-K-CPUs.pow",
       "displayName": "LLG Certified (Non-K CPUs)",
       "description": "LLG certified plan tuned for non-K CPUs.",
-      "activeSchemeNameHints": ["LLG-CΞRT1F1ΞD-FOR-NON-K-CPUs", "NON-K"]
+      "activeSchemeNameHints": ["LLG-CΞRT1F1ΞD-For-Non-K-CPUs", "Non-K"]
     },
     {
       "fileName": "LLG-CΞRT1F1ΞD-FOR-PARKING+E-CORES-FIX.pow",
       "displayName": "LLG Certified (Parking + E-Cores Fix)",
       "description": "LLG certified plan with core parking and E-cores fixes.",
-      "activeSchemeNameHints": ["LLG-CΞRT1F1ΞD-FOR-PARKING+E-CORES-FIX", "PARKING", "E-CORES"]
+      "activeSchemeNameHints": ["LLG-CΞRT1F1ΞD-For-Parking+E-Cores-Fix", "Parking", "E-Cores"]
     },
     {
       "fileName": "LLG-CΞRT1F1ΞD.pow",
@@ -212,33 +212,33 @@
     },
     {
       "fileName": "Lumin Pro Powerplan.pow",
-      "displayName": "Lumin Pro Powerplan",
+      "displayName": "Lumin Pro Power Plan",
       "description": "LuminOS performance plan for high performance and low latency.",
-      "activeSchemeNameHints": ["Lumin Pro Powerplan"]
+      "activeSchemeNameHints": ["Lumin Pro PowerPlan"]
     },
     {
       "fileName": "MaxOS Low Latency Powerplan v1.pow",
       "displayName": "MaxOS Low Latency v1",
       "description": "MaxOS v1 low-latency plan aimed at lower DPC latency for gaming.",
-      "activeSchemeNameHints": ["MaxOS Low Latency Powerplan"]
+      "activeSchemeNameHints": ["MaxOS Low Latency PowerPlan"]
     },
     {
       "fileName": "MaxOS Low Latency Powerplan v2.pow",
       "displayName": "MaxOS Low Latency v2",
       "description": "MaxOS v2 low-latency plan tuned for lower delay and reaction time.",
-      "activeSchemeNameHints": ["MaxOS Low Latency Powerplan v2"]
+      "activeSchemeNameHints": ["MaxOS Low Latency PowerPlan v2"]
     },
     {
       "fileName": "MaxOS Low Latency Powerplan v3.pow",
       "displayName": "MaxOS Low Latency v3",
       "description": "MaxOS v3 low-latency plan tuned for low delay and reaction time.",
-      "activeSchemeNameHints": ["MaxOS Low Latency Powerplan v3"]
+      "activeSchemeNameHints": ["MaxOS Low Latency PowerPlan v3"]
     },
     {
       "fileName": "nexus.pow",
       "displayName": "Nexus",
       "description": "Nexus LiteOS gaming power plan for strong desktop performance.",
-      "activeSchemeNameHints": ["Nexus LiteOS Powerplan"]
+      "activeSchemeNameHints": ["Nexus LiteOS PowerPlan"]
     },
     {
       "fileName": "NovaOS.pow",
@@ -250,7 +250,7 @@
       "fileName": "NOVERSE-Performance.pow",
       "displayName": "Noverse Performance",
       "description": "Noverse high-performance power plan.",
-      "activeSchemeNameHints": ["Noverse Performance", "NOVERSE"]
+      "activeSchemeNameHints": ["Noverse Performance", "Noverse"]
     },
     {
       "fileName": "OverTweak AMD.pow",
@@ -273,14 +273,14 @@
     {
       "fileName": "RaxOS.pow",
       "displayName": "RaxOS",
-      "description": "RaxOS PowerPlan favoring performance over energy saving.",
+      "description": "RaxOS power plan favoring performance over energy saving.",
       "activeSchemeNameHints": ["RaxOS PowerPlan", "RaxOS"]
     },
     {
       "fileName": "sapphire.pow",
       "displayName": "SapphireOS",
       "description": "SapphireOS community power plan.",
-      "activeSchemeNameHints": ["SapphireOS Powerplan", "Sapphire"]
+      "activeSchemeNameHints": ["SapphireOS PowerPlan", "Sapphire"]
     },
     {
       "fileName": "Slower.pow",
@@ -298,7 +298,7 @@
       "fileName": "VainOS.pow",
       "displayName": "VainOS",
       "description": "VainOS community power plan.",
-      "activeSchemeNameHints": ["VainOS", "vain"]
+      "activeSchemeNameHints": ["VainOS", "Vain"]
     },
     {
       "fileName": "vtrl.pow",
@@ -315,8 +315,8 @@
     {
       "fileName": "xos.pow",
       "displayName": "XOS",
-      "description": "XOS / imribiy community power plan.",
-      "activeSchemeNameHints": ["imribiy Power Plan", "xos"]
+      "description": "XOS / Imribiy community power plan.",
+      "activeSchemeNameHints": ["Imribiy Power Plan", "XOS"]
     },
     {
       "fileName": "Yuki High-Performance.pow",
