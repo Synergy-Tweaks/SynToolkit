@@ -126,6 +126,7 @@ internal static class Program
         Run("SystemResponsiveness detection is fresh each call", SystemResponsivenessTests.DetectionAlwaysUsesFreshInput);
         Run("SystemResponsiveness uint conversion", SystemResponsivenessTests.UIntConversionHandlesSignedNegativeOne);
         Run("Context menu service tests", ContextMenuServiceTests.RunAll);
+        Run("Power plan manifest matches bundled .pow files", PowerPlanManifestTests.ManifestMatchesDisk);
 
         Console.WriteLine(_failures == 0
             ? "All SynToolkit service tests passed."

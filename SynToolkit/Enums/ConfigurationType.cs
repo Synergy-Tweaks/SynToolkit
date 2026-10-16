@@ -6,43 +6,42 @@ namespace SynToolkit.Enums
     public enum ConfigurationType
     {
         [Description("General Configuration")]
-        General,
+        General = 0,
         [Description("Tweaks")]
-        Tweaks,
+        Tweaks = 1,
         [Description("Interface Tweaks")]
-        Interface,
+        Interface = 2,
         [Description("Windows Settings")]
-        Windows,
+        Windows = 3,
         [Description("Advanced Configuration")]
-        Advanced,
+        Advanced = 4,
         [Description("Security")]
-        Security,
+        Security = 5,
         [Description("Restoration")]
-        Troubleshooting,
+        Troubleshooting = 6,
         [Description("Software")]
-        Software,
-        ContextMenuSubMenu,
-        AiSubMenu,
-        ServicesSubMenu,
-        CpuIdleSubMenu,
-        BootConfigurationSubMenu,
-        FileExplorerSubMenu,
-        StartMenuSubMenu,
-        BootConfigAppearance,
-        BootConfigBehavior,
-        DriverConfigurationSubMenu,
-        NvidiaDisplayContainerSubMenu,
-        CoreIsolationSubMenu,
-        DefenderSubMenu,
-        MitigationsSubMenu,
-        TroubleshootingNetwork,
-        FileSharingSubMenu,
-        WindowsUpdate,
-        TweaksPerformanceSubMenu,
-        TweaksNetworkPowerSubMenu,
-        TweaksPrivacySubMenu,
-        TweaksInterfaceSubMenu,
-        AmdGpuTweaksSubMenu,
+        Software = 7,
+        ContextMenuSubMenu = 8,
+        AiSubMenu = 9,
+        ServicesSubMenu = 10,
+        CpuIdleSubMenu = 11,
+        BootConfigurationSubMenu = 12,
+        FileExplorerSubMenu = 13,
+        StartMenuSubMenu = 14,
+        BootConfigAppearance = 15,
+        BootConfigBehavior = 16,
+        DriverConfigurationSubMenu = 17,
+        NvidiaDisplayContainerSubMenu = 18,
+        CoreIsolationSubMenu = 19,
+        MitigationsSubMenu = 21,
+        TroubleshootingNetwork = 22,
+        FileSharingSubMenu = 23,
+        WindowsUpdate = 24,
+        TweaksPerformanceSubMenu = 25,
+        TweaksNetworkPowerSubMenu = 26,
+        TweaksPrivacySubMenu = 27,
+        TweaksInterfaceSubMenu = 28,
+        AmdGpuTweaksSubMenu = 29,
     }
 
     public static class EnumExtensions
