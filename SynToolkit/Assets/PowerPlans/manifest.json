@@ -175,6 +175,12 @@
       "activeSchemeNameHints": ["Kizzimo", "Latency Master", "Extreme Low Latency"]
     },
     {
+      "fileName": "Kwanteks.pow",
+      "displayName": "Kwanteks",
+      "description": "Power plan created by Kwanteks for the dsc.gg/kwanteks community.",
+      "activeSchemeNameHints": ["Kwanteks"]
+    },
+    {
       "fileName": "lawliet.pow",
       "displayName": "Lawliet",
       "description": "Lawliet's custom power scheme from Tweak Zone.",
