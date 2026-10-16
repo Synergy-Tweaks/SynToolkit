@@ -106,10 +106,6 @@ Type: files; Name: "{commonappdata}\Synergy\Scripts\Troubleshooting\Troubleshoot
 Type: files; Name: "{commonappdata}\Synergy\ConfigurationServices\FileSharing\disable.cmd"
 Type: files; Name: "{commonappdata}\Synergy\ConfigurationServices\FileSharing\enable.cmd"
 Type: dirifempty; Name: "{commonappdata}\Synergy\ConfigurationServices\FileSharing"
-Type: files; Name: "{commonappdata}\Synergy\Scripts\toggleDefender.cmd"
-Type: files; Name: "{commonappdata}\Synergy\Scripts\SecurityHealthTray\AddTray.reg"
-Type: files; Name: "{commonappdata}\Synergy\Scripts\SecurityHealthTray\RemoveTray.reg"
-Type: dirifempty; Name: "{commonappdata}\Synergy\Scripts\SecurityHealthTray"
 
 [UninstallDelete]
 Type: files; Name: "{app}\assets\Tools\HWiNFO64.INI"
@@ -498,6 +494,7 @@ begin
   RequireInstalledFile(SynergyRoot + '\ConfigurationServices\ShortcutIcon\ShortcutIcon_2.reg', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\ConfigurationServices\ShortcutIcon\ShortcutIcon_3.reg', MissingFiles);
 
+  RequireInstalledFile(SynergyRoot + '\Scripts\toggleDefender.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\vbsCurrentConfig.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\viewBootValues.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\VBS\Disable VBS (default).bat', MissingFiles);
@@ -505,6 +502,8 @@ begin
   RequireInstalledFile(SynergyRoot + '\Scripts\NVidia\DisableNVIDIADisplayContainerLS.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\NVidia\EnableNVIDIADisplayContainerLS.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\NVidia\NVIDIADisplayContainerState.ps1', MissingFiles);
+  RequireInstalledFile(SynergyRoot + '\Scripts\SecurityHealthTray\AddTray.reg', MissingFiles);
+  RequireInstalledFile(SynergyRoot + '\Scripts\SecurityHealthTray\RemoveTray.reg', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\Troubleshooting\Repair Windows Installer.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\Troubleshooting\Repair Windows Components.cmd', MissingFiles);
   RequireInstalledFile(SynergyRoot + '\Scripts\Troubleshooting\Telemetry Components.cmd', MissingFiles);

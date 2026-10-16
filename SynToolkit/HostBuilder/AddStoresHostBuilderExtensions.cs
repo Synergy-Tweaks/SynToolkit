@@ -66,6 +66,8 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<ConfigurationStore>("VerboseStatusMessage");
                 services.AddKeyedSingleton<ConfigurationStore>("NvidiaDispayContainer");
                 services.AddKeyedSingleton<ConfigurationStore>("AddNvidiaDisplayContainerContextMenu");
+                services.AddKeyedSingleton<ConfigurationStore>("HideAppBrowserControl");
+                services.AddKeyedSingleton<ConfigurationStore>("SecurityHealthTray");
                 services.AddKeyedSingleton<ConfigurationStore>("FaultTolerantHeap");
                 services.AddKeyedSingleton<ConfigurationStore>("CpuIdle");
                 services.AddKeyedSingleton<ConfigurationStore>("GiveAccessToMenu");
@@ -74,6 +76,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<ConfigurationStore>("MultiPlaneOverlay");
                 services.AddKeyedSingleton<ConfigurationStore>("Hags");
                 services.AddKeyedSingleton<ConfigurationStore>("WindowedGamesOptimization");
+                services.AddKeyedSingleton<ConfigurationStore>("DefenderRealtimeProtection");
                 services.AddKeyedSingleton<ConfigurationStore>("UsernameRequirement");
                 services.AddKeyedSingleton<ConfigurationStore>("UAC");
                 services.AddKeyedSingleton<ConfigurationStore>("WiFi");
@@ -144,6 +147,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("DriverConfigurationSubMenu");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("NvidiaDisplayContainerSubMenu");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("CoreIsolationSubMenu");
+                services.AddKeyedSingleton<ConfigurationStoreSubMenu>("DefenderSubMenu");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("MitigationsSubMenu");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("TroubleshootingNetwork");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("FileSharingSubMenu");

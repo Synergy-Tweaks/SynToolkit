@@ -93,6 +93,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationService, MultiPlaneOverlayConfigurationService>("MultiPlaneOverlay");
                 services.AddKeyedTransient<IConfigurationService, HagsConfigurationService>("Hags");
                 services.AddKeyedTransient<IConfigurationService, WindowedGamesOptimizationConfigurationService>("WindowedGamesOptimization");
+                services.AddKeyedTransient<IConfigurationService, DefenderRealtimeProtectionConfigurationService>("DefenderRealtimeProtection");
                 services.AddKeyedTransient<IConfigurationService, UsernameRequirementConfigurationService>("UsernameRequirement");
                 services.AddKeyedTransient<IConfigurationService, UacConfigurationService>("UAC");
                 services.AddKeyedTransient<IConfigurationService, WiFiConfigurationService>("WiFi");
@@ -110,6 +111,8 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationService, VerboseStatusMessageConfiguarationServices>("VerboseStatusMessage");
                 services.AddKeyedTransient<IConfigurationService, NvidiaDispayContainerConfigurationService>("NvidiaDispayContainer");
                 services.AddKeyedTransient<IConfigurationService, AddNvidiaDisplayContainerContextMenuConfigurationService>("AddNvidiaDisplayContainerContextMenu");
+                services.AddKeyedTransient<IConfigurationService, HideAppBrowserControlConfigurationService>("HideAppBrowserControl");
+                services.AddKeyedTransient<IConfigurationService, SecurityHealthTrayConfigurationService>("SecurityHealthTray");
                 services.AddKeyedTransient<IConfigurationService, FaultTolerantHeapConfigurationService>("FaultTolerantHeap");
                 services.AddKeyedTransient<IConfigurationService, GiveAccessToMenuConfigurationService>("GiveAccessToMenu");
                 services.AddKeyedTransient<IConfigurationService, NetworkNavigationPaneConfigurationService>("NetworkNavigationPane");
@@ -179,6 +182,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationSubMenu, DriverConfigurationSubMenu>("DriverConfigurationSubMenu");
                 services.AddKeyedTransient<IConfigurationSubMenu, NvidiaDisplayContainerSubMenu>("NvidiaDisplayContainerSubMenu");
                 services.AddKeyedTransient<IConfigurationSubMenu, CoreIsolationSubMenu>("CoreIsolationSubMenu");
+                services.AddKeyedTransient<IConfigurationSubMenu, DefenderSubMenu>("DefenderSubMenu");
                 services.AddKeyedTransient<IConfigurationSubMenu, MitigationsSubMenu>("MitigationsSubMenu");
                 services.AddKeyedTransient<IConfigurationSubMenu, TroubleshootingNetworkSubMenu>("TroubleshootingNetwork");
                 services.AddKeyedTransient<IConfigurationSubMenu, FileSharingSubMenu>("FileSharingSubMenu");
