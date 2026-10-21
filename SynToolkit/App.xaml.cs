@@ -291,14 +291,14 @@ namespace SynToolkit
                 return;
             }
 
-            //if (!CompatibilityHelper.IsSynergyOsCompatible())
-            //{
-            //    logger.Warn("Blocked startup on unsupported installation: SynergyOS OEM markers not found.");
-            //    m_window = new IncompatibleVersionWindow(IncompatibleVersionReason.SynergyOs);
-            //    m_window.Closed += (_, _) => ShutdownApplication();
-            //    m_window.Activate();
-            //    return;
-            //}
+            if (!CompatibilityHelper.IsSynergyOsCompatible())
+            {
+               logger.Warn("Blocked startup on unsupported installation: SynergyOS OEM markers not found.");
+               m_window = new IncompatibleVersionWindow(IncompatibleVersionReason.SynergyOs);
+               m_window.Closed += (_, _) => ShutdownApplication();
+               m_window.Activate();
+               return;
+            }
 
             StartHost();
             SynergyOsUpdateChecker.InstalledVersionProvider =

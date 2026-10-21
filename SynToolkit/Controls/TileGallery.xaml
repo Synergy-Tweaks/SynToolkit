@@ -235,9 +235,16 @@
                             Text="SynToolkit 1.7.0" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="A combined release with a refreshed Home tile row, Power Plans browsing and editing, wallpaper customization, clearer community links, installer improvements, dismissible Needs Attention checks, recovery tools, and update reliability fixes."
+                            Text="This release brings more of your everyday setup into SynToolkit, so games, sound, power, and SynergyOS tweaks are easier to manage in one place. A set of install, layout, and stability fixes comes along with it."
                             TextWrapping="Wrap" />
                     </StackPanel>
+
+                    <TextBlock
+                        Margin="0,4,0,-10"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Text="New" />
 
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
@@ -245,14 +252,15 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <FontIcon
+                            VerticalAlignment="Top"
                             FontSize="16"
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE8F1;" />
+                            Glyph="&#xE7FC;" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Refreshed Home tiles" />
+                            <TextBlock FontWeight="SemiBold" Text="Games Tab" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="The Home row now opens with Update Notes, Support Kwanteks, and Discord, then SynergyOS and SynToolkit repo tiles, plus Report a Bug. Overflowing tiles scroll horizontally with snap alignment and edge chevrons."
+                                Text="Import the games you already own and launch them straight from SynToolkit. Discord Rich Presence has been updated to show when you start a game from this tab."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
@@ -263,6 +271,64 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <FontIcon
+                            VerticalAlignment="Top"
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE767;" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock FontWeight="SemiBold" Text="Audio Mixer" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="A new Audio Mixer tab gives you volume and playback controls without leaving SynToolkit."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            VerticalAlignment="Top"
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE9D9;" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock FontWeight="SemiBold" Text="Tweaks Tab" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="See which tweaks SynergyOS applies, then change them with toggles and extra options. Settings that used to be spread across the app now sit together here."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            VerticalAlignment="Top"
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE894;" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock FontWeight="SemiBold" Text="Uninstaller Tab" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Scan the desktop apps installed on this PC and remove them with each app's own uninstaller."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            VerticalAlignment="Top"
                             FontSize="16"
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                             Glyph="&#xE945;" />
@@ -270,7 +336,7 @@
                             <TextBlock FontWeight="SemiBold" Text="Power Plans" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Browse every power setting in your current .pow, review the preinstalled plans, and create your own custom plan when you want something tailored."
+                                Text="Create and modify power plans, and explore the settings on the plans that come preinstalled. You can also import a plan or switch the active one from the desktop right-click menu."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
@@ -281,14 +347,91 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <FontIcon
+                            VerticalAlignment="Top"
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE7F4;" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock FontWeight="SemiBold" Text="GPU Drivers" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="The GPU tab should now support driver downloads and let you optimize those drivers from the app."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            VerticalAlignment="Top"
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE90F;" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock FontWeight="SemiBold" Text="More Tweaks" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="New options include a Steam WebHelper toggle, a Multimedia Class Scheduler choice of Default, Optimized, or Disabled, and a quality-of-life taskbar tweak."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            VerticalAlignment="Top"
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE8C7;" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock FontWeight="SemiBold" Text="Right-Click Shortcut" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Add an Open SynToolkit shortcut when you right-click the desktop or a folder background. On Windows 11 it appears under Show more options."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            VerticalAlignment="Top"
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE8F1;" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock FontWeight="SemiBold" Text="New Home Tiles" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Home has new tiles for bug reports, the GitHub repository, and more, so those links are easier to open."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            VerticalAlignment="Top"
                             FontSize="16"
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                             Glyph="&#xE91B;" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Wallpapers" />
+                            <TextBlock FontWeight="SemiBold" Text="Fall Wallpaper" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Browse the bundled SynergyOS wallpapers, apply them with your preferred desktop fit, add and name your own images, and use the same fitting options for the lock screen."
+                                Text="One new Fall wallpaper is included and ready to apply."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
@@ -299,17 +442,25 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <FontIcon
+                            VerticalAlignment="Top"
                             FontSize="16"
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xEBE8;" />
+                            Glyph="&#xE946;" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Report a Bug from Home" />
+                            <TextBlock FontWeight="SemiBold" Text="SynergyOS Update Notice" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Choose whether to open a SynToolkit or SynergyOS issue template in your browser, so feedback lands in the right repository."
+                                Text="SynToolkit should let you know if your SynergyOS install is out of date. Detection has been improved, and it still needs testing."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
+
+                    <TextBlock
+                        Margin="0,8,0,-10"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Text="Improved" />
 
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
@@ -317,168 +468,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <FontIcon
-                            FontSize="16"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE713;" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Choose your default GitHub repo" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="In Settings, pick whether clone and bug-report actions open SynToolkit or SynergyOS. Home repo tiles always open their own repositories."
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="28" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
-                            FontSize="16"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE8D4;" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Clearer labels and Discord invite" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Sidebar and Home titles use consistent Title Case (including Needs Attention and Update Notes), and Discord now uses the dsc.gg/kwanteks invite across the app."
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="28" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
-                            FontSize="16"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE7F3;" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="AMD driver install UI recovery" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Fixed the GPU page displaying incorrectly after installing an AMD driver. SynToolkit now rebuilds the page automatically when the graphics driver restarts."
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="28" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
-                            FontSize="16"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE8B7;" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Import your own AMD driver" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="You can now import your own AMD driver package (installer or extracted folder) and still use the same Debloat / slim workflow as catalog downloads."
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="28" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
-                            FontSize="16"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE7FC;" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Games tab" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Scan installed Steam, Epic, and GOG games, add titles manually, and launch them from SynToolkit. Detection is powered by Playnite's open-source library plugins. Discord Rich Presence shows when you launch a game (toggle in Settings)."
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="28" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
-                            FontSize="16"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE896;" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Installers page" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Browse a curated catalog of game launchers, browsers, media apps, dev tools, and runtimes. Detects already-installed apps from your system."
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="28" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
-                            FontSize="16"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE771;" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Polished checkbox styling" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Custom-styled checkboxes with rounded corners, accent color fill, and hover states matching the app's design language."
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="28" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
-                            FontSize="16"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE713;" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Version synchronization" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="All version strings across manifests, CI workflows, and UI are now unified at 1.7.0 for consistency."
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="28" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
-                            FontSize="16"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE9F5;" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Installed app detection" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Registry-based detection scans both 64-bit and 32-bit uninstall keys, plus common installation paths, to mark apps as installed."
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="28" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
+                            VerticalAlignment="Top"
                             FontSize="16"
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                             Glyph="&#xE7BA;" />
@@ -486,7 +476,7 @@
                             <TextBlock FontWeight="SemiBold" Text="Needs Attention" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Review disk space, restore points, time sync, app updates, critical drivers, and available SynToolkit updates in one place. Use Ignore All to suppress whole check categories, Restore Ignored to bring them back, or Ignore on individual items when you want a shorter mute."
+                                Text="The Needs Attention icon switches to a checkmark when nothing needs attention. Ignore a warning for a length of time you choose, and use the button at the top right to ignore checks or restore the ones you hid."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
@@ -497,14 +487,15 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <FontIcon
+                            VerticalAlignment="Top"
                             FontSize="16"
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE946;" />
+                            Glyph="&#xE706;" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="View modes" />
+                            <TextBlock FontWeight="SemiBold" Text="Interface Polish" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Switch between detailed Grid and List views in the Installers page, alongside category, status, and search filters."
+                                Text="The sidebar takes up less room, and light mode visuals have been improved."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
@@ -515,14 +506,41 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <FontIcon
+                            VerticalAlignment="Top"
                             FontSize="16"
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE72C;" />
+                            Glyph="&#xE8B9;" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Restoration quick actions" />
+                            <TextBlock FontWeight="SemiBold" Text="Game Cover Art" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Re-register DNS, renew DHCP, sync Windows time, and restart audio services from Restoration."
+                                Text="Cover art picked up during a Games tab scan should show more reliably. This is a potential improvement and may not cover every title."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock
+                        Margin="0,8,0,-10"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Text="Fixed" />
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            VerticalAlignment="Top"
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE896;" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock FontWeight="SemiBold" Text="App Installs" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Battle.net, Spotify, and Visual C++ now install correctly."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
@@ -533,14 +551,15 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <FontIcon
+                            VerticalAlignment="Top"
                             FontSize="16"
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE777;" />
+                            Glyph="&#xE74D;" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Reliable in-app updates" />
+                            <TextBlock FontWeight="SemiBold" Text="Games Remove Button" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Update checks refresh on demand, and the downloaded setup is launched only after it is fully ready."
+                                Text="The Remove button on the Games tab is no longer cut off."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
@@ -551,14 +570,15 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <FontIcon
+                            VerticalAlignment="Top"
                             FontSize="16"
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE8D4;" />
+                            Glyph="&#xE783;" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Expanded language support" />
+                            <TextBlock FontWeight="SemiBold" Text="Tab Crash Fixes" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="English, Spanish, French, Portuguese, Russian, Swedish, Chinese, Vietnamese, Japanese, Korean, Arabic, Turkish, and German now cover the newer Toolkit pages and installer content."
+                                Text="Tabs that were crashing after the recent additions have been fixed."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
@@ -569,32 +589,15 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <FontIcon
+                            VerticalAlignment="Top"
                             FontSize="16"
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE950;" />
+                            Glyph="&#xE189;" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Advanced system details" />
+                            <TextBlock FontWeight="SemiBold" Text="Audio Mixer Sources" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Expanded CPU, motherboard, memory, graphics, storage, network, and Windows details, including GPU vendor detection and enabled or disabled Device Manager state."
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="28" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
-                            FontSize="16"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xE9D9;" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock FontWeight="SemiBold" Text="Built-in portable tools" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Launch WizTree, HWiNFO, CPU-Z, GPU-Z, CrystalDiskMark, and EmptyStandbyList directly from their Toolkit pages."
+                                Text="The Audio Mixer can find playback sources again, and it shows one source at a time."
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
