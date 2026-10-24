@@ -204,6 +204,11 @@
                         <ImageIcon Source="ms-appx:///assets/Icons/Home.png" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem x:Name="Display" Tag="SynToolkit.Views.DisplayPage">
+                    <NavigationViewItem.Icon>
+                        <ImageIcon Source="ms-appx:///assets/Icons/Display.png" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem x:Name="AudioMixer" Tag="SynToolkit.Views.AudioMixerPage">
                     <NavigationViewItem.Icon>
                         <ImageIcon Source="ms-appx:///assets/Icons/Sound.png" />

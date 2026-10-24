@@ -17,7 +17,7 @@ if ([string]::IsNullOrWhiteSpace($applicationVersion)) {
 
 $releaseDirectory = Join-Path $root 'Release'
 $sourceArchive = Join-Path $releaseDirectory "SynToolkit-Source-$applicationVersion.zip"
-$setupSource = Join-Path $root "Installer\Output\SynToolkit-Setup-$applicationVersion-Stable.exe"
+$setupSource = Join-Path $root "Installer\Output\SynToolkit-Setup-$applicationVersion-Beta.exe"
 $setupDestination = Join-Path $releaseDirectory "SynToolkit-Setup-$applicationVersion.exe"
 
 if (-not $SkipInstallerBuild) {

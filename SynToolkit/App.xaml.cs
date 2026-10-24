@@ -56,7 +56,7 @@ namespace SynToolkit
         private int _resourcesDisposed;
 
         public static string Version { get; set; }
-        internal const string AppChannel = "Stable";
+        internal const string AppChannel = "Beta";
         public static bool IsReturningUser { get; private set; }
         public static string DisplayUserName { get; private set; } = "there";
         public static string WelcomeGreetingFormat { get; private set; } = "Welcome back, {0}";
@@ -291,14 +291,14 @@ namespace SynToolkit
                 return;
             }
 
-            if (!CompatibilityHelper.IsSynergyOsCompatible())
-            {
-               logger.Warn("Blocked startup on unsupported installation: SynergyOS OEM markers not found.");
-               m_window = new IncompatibleVersionWindow(IncompatibleVersionReason.SynergyOs);
-               m_window.Closed += (_, _) => ShutdownApplication();
-               m_window.Activate();
-               return;
-            }
+            // if (!CompatibilityHelper.IsSynergyOsCompatible())
+            // {
+            //    logger.Warn("Blocked startup on unsupported installation: SynergyOS OEM markers not found.");
+            //    m_window = new IncompatibleVersionWindow(IncompatibleVersionReason.SynergyOs);
+            //    m_window.Closed += (_, _) => ShutdownApplication();
+            //    m_window.Activate();
+            //    return;
+            // }
 
             StartHost();
             SynergyOsUpdateChecker.InstalledVersionProvider =
@@ -846,10 +846,10 @@ namespace SynToolkit
         {
             System.Version assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
             string versionNumber = assemblyVersion is null
-                ? "1.7.0"
+                ? "1.8.0"
                 : $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
 
-            return $"{AppChannel} {versionNumber}";
+            return $"{versionNumber} {AppChannel}";
         }
 
         public static string GetValueFromItemList(string key, bool desc = false)
