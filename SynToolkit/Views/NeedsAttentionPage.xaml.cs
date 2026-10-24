@@ -213,8 +213,7 @@ public sealed partial class NeedsAttentionPage : Page
                     (App.m_window as MainWindow)?.NavigateToPage(typeof(CleanerPage), "SynToolkit.Views.CleanerPage");
                     break;
                 case NeedsAttentionAction.CreateRestorePoint:
-                    await RunActionAsync(() => NeedsAttentionService.CreateRestorePointAsync(_lifetimeCancellation.Token),
-                        App.GetValueFromItemList("NeedsAttention_RestorePointCreated"));
+                    (App.m_window as MainWindow)?.NavigateToPage(typeof(ConfigPage), "Troubleshooting");
                     break;
                 case NeedsAttentionAction.SyncWindowsClock:
                     await RunActionAsync(() => NeedsAttentionService.SyncWindowsClockAsync(_lifetimeCancellation.Token),

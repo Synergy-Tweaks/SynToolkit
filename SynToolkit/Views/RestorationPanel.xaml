@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="SynToolkit.Views.RestorationPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:local="using:SynToolkit.Views"
+    xmlns:viewmodel="using:SynToolkit.ViewModels">
+    <UserControl.Resources>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
+    <StackPanel Spacing="12">
+        <TextBlock
+            FontSize="15"
+            FontWeight="SemiBold"
+            Text="Create restore point"
+            local:LocalizedText.TextKey="Restoration_CreateTitle" />
+        <TextBlock
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="Save the current Windows configuration so you can roll it back from System Restore."
+            TextWrapping="Wrap"
+            local:LocalizedText.TextKey="Restoration_CreateDescription" />
+        <InfoBar
+            IsClosable="True"
+            IsOpen="{Binding IsStatusOpen, Mode=TwoWay}"
+            Message="{Binding StatusMessage, Mode=OneWay}"
+            Severity="{Binding StatusSeverity, Mode=OneWay}" />
+        <TextBox
+            x:Name="DescriptionBox"
+            Header="Description"
+            IsEnabled="{Binding CanEditDescription, Mode=OneWay}"
+            MaxLength="255"
+            Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button
+                Command="{Binding CreateCommand}"
+                Content="Create restore point"
+                Style="{StaticResource AccentButtonStyle}"
+                local:LocalizedText.ContentKey="Restoration_CreateButton" />
+            <ProgressRing
+                Width="20"
+                Height="20"
+                IsActive="{Binding IsBusy, Mode=OneWay}"
+                Visibility="{Binding IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+        </StackPanel>
+        <TextBlock
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="{Binding BlockedReason, Mode=OneWay}"
+            TextWrapping="Wrap"
+            Visibility="{Binding ShowBlockedReason, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+        <TextBlock
+            Margin="0,8,0,0"
+            FontSize="15"
+            FontWeight="SemiBold"
+            Text="Restore points"
+            local:LocalizedText.TextKey="Restoration_LogTitle" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button
+                Command="{Binding RefreshCommand}"
+                Content="Refresh"
+                Style="{StaticResource DefaultButtonStyle}"
+                local:LocalizedText.ContentKey="Restoration_Refresh" />
+            <Button
+                Click="OpenWindowsSystemRestore_Click"
+                Content="Open Windows System Restore"
+                Style="{StaticResource DefaultButtonStyle}"
+                local:LocalizedText.ContentKey="Restoration_OpenWindows" />
+            <ProgressRing
+                Width="20"
+                Height="20"
+                IsActive="{Binding IsLoading, Mode=OneWay}"
+                Visibility="{Binding IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+        </StackPanel>
+        <TextBlock
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="{Binding SummaryText, Mode=OneWay}"
+            TextWrapping="Wrap"
+            Visibility="{Binding HasRestorePoints, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+        <TextBlock
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="{Binding EmptyText, Mode=OneWay}"
+            TextWrapping="Wrap"
+            Visibility="{Binding ShowEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+        <ItemsControl ItemsSource="{Binding RestorePoints}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="viewmodel:RestorePointRow">
+                    <controls:SettingsCard
+                        Margin="0,0,0,10"
+                        Description="{x:Bind Details, Mode=OneTime}"
+                        Header="{x:Bind Description, Mode=OneTime}"
+                        Style="{StaticResource ConfigurationSettingsCardTemplate}" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

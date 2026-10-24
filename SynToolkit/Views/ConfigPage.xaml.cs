@@ -50,6 +50,7 @@ public sealed partial class ConfigPage : Page
             };
             BreadcrumbBar.ItemClicked += BreadcrumbBar_ItemClicked;
             ConfigureTweaksIntro(type);
+            ConfigureRestorationPanel(type);
 
             this.Loaded += ConfigPage_Loaded;
             this.Unloaded += ConfigPage_Unloaded;
@@ -73,6 +74,16 @@ public sealed partial class ConfigPage : Page
         TweaksDescriptionText.Text = App.GetValueFromItemList("TweaksPageDescription");
         TweaksWarningBanner.Title = App.GetValueFromItemList("TweaksWarningTitle");
         TweaksWarningBanner.Message = App.GetValueFromItemList("TweaksWarningMessage");
+    }
+
+    private void ConfigureRestorationPanel(ConfigurationType type)
+    {
+        bool isRestoration = type == ConfigurationType.Troubleshooting;
+        RestorationPanel.Visibility = isRestoration ? Visibility.Visible : Visibility.Collapsed;
+        if (isRestoration)
+        {
+            RestorationPanel.Activate();
+        }
     }
 
     private void RefreshVisibleConfigurationStates()
@@ -171,6 +182,7 @@ public sealed partial class ConfigPage : Page
     private void ConfigPage_Unloaded(object sender, RoutedEventArgs e)
     {
         App.ConfigurationActionSucceeded -= ConfigurationActionSucceeded;
+        RestorationPanel.Deactivate();
         _lifetimeCancellation.Cancel();
         _highlightTimer?.Stop();
         _highlightTimer = null;

@@ -28,6 +28,7 @@ namespace SynToolkit.HostBuilder
                 services.AddSingleton<WingetInstallerService>();
                 services.AddSingleton<PortableAppService>();
                 services.AddSingleton<NeedsAttentionService>();
+                services.AddSingleton<IRestorePointService, RestorePointService>();
                 services.AddSingleton<AudioMixerSettingsStore>();
                 services.AddSingleton<IAudioMixerService, WindowsAudioMixerService>();
                 services.AddSingleton<IMediaSessionService, WindowsMediaSessionService>();

@@ -44,9 +44,20 @@ jobs:
         with:
           filepath: Installer/setup.iss
 
+      - name: Resolve installer
+        id: installer
+        shell: pwsh
+        run: |
+          $setups = @(Get-ChildItem -Path Installer\Output -Filter 'SynToolkit-Setup-*.exe' -File)
+          if ($setups.Count -ne 1) {
+            throw "Expected one installer in Installer\Output, found $($setups.Count)."
+          }
+          "name=$($setups[0].BaseName)" >> $env:GITHUB_OUTPUT
+          "path=Installer/Output/$($setups[0].Name)" >> $env:GITHUB_OUTPUT
+
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: SynToolkit-Setup-1.7.0
-          path: Installer/Output/SynToolkit-Setup-1.7.0-*.exe
+          name: ${{ steps.installer.outputs.name }}
+          path: ${{ steps.installer.outputs.path }}
           if-no-files-found: error
