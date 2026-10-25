@@ -101,6 +101,7 @@
     <PackageReference Include="System.DirectoryServices.AccountManagement" Version="8.0.1" />
     <PackageReference Include="System.Management" Version="9.0.3" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.3" />
+    <PackageReference Include="TaskScheduler" Version="2.12.0" />
     <PackageReference Include="WindowsDisplayAPI" Version="1.3.0.13" />
     <PackageReference Include="WinUIEx" Version="2.5.1" />
     <PackageReference Include="YamlDotNet" Version="18.1.0" />

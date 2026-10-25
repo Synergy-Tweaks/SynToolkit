@@ -237,6 +237,11 @@
                         </Border>
                     </StackPanel>
                 </NavigationViewItem>
+                <NavigationViewItem x:Name="Startup" Tag="SynToolkit.Views.StartupPage">
+                    <NavigationViewItem.Icon>
+                        <ImageIcon Source="ms-appx:///assets/Icons/Startup.png" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem x:Name="Installer" Tag="SynToolkit.Views.AppFetchPage">
                     <NavigationViewItem.Icon>
                         <ImageIcon Source="ms-appx:///assets/Icons/Installer.png" />

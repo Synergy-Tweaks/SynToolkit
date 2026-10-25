@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="SynToolkit.Views.StartupPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SynToolkit.Views"
+    xmlns:models="using:SynToolkit.Models.Startup"
+    NavigationCacheMode="Enabled">
+    <Page.Resources>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <local:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
+        <local:RiskToColorConverter x:Key="RiskToColorConverter" />
+        <local:RiskToBackgroundConverter x:Key="RiskToBackgroundConverter" />
+        <local:CategoryToGlyphConverter x:Key="CategoryToGlyphConverter" />
+        <local:BoolToEnabledTextConverter x:Key="BoolToEnabledTextConverter" />
+        <local:BoolToEnabledColorConverter x:Key="BoolToEnabledColorConverter" />
+    </Page.Resources>
+    <Grid Margin="36,28,36,36" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Spacing="2">
+                <TextBlock
+                    FontSize="28"
+                    FontWeight="SemiBold"
+                    Text="Startup"
+                    local:LocalizedText.TextKey="Startup" />
+                <TextBlock
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="See what starts with Windows and turn entries on or off."
+                    TextWrapping="Wrap"
+                    local:LocalizedText.TextKey="Startup_Subtitle" />
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                Orientation="Horizontal"
+                Spacing="8"
+                VerticalAlignment="Center">
+                <TextBox
+                    Width="280"
+                    PlaceholderText="Search by name, publisher, or path"
+                    Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    local:LocalizedText.PlaceholderTextKey="Startup_SearchPlaceholder" />
+                <Button
+                    Command="{Binding ScanCommand}"
+                    Content="Scan"
+                    Style="{StaticResource AccentButtonStyle}"
+                    local:LocalizedText.ContentKey="Startup_Scan" />
+                <ProgressRing
+                    Width="20"
+                    Height="20"
+                    IsActive="{Binding IsScanning, Mode=OneWay}"
+                    Visibility="{Binding IsScanning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Grid.Row="1" Spacing="8">
+            <InfoBar
+                IsClosable="False"
+                IsOpen="{Binding ShowUnknownWarning, Mode=OneWay}"
+                Message="Some entries are marked Unknown because SynToolkit could not tell who published them. Leave those alone. Turning an unknown item off can break an app or part of Windows."
+                Severity="Warning"
+                local:LocalizedText.MessageKey="Startup_UnknownWarning" />
+            <InfoBar
+                IsClosable="False"
+                IsOpen="{Binding ShowAdminNotice, Mode=OneWay}"
+                Message="SynToolkit is not running as administrator. Startup entries for all users, services, and scheduled tasks can be viewed when Windows allows it, but changing them needs an elevated SynToolkit."
+                Severity="Warning"
+                local:LocalizedText.MessageKey="Startup_AdminNotice" />
+            <InfoBar
+                IsClosable="True"
+                IsOpen="{Binding IsStatusOpen, Mode=TwoWay}"
+                Message="{Binding StatusMessage, Mode=OneWay}"
+                Severity="{Binding StatusSeverity, Mode=OneWay}" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+            <Border
+                MinWidth="110"
+                Padding="14,8"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="11"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Total"
+                        local:LocalizedText.TextKey="Startup_Total" />
+                    <TextBlock FontSize="22" FontWeight="SemiBold" Text="{Binding TotalCount, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+            <Border
+                MinWidth="110"
+                Padding="14,8"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="11"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="High risk"
+                        local:LocalizedText.TextKey="Startup_HighRisk" />
+                    <TextBlock
+                        FontSize="22"
+                        FontWeight="SemiBold"
+                        Foreground="#FFEF4444"
+                        Text="{Binding HighRiskCount, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+            <Border
+                MinWidth="110"
+                Padding="14,8"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="11"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Unknown"
+                        local:LocalizedText.TextKey="Startup_Unknown" />
+                    <TextBlock FontSize="22" FontWeight="SemiBold" Text="{Binding UnknownCount, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+            <Border
+                MinWidth="110"
+                Padding="14,8"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="11"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Safe"
+                        local:LocalizedText.TextKey="Startup_Safe" />
+                    <TextBlock
+                        FontSize="22"
+                        FontWeight="SemiBold"
+                        Foreground="#FF22C55E"
+                        Text="{Binding SafeCount, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+            <Button
+                VerticalAlignment="Center"
+                Command="{Binding FilterHighRiskCommand}"
+                Content="{Binding HighRiskButtonText, Mode=OneWay}" />
+            <ComboBox
+                MinWidth="180"
+                VerticalAlignment="Center"
+                DisplayMemberPath="Label"
+                ItemsSource="{Binding Categories}"
+                SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
+        </StackPanel>
+
+        <Grid Grid.Row="3" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="340" />
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <ListView
+                    ItemsSource="{Binding Entries}"
+                    SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
+                    SelectionMode="Single">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:StartupEntry">
+                            <Grid Padding="4,6" ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="28" />
+                                    <ColumnDefinition Width="180" />
+                                    <ColumnDefinition Width="140" />
+                                    <ColumnDefinition Width="88" />
+                                    <ColumnDefinition Width="88" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    Glyph="{x:Bind Category, Mode=OneWay, Converter={StaticResource CategoryToGlyphConverter}}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    FontWeight="SemiBold"
+                                    Text="{x:Bind Name, Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{x:Bind PublisherText, Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <Border
+                                    Grid.Column="3"
+                                    Padding="8,3"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Background="{x:Bind Risk, Mode=OneWay, Converter={StaticResource RiskToBackgroundConverter}}"
+                                    CornerRadius="4">
+                                    <TextBlock
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Foreground="{x:Bind Risk, Mode=OneWay, Converter={StaticResource RiskToColorConverter}}"
+                                        Text="{x:Bind RiskLabel, Mode=OneWay}" />
+                                </Border>
+                                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Ellipse
+                                        Width="8"
+                                        Height="8"
+                                        VerticalAlignment="Center"
+                                        Fill="{x:Bind IsEnabled, Mode=OneWay, Converter={StaticResource BoolToEnabledColorConverter}}" />
+                                    <TextBlock
+                                        FontSize="12"
+                                        Foreground="{x:Bind IsEnabled, Mode=OneWay, Converter={StaticResource BoolToEnabledColorConverter}}"
+                                        Text="{x:Bind IsEnabled, Mode=OneWay, Converter={StaticResource BoolToEnabledTextConverter}}" />
+                                </StackPanel>
+                                <TextBlock
+                                    Grid.Column="5"
+                                    VerticalAlignment="Center"
+                                    FontFamily="Consolas"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{x:Bind FilePath, Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="4"
+                    Visibility="{Binding ShowEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="16"
+                        Text="No startup entries"
+                        local:LocalizedText.TextKey="Startup_EmptyTitle" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Run a scan to list programs, tasks, and services that start with Windows."
+                        local:LocalizedText.TextKey="Startup_EmptyBody" />
+                </StackPanel>
+            </Grid>
+
+            <Border
+                Grid.Column="1"
+                Padding="16"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <Grid>
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="4"
+                        Visibility="{Binding HasSelection, Mode=OneWay, Converter={StaticResource BoolToVisibilityInverseConverter}}">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Text="Select an entry"
+                            local:LocalizedText.TextKey="Startup_SelectEntry" />
+                    </StackPanel>
+                    <ScrollViewer Visibility="{Binding HasSelection, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Spacing="10">
+                            <Border
+                                Padding="12"
+                                Background="{Binding SelectedEntry.Risk, Mode=OneWay, Converter={StaticResource RiskToBackgroundConverter}}"
+                                BorderBrush="{Binding SelectedEntry.Risk, Mode=OneWay, Converter={StaticResource RiskToColorConverter}}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <StackPanel>
+                                    <TextBlock
+                                        FontSize="11"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="Risk level"
+                                        local:LocalizedText.TextKey="Startup_RiskLevel" />
+                                    <TextBlock
+                                        FontSize="22"
+                                        FontWeight="SemiBold"
+                                        Foreground="{Binding SelectedEntry.Risk, Mode=OneWay, Converter={StaticResource RiskToColorConverter}}"
+                                        Text="{Binding SelectedEntry.RiskLabel, Mode=OneWay}" />
+                                </StackPanel>
+                            </Border>
+                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="{Binding SelectedEntry.Name, Mode=OneWay}" TextWrapping="Wrap" />
+                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding SelectedEntry.PublisherText, Mode=OneWay}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding SelectedEntry.CategoryLabel, Mode=OneWay}" />
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{Binding SelectedEntry.IsEnabled, Mode=OneWay, Converter={StaticResource BoolToEnabledColorConverter}}"
+                                Text="{Binding SelectedEntry.IsEnabled, Mode=OneWay, Converter={StaticResource BoolToEnabledTextConverter}}" />
+                            <TextBlock
+                                FontFamily="Consolas"
+                                FontSize="12"
+                                Text="{Binding SelectedEntry.Location, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                FontFamily="Consolas"
+                                FontSize="12"
+                                Text="{Binding SelectedEntry.FilePath, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                FontFamily="Consolas"
+                                FontSize="12"
+                                Text="{Binding SelectedEntry.Command, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding SelectedEntry.DelayText, Mode=OneWay}" />
+                            <TextBlock
+                                Text="{Binding SelectedEntry.Description, Mode=OneWay}"
+                                TextWrapping="Wrap"
+                                Visibility="{Binding SelectedEntry.HasDescription, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <Button
+                                HorizontalAlignment="Stretch"
+                                Command="{Binding ToggleCommand}"
+                                Content="{Binding ToggleButtonText, Mode=OneWay}"
+                                Style="{StaticResource AccentButtonStyle}" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{Binding ToggleBlockedReason, Mode=OneWay}"
+                                TextWrapping="Wrap"
+                                Visibility="{Binding ShowToggleBlockedReason, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button
+                                    Command="{Binding OpenLocationCommand}"
+                                    Content="Open location"
+                                    local:LocalizedText.ContentKey="Startup_OpenLocation" />
+                                <Button
+                                    Command="{Binding CopyPathCommand}"
+                                    Content="Copy path"
+                                    local:LocalizedText.ContentKey="Startup_CopyPath" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+        <TextBlock
+            Grid.Row="4"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="{Binding StatusText, Mode=OneWay}"
+            TextWrapping="Wrap" />
+    </Grid>
+</Page>
