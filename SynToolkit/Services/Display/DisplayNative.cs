@@ -27,6 +27,17 @@ internal static class DisplayNative
     public const int ErrorSuccess = 0;
     public const int ErrorInsufficientBuffer = 122;
 
+    public const int DwmwaBorderColor = 34;
+    public const int DwmColorNone = unchecked((int)0xFFFFFFFE);
+
+    public const int GwlStyle = -16;
+    public const long WsCaption = 0x00C00000;
+    public const long WsThickFrame = 0x00040000;
+    public const uint SwpNoSize = 0x0001;
+    public const uint SwpNoMove = 0x0002;
+    public const uint SwpNoZOrder = 0x0004;
+    public const uint SwpFrameChanged = 0x0020;
+
     public const int DeviceInfoGetSourceName = 1;
     public const int DeviceInfoGetTargetName = 2;
     public const int DeviceInfoGetTargetPreferredMode = 3;
@@ -42,6 +53,10 @@ internal static class DisplayNative
 
     public const uint EnumCurrentSettings = 0xFFFFFFFFu;
     public const uint EdsRotatedMode = 0x00000004;
+
+    public const uint CdsTest = 0x00000002;
+    public const int DispChangeSuccessful = 0;
+    public const int DispChangeRestart = 1;
 
     public const uint DmPosition = 0x00000020;
     public const uint DmDisplayOrientation = 0x00000080;
@@ -353,6 +368,38 @@ internal static class DisplayNative
     [DllImport("user32.dll")]
     internal static extern int DisplayConfigSetDeviceInfo(ref DisplayConfigSetHdrState deviceInfo);
 
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
+    private static extern IntPtr GetWindowLongPtr(IntPtr hwnd, int index);
+
+    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+    private static extern IntPtr SetWindowLongPtr(IntPtr hwnd, int index, IntPtr value);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetWindowPos(
+        IntPtr hwnd, IntPtr insertAfter, int x, int y, int width, int height, uint flags);
+
+    internal static void MakeBorderless(IntPtr hwnd)
+    {
+        var style = GetWindowLongPtr(hwnd, GwlStyle).ToInt64();
+        style &= ~(WsCaption | WsThickFrame);
+        _ = SetWindowLongPtr(hwnd, GwlStyle, new IntPtr(style));
+        _ = SetWindowPos(
+            hwnd,
+            IntPtr.Zero,
+            0,
+            0,
+            0,
+            0,
+            SwpNoMove | SwpNoSize | SwpNoZOrder | SwpFrameChanged);
+
+        var border = DwmColorNone;
+        _ = DwmSetWindowAttribute(hwnd, DwmwaBorderColor, ref border, sizeof(int));
+    }
+
     [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "EnumDisplaySettingsExW")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool EnumDisplaySettingsEx(
@@ -360,6 +407,14 @@ internal static class DisplayNative
         uint iModeNum,
         ref DevModeW lpDevMode,
         uint dwFlags);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "ChangeDisplaySettingsExW")]
+    internal static extern int ChangeDisplaySettingsEx(
+        string? lpszDeviceName,
+        ref DevModeW lpDevMode,
+        IntPtr hwnd,
+        uint dwFlags,
+        IntPtr lParam);
 
     [DllImport("user32.dll")]
     internal static extern IntPtr MonitorFromPoint(PointL pt, uint dwFlags);

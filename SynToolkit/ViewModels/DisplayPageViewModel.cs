@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -46,14 +47,12 @@ public sealed partial class DisplayPageViewModel : ObservableObject
     private int _applyFlagVersion;
     private int _scaleVersion;
     private bool _scaleRevertArmed;
-    private bool _exportedThisSession;
-    private string _lastExportPath = string.Empty;
     private DisplaySnapshot? _lastValidCanvas;
     private DisplayNative.DisplayConfigPathSourceInfo _scaleSource;
     private int _scalePreviousStep;
     private int _scaleRequestedStep;
     private string _scaleMonitorKey = string.Empty;
-    private DisplayNative.DisplayConfigPathSourceInfo _hdrSource;
+    private DisplayHdrTarget? _hdrTarget;
     private int _hdrVersion;
     private bool _hdrRevertArmed;
     private bool _hdrPreviousEnabled;
@@ -153,8 +152,9 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             }))
                 return;
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine(ex);
         }
         IsApplying = true;
     }
@@ -479,8 +479,9 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             ApplySnapshot(snapshot, preserveSelectionKey: SelectedMonitor?.GdiDeviceName);
             CanvasInvalidated?.Invoke(this, EventArgs.Empty);
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine(ex);
         }
         finally
         {
@@ -829,7 +830,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             if (version != _loadVersion || cts.IsCancellationRequested)
                 return;
 
-            DisplayReentrancyTrail.Reset();
             ApplySnapshot(snapshot, preserveSelectionKey: SelectedMonitor?.GdiDeviceName);
             _hasLoaded = true;
             OnPropertyChanged(nameof(HasLoaded));
@@ -842,7 +842,7 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             {
                 ErrorTitle = "Couldn't read display configuration";
                 ErrorMessage = "Couldn't read the display configuration. Nothing changed.";
-                ErrorLog = ex.ToString() + Environment.NewLine + "Re-entry trail: " + DisplayReentrancyTrail.DescribePeak();
+                ErrorLog = ex.ToString();
             }
         }
         finally
@@ -852,14 +852,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         }
     }
 
-    private async Task StampExportOutcomeAsync(string outcome)
-    {
-        if (!_chain.ExportedThisChain || string.IsNullOrEmpty(_lastExportPath))
-            return;
-
-        var path = _lastExportPath;
-        await Task.Run(() => DisplayApplyService.TryStampExportOutcome(path, outcome)).ConfigureAwait(true);
-    }
 
     [RelayCommand(CanExecute = nameof(CanMakePrimary))]
     private void MakePrimary()
@@ -955,15 +947,13 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             return;
 
         if (startedNewChain)
-            DisplayReentrancyTrail.Reset();
 
-        using var trail = DisplayReentrancyTrail.Track("RequestApplyAsync");
 
-        if (startedNewChain)
-        {
-            ClearScaleRevert();
-            _temporaryApplied = false;
-        }
+            if (startedNewChain)
+            {
+                ClearScaleRevert();
+                _temporaryApplied = false;
+            }
 
         ConsumePositionStage();
 
@@ -1007,14 +997,13 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             var restoreBaseline = _chain.ChainBaseline ?? Snapshot;
             var wasMakePrimary = _makePrimaryPending;
             ErrorTitle = "Couldn't apply display settings";
-            ErrorLog = ex.ToString() + Environment.NewLine + "Re-entry trail: " + DisplayReentrancyTrail.DescribePeak() + ".";
+            ErrorLog = ex.ToString();
             var liveMatchesBaseline = _temporaryApplied || await LiveMatchesChainBaselineAsync(restoreBaseline).ConfigureAwait(true);
             if (!DisplayChainPolicy.ShouldRevertAfterApplyFault(_temporaryApplied, liveMatchesBaseline))
             {
                 ErrorMessage = "Couldn't apply those display settings. Nothing changed.";
                 StopCountdown();
                 _chain.EndChain();
-                await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
                 RestoreStageAfterFailure(failedPlan, restoreBaseline, wasMakePrimary);
                 return;
             }
@@ -1023,7 +1012,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             var revert = await RevertInternalAsync().ConfigureAwait(true);
             StopCountdown();
             _chain.EndChain();
-            await StampExportOutcomeAsync(revert.Success ? DisplayApplyService.ExportOutcomeReverted : DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
             RestoreStageAfterFailure(failedPlan, restoreBaseline, wasMakePrimary);
             var message = revert.Success && !DisplayApplyService.IsPostRevertNotice(revert.Message)
                 ? DisplayChainPolicy.ApplyCatchRevertedMessage()
@@ -1055,7 +1043,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
 
     private async Task RunSingleCycleAsync(bool arrangementInitiated)
     {
-        using var trail = DisplayReentrancyTrail.Track("RunSingleCycleAsync");
         var plan = _chain.LatestPlan ?? BuildPlan();
         var restoreBaseline = _chain.ChainBaseline ?? Snapshot;
         var wasMakePrimary = _makePrimaryPending;
@@ -1093,24 +1080,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             return;
         }
 
-        if (!_chain.ExportedThisChain && !_exportedThisSession && Snapshot is not null)
-        {
-            var snapshotForExport = Snapshot;
-            try
-            {
-                _lastExportPath = await Task.Run(() => DisplayApplyService.ExportSnapshot(snapshotForExport)).ConfigureAwait(true);
-                _chain.MarkExported();
-                _exportedThisSession = true;
-            }
-            catch (Exception ex)
-            {
-                ErrorTitle = "Couldn't back up the display configuration";
-                ErrorMessage = "Couldn't back up the display configuration before applying. Nothing changed. Try again.";
-                ErrorLog = ex.ToString() + Environment.NewLine + "Re-entry trail: " + DisplayReentrancyTrail.DescribePeak();
-                await FailCycle(restoreBaseline, wasMakePrimary).ConfigureAwait(true);
-                return;
-            }
-        }
 
         var validation = await DisplayApplyService.ValidateAsync(plan).ConfigureAwait(true);
         if (!validation.Success)
@@ -1133,7 +1102,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         _temporaryApplied = true;
 
         var (isTopology, mismatchDetail) = DisplayChainPolicy.DescribeMismatch(plan, temporary.ReadBack);
-        DisplayReentrancyTrail.LogTargetSignalPair(plan, temporary.ReadBack, DisplayApplyService.BuildFlags(validateOnly: false, persist: false));
         if (isTopology)
         {
             var topologyRevert = await RevertInternalAsync().ConfigureAwait(true);
@@ -1188,13 +1156,11 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             Announce($"{saved.Message} {revert.Message}");
             BarMessage = revert.Success && !DisplayApplyService.IsPostRevertNotice(revert.Message) ? string.Empty : revert.Message;
             _chain.EndChain();
-            await StampExportOutcomeAsync(revert.Success ? DisplayApplyService.ExportOutcomeReverted : DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
             IsApplying = false;
             return;
         }
 
         var (keepTopology, keepDetail) = DisplayChainPolicy.DescribeMismatch(plan, saved.ReadBack);
-        DisplayReentrancyTrail.LogTargetSignalPair(plan, saved.ReadBack, DisplayApplyService.BuildFlags(validateOnly: false, persist: true));
         ClearChainState();
         if (saved.ReadBack is not null)
             ApplySnapshot(saved.ReadBack, preserveSelectionKey: SelectedMonitor?.GdiDeviceName);
@@ -1204,7 +1170,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         Announce(message);
         CanvasInvalidated?.Invoke(this, EventArgs.Empty);
         _chain.EndChain();
-        await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeKept).ConfigureAwait(true);
         IsApplying = false;
         if (!IsBarVisible)
             BarMessage = string.Empty;
@@ -1212,7 +1177,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
 
     private async Task<bool> FailCycle(DisplaySnapshot? restoreBaseline, bool excludePrimarySwap, bool reassertPick = true)
     {
-        using var trail = DisplayReentrancyTrail.Track("FailCycle");
         var failedPlan = _chain.StageRestorePlan ?? _chain.LatestPlan;
         _chain.CompleteCycle(DateTimeOffset.UtcNow, success: false, out var resumeCountdown);
         IsApplying = false;
@@ -1233,7 +1197,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             if (reassertPick)
                 ReassertSelections();
             _ = ReloadScaleOptionsAsync();
-            await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
             return stageRestored;
         }
     }
@@ -1288,7 +1251,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
 
         ReassertSelections();
         await ReloadScaleOptionsAsync().ConfigureAwait(true);
-        await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
     }
 
     private void ClearScaleRevert()
@@ -1306,7 +1268,7 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         _hdrPreviousEnabled = false;
         _hdrRequestedEnabled = false;
         _hdrMonitorKey = string.Empty;
-        _hdrSource = default;
+        _hdrTarget = null;
     }
 
     private async Task ReloadHdrStateAsync()
@@ -1386,7 +1348,7 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         }
 
         var monitorKey = SelectedMonitor.GdiDeviceName;
-        if (!DisplayService.TryGetSourceForMonitor(monitorKey, out var source))
+        if (!DisplayHdrService.TryGetTargetForMonitor(monitorKey, out var target))
         {
             ShowStatus("Couldn't find that display's HDR control. Nothing changed.", DisplayNoticeKind.Failure);
             Announce("Couldn't find that display's HDR control. Nothing changed.");
@@ -1397,7 +1359,7 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         DisplayHdrRead before;
         try
         {
-            before = await Task.Run(() => DisplayHdrService.ReadState(source)).ConfigureAwait(true);
+            before = await Task.Run(() => DisplayHdrService.ReadState(target)).ConfigureAwait(true);
         }
         catch
         {
@@ -1414,6 +1376,8 @@ public sealed partial class DisplayPageViewModel : ObservableObject
 
         if (before.State.Enabled == requestedState)
         {
+            ShowStatus(DisplayHdrService.AlreadyActiveMessage, DisplayNoticeKind.Neutral);
+            Announce(DisplayHdrService.AlreadyActiveMessage);
             _ = ReloadHdrStateAsync();
             return;
         }
@@ -1441,33 +1405,15 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         BarMessage = "Applying…";
         Announce("Applying HDR change.");
         ClearScaleRevert();
-        _hdrSource = source;
+        _hdrTarget = target;
         _hdrPreviousEnabled = before.State.Enabled;
         _hdrRequestedEnabled = requestedState;
         _hdrMonitorKey = monitorKey;
         _hdrRevertArmed = true;
         try
         {
-            if (!_chain.ExportedThisChain && !_exportedThisSession && Snapshot is not null)
-            {
-                var snapshotForExport = Snapshot;
-                try
-                {
-                    _lastExportPath = await Task.Run(() => DisplayApplyService.ExportSnapshot(snapshotForExport)).ConfigureAwait(true);
-                    _chain.MarkExported();
-                    _exportedThisSession = true;
-                }
-                catch (Exception ex)
-                {
-                    ErrorTitle = "Couldn't back up the display configuration";
-                    ErrorMessage = "Couldn't back up the display configuration before applying. Nothing changed. Try again.";
-                    ErrorLog = ex.ToString() + Environment.NewLine + "Re-entry trail: " + DisplayReentrancyTrail.DescribePeak();
-                    await FailHdrCycleAsync().ConfigureAwait(true);
-                    return;
-                }
-            }
 
-            var result = await DisplayHdrService.SetEnabledAsync(source, requestedState, _hdrPreviousEnabled).ConfigureAwait(true);
+            var result = await DisplayHdrService.SetEnabledAsync(target, requestedState, _hdrPreviousEnabled).ConfigureAwait(true);
             if (!result.Success)
             {
                 ShowStatus(result.Message, DisplayNoticeKind.Failure);
@@ -1484,15 +1430,16 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         catch (Exception ex)
         {
             ErrorTitle = "Couldn't apply the HDR change";
-            ErrorLog = ex.ToString() + Environment.NewLine + "Re-entry trail: " + DisplayReentrancyTrail.DescribePeak();
+            ErrorLog = ex.ToString();
             var confirmed = false;
             try
             {
-                var current = await Task.Run(() => DisplayHdrService.ReadState(source)).ConfigureAwait(true);
+                var current = await Task.Run(() => DisplayHdrService.ReadState(target)).ConfigureAwait(true);
                 confirmed = current.Success && current.State is not null && current.State.Enabled == requestedState;
             }
-            catch
+            catch (Exception inner)
             {
+                Debug.WriteLine(inner);
             }
 
             if (confirmed)
@@ -1511,7 +1458,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                 ClearHdrRevert();
                 _temporaryApplied = false;
                 _chain.EndChain();
-                await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
                 _ = ReloadHdrStateAsync();
             }
         }
@@ -1530,19 +1476,25 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             BarMessage = string.Empty;
         ClearChainState();
         _ = ReloadHdrStateAsync();
-        await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
     }
 
     private async Task KeepHdrAsync()
     {
         var requested = _hdrRequestedEnabled;
-        var source = _hdrSource;
+        var target = _hdrTarget;
         ClearHdrRevert();
         _temporaryApplied = false;
         IsSettling = true;
+        if (target is null)
+        {
+            ShowStatus("Couldn't confirm the HDR change. Change it again to try.", DisplayNoticeKind.Failure);
+            Announce("Couldn't confirm the HDR change. Change it again to try.");
+            IsSettling = false;
+            return;
+        }
         try
         {
-            var current = await Task.Run(() => DisplayHdrService.ReadState(source)).ConfigureAwait(true);
+            var current = await Task.Run(() => DisplayHdrService.ReadState(target)).ConfigureAwait(true);
             var live = await DisplayService.LoadAsync().ConfigureAwait(true);
             ApplySnapshot(live, preserveSelectionKey: SelectedMonitor?.GdiDeviceName);
             var readable = current.Success && current.State is not null;
@@ -1551,16 +1503,14 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             ShowStatus(message, matches ? DisplayNoticeKind.Saved : DisplayNoticeKind.Failure);
             Announce(message);
             CanvasInvalidated?.Invoke(this, EventArgs.Empty);
-            await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeKept).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
             ErrorTitle = "Couldn't confirm the HDR change";
             ErrorMessage = "Couldn't confirm the HDR change. Change it again to try.";
-            ErrorLog = ex.ToString() + Environment.NewLine + "Re-entry trail: " + DisplayReentrancyTrail.DescribePeak();
+            ErrorLog = ex.ToString();
             ShowStatus("Couldn't confirm the HDR change. Change it again to try.", DisplayNoticeKind.Failure);
             Announce("Couldn't confirm the HDR change. Change it again to try.");
-            await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
         }
         finally
         {
@@ -1579,7 +1529,17 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         Announce("Reverting HDR change.");
         try
         {
-            var current = await Task.Run(() => DisplayHdrService.ReadState(_hdrSource)).ConfigureAwait(true);
+            if (_hdrTarget is not { } target)
+            {
+                HasRevertFailed = true;
+                _temporaryApplied = false;
+                _hdrRevertArmed = false;
+                BarMessage = DisplayHdrService.RevertReadFailureMessage();
+                Announce(BarMessage);
+                return;
+            }
+
+            var current = await Task.Run(() => DisplayHdrService.ReadState(target)).ConfigureAwait(true);
             if (!current.Success || current.State is null)
             {
                 HasRevertFailed = true;
@@ -1587,18 +1547,17 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                 _hdrRevertArmed = false;
                 BarMessage = DisplayHdrService.RevertReadFailureMessage();
                 Announce(BarMessage);
-                await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
                 return;
             }
 
             var previous = _hdrPreviousEnabled;
-            var result = await DisplayHdrService.SetEnabledAsync(_hdrSource, previous, current.State.Enabled).ConfigureAwait(true);
+            var result = await DisplayHdrService.SetEnabledAsync(target, previous, current.State.Enabled).ConfigureAwait(true);
             ClearChainState();
             CanvasInvalidated?.Invoke(this, EventArgs.Empty);
             _ = ReloadHdrStateAsync();
             if (result.Success)
             {
-                var reread = await Task.Run(() => DisplayHdrService.ReadState(_hdrSource)).ConfigureAwait(true);
+                var reread = await Task.Run(() => DisplayHdrService.ReadState(target)).ConfigureAwait(true);
                 var stateMatches = reread.Success && reread.State is not null && reread.State.Enabled == previous;
                 if (stateMatches)
                 {
@@ -1607,7 +1566,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                     BarMessage = string.Empty;
                     ShowStatus("Reverted.", DisplayNoticeKind.Saved);
                     Announce("Reverted.");
-                    await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeReverted).ConfigureAwait(true);
                 }
                 else
                 {
@@ -1617,7 +1575,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                     BarMessage = weaker;
                     ShowStatus(weaker, DisplayNoticeKind.Failure);
                     Announce(weaker);
-                    await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
                 }
             }
             else
@@ -1626,7 +1583,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                 _hdrRevertArmed = false;
                 BarMessage = result.Message;
                 Announce(result.Message);
-                await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
             }
         }
         catch
@@ -1636,7 +1592,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             _hdrRevertArmed = false;
             BarMessage = DisplayHdrService.RevertFailureMessage();
             Announce(BarMessage);
-            await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
         }
         finally
         {
@@ -1710,6 +1665,8 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         var clamped = DisplayScaleOptions.ClampStep(requestedStep, state.Triple.MinRelativeScaleStep, state.Triple.MaxRelativeScaleStep);
         if (clamped == state.Triple.CurRelativeScaleStep)
         {
+            ShowStatus(DisplayScaleService.AlreadyActiveMessage, DisplayNoticeKind.Neutral);
+            Announce(DisplayScaleService.AlreadyActiveMessage);
             _ = ReloadScaleOptionsAsync();
             return;
         }
@@ -1735,24 +1692,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         _scaleRevertArmed = true;
         try
         {
-            if (!_chain.ExportedThisChain && !_exportedThisSession && Snapshot is not null)
-            {
-                var snapshotForExport = Snapshot;
-                try
-                {
-                    _lastExportPath = await Task.Run(() => DisplayApplyService.ExportSnapshot(snapshotForExport)).ConfigureAwait(true);
-                    _chain.MarkExported();
-                    _exportedThisSession = true;
-                }
-                catch (Exception ex)
-                {
-                    ErrorTitle = "Couldn't back up the display configuration";
-                    ErrorMessage = "Couldn't back up the display configuration before applying. Nothing changed. Try again.";
-                    ErrorLog = ex.ToString() + Environment.NewLine + "Re-entry trail: " + DisplayReentrancyTrail.DescribePeak();
-                    await FailScaleCycleAsync().ConfigureAwait(true);
-                    return;
-                }
-            }
 
             var result = await DisplayScaleService.SetStepAsync(state.Source, clamped, _scalePreviousStep).ConfigureAwait(true);
             if (!result.Success)
@@ -1774,7 +1713,7 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         catch (Exception ex)
         {
             ErrorTitle = "Couldn't apply scale change";
-            ErrorLog = ex.ToString() + Environment.NewLine + "Re-entry trail: " + DisplayReentrancyTrail.DescribePeak();
+            ErrorLog = ex.ToString();
             var recovery = await ResolveScaleApplyRecoveryAsync(monitorKey).ConfigureAwait(true);
             if (recovery == ScaleApplyRecovery.OfferRevert)
             {
@@ -1794,7 +1733,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                 ClearScaleRevert();
                 _temporaryApplied = false;
                 _chain.EndChain();
-                await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
                 ReassertSelections();
                 _ = ReloadScaleOptionsAsync();
             }
@@ -1841,16 +1779,14 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             ShowStatus(message, triple.Success && triple.CurRelativeScaleStep == requestedStep ? DisplayNoticeKind.Saved : DisplayNoticeKind.Failure);
             Announce(message);
             CanvasInvalidated?.Invoke(this, EventArgs.Empty);
-            await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeKept).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
             ErrorTitle = "Couldn't confirm the scale change";
             ErrorMessage = "Couldn't confirm the kept scale. Change it again to try.";
-            ErrorLog = ex.ToString() + Environment.NewLine + "Re-entry trail: " + DisplayReentrancyTrail.DescribePeak();
+            ErrorLog = ex.ToString();
             ShowStatus("Couldn't confirm the scale change. Change it again to try.", DisplayNoticeKind.Failure);
             Announce("Couldn't confirm the scale change. Change it again to try.");
-            await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
         }
         finally
         {
@@ -1877,7 +1813,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                 _scaleRevertArmed = false;
                 BarMessage = "Couldn't read the current scale. Nothing changed.";
                 Announce(BarMessage);
-                await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
                 return;
             }
 
@@ -1902,7 +1837,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                     BarMessage = string.Empty;
                     ShowStatus("Reverted.", DisplayNoticeKind.Saved);
                     Announce("Reverted.");
-                    await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeReverted).ConfigureAwait(true);
                 }
                 else
                 {
@@ -1912,7 +1846,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                     BarMessage = weaker;
                     ShowStatus(weaker, DisplayNoticeKind.Failure);
                     Announce(weaker);
-                    await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
                 }
             }
             else
@@ -1921,7 +1854,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                 _scaleRevertArmed = false;
                 BarMessage = result.Message;
                 Announce(result.Message);
-                await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
             }
         }
         catch
@@ -1931,7 +1863,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             _scaleRevertArmed = false;
             BarMessage = DisplayScaleService.RevertFailureMessage();
             Announce(BarMessage);
-            await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
         }
         finally
         {
@@ -2080,14 +2011,12 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                 ShowStatus($"{result.Message} {revert.Message}", DisplayNoticeKind.Failure);
                 Announce($"{result.Message} {revert.Message}");
                 BarMessage = revert.Success && !DisplayApplyService.IsPostRevertNotice(revert.Message) ? string.Empty : revert.Message;
-                await StampExportOutcomeAsync(revert.Success ? DisplayApplyService.ExportOutcomeReverted : DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
                 return;
             }
 
             var (keepTopology, keepDetail) = DisplayChainPolicy.DescribeMismatch(plan, result.ReadBack);
             if (persistClaimed)
-                DisplayReentrancyTrail.LogTargetSignalPair(plan, result.ReadBack, DisplayApplyService.BuildFlags(validateOnly: false, persist: true));
-            ClearChainState();
+                ClearChainState();
             if (result.ReadBack is not null)
                 ApplySnapshot(result.ReadBack, preserveSelectionKey: SelectedMonitor?.GdiDeviceName);
 
@@ -2103,18 +2032,16 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             ShowStatus(keepMessage, keepDetail is null && !keepTopology ? DisplayNoticeKind.Saved : DisplayNoticeKind.Failure);
             Announce(keepMessage);
             CanvasInvalidated?.Invoke(this, EventArgs.Empty);
-            await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeKept).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
             ErrorTitle = "Couldn't save display settings";
-            ErrorLog = ex.ToString() + Environment.NewLine + "Re-entry trail: " + DisplayReentrancyTrail.DescribePeak();
+            ErrorLog = ex.ToString();
             var revert = await RevertInternalAsync().ConfigureAwait(true);
             ErrorMessage = $"Couldn't save those settings. {revert.Message}";
             ShowStatus($"Couldn't save those settings. {revert.Message}", DisplayNoticeKind.Failure);
             Announce($"Couldn't save those settings. {revert.Message}");
             BarMessage = revert.Success && !DisplayApplyService.IsPostRevertNotice(revert.Message) ? string.Empty : revert.Message;
-            await StampExportOutcomeAsync(revert.Success ? DisplayApplyService.ExportOutcomeReverted : DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
         }
         finally
         {
@@ -2168,14 +2095,12 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                     Announce("Reverted.");
                 }
 
-                await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeReverted).ConfigureAwait(true);
             }
             else
             {
                 HasRevertFailed = true;
                 BarMessage = result.Message;
                 Announce(result.Message);
-                await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
             }
         }
         catch (Exception ex)
@@ -2184,10 +2109,9 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             _temporaryApplied = false;
             ErrorTitle = "Couldn't finish reverting";
             ErrorMessage = DisplayApplyService.RevertUnfinishedMessage();
-            ErrorLog = ex.ToString() + Environment.NewLine + "Re-entry trail: " + DisplayReentrancyTrail.DescribePeak() + ".";
+            ErrorLog = ex.ToString();
             BarMessage = DisplayApplyService.RevertUnfinishedMessage();
             Announce(BarMessage);
-            await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeFailed).ConfigureAwait(true);
         }
         finally
         {
@@ -2215,7 +2139,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
 
     private async Task LoadModesForSelectionAsync()
     {
-        using var trail = DisplayReentrancyTrail.Track("LoadModesForSelectionAsync");
         var version = Interlocked.Increment(ref _modeVersion);
         var prevSuppress = _suppressUi;
         _suppressUi = true;
@@ -2374,13 +2297,11 @@ public sealed partial class DisplayPageViewModel : ObservableObject
     private DisplayApplyPlan BuildPlan()
     {
         var canvas = BuildCanvasSnapshot(includeStage: true, validateDisplay: false);
-        DisplayReentrancyTrail.LogPickedMode(SelectedMode, canvas);
         return new DisplayApplyPlan(canvas.Monitors.ToArray(), Array.Empty<DisplayPendingChange>());
     }
 
     private void ApplySnapshot(DisplaySnapshot snapshot, string? preserveSelectionKey)
     {
-        using var trail = DisplayReentrancyTrail.Track("ApplySnapshot");
         _snapshotEpoch++;
         var before = new HashSet<string>(
             Monitors.Select(monitor => monitor.GdiDeviceName),
@@ -2464,32 +2385,38 @@ public sealed partial class DisplayPageViewModel : ObservableObject
 
     private async void CountdownTick(DispatcherQueueTimer sender, object args)
     {
-        if (!ReferenceEquals(sender, _countdownTimer))
-            return;
-
-        if (_tickCycleId != _chain.CurrentCycleId || !_chain.IsCountdownActive)
-            return;
-
-        var remaining = _chain.SecondsRemaining(DateTimeOffset.UtcNow);
-        if (remaining <= 0)
+        try
         {
-            StopCountdown();
-            if (await CountdownGuardAllowsRevertAsync().ConfigureAwait(true))
-                await RevertNowAsync().ConfigureAwait(true);
-            else
+            if (!ReferenceEquals(sender, _countdownTimer))
+                return;
+
+            if (_tickCycleId != _chain.CurrentCycleId || !_chain.IsCountdownActive)
+                return;
+
+            var remaining = _chain.SecondsRemaining(DateTimeOffset.UtcNow);
+            if (remaining <= 0)
             {
-                AbandonStaleCountdown();
-                await StampExportOutcomeAsync(DisplayApplyService.ExportOutcomeAbandoned).ConfigureAwait(true);
+                StopCountdown();
+                if (await CountdownGuardAllowsRevertAsync().ConfigureAwait(true))
+                    await RevertNowAsync().ConfigureAwait(true);
+                else
+                {
+                    AbandonStaleCountdown();
+                }
+
+                return;
             }
 
-            return;
+            BarMessage = $"Keep these settings? {DisplayChainPolicy.CountdownMessage(remaining)}";
+            if (DisplayChainPolicy.ShouldAnnounceCountdown(remaining, _countdownLowAnnounced))
+            {
+                _countdownLowAnnounced = true;
+                Announce(DisplayChainPolicy.CountdownMessage(remaining));
+            }
         }
-
-        BarMessage = $"Keep these settings? {DisplayChainPolicy.CountdownMessage(remaining)}";
-        if (DisplayChainPolicy.ShouldAnnounceCountdown(remaining, _countdownLowAnnounced))
+        catch (Exception ex)
         {
-            _countdownLowAnnounced = true;
-            Announce(DisplayChainPolicy.CountdownMessage(remaining));
+            Debug.WriteLine($"Display countdown tick failed: {ex.Message}");
         }
     }
 
@@ -2519,8 +2446,13 @@ public sealed partial class DisplayPageViewModel : ObservableObject
 
             if (_hdrRevertArmed)
             {
-                var hdrSource = _hdrSource;
-                var current = await Task.Run(() => DisplayHdrService.ReadState(hdrSource)).ConfigureAwait(true);
+                if (_hdrTarget is not { } hdrTarget)
+                {
+                    _countdownGuardOutcome = DisplayCountdownGuardOutcome.Unreadable;
+                    return false;
+                }
+
+                var current = await Task.Run(() => DisplayHdrService.ReadState(hdrTarget)).ConfigureAwait(true);
                 if (!current.Success || current.State is null)
                 {
                     _countdownGuardOutcome = DisplayCountdownGuardOutcome.Unreadable;

@@ -243,7 +243,6 @@ public sealed partial class DisplayPage : Page
 
     private void RenderCanvas()
     {
-        using var trail = DisplayReentrancyTrail.Track("RenderCanvas");
         string? focusedKey = null;
         foreach (var entry in _tiles)
         {

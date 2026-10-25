@@ -21,87 +21,90 @@ public sealed record DisplayMonitor(
     uint PreferredHeight,
     int Ordinal,
     int ScalePercent,
-    uint TargetActiveWidth,
-    uint TargetActiveHeight,
-    uint TargetTotalWidth,
-    uint TargetTotalHeight,
-    ulong TargetPixelRate,
-    uint TargetHSyncNumerator,
-    uint TargetHSyncDenominator,
-    uint TargetVSyncNumerator,
-    uint TargetVSyncDenominator)
+    uint TargetActiveWidth = 0,
+    uint TargetActiveHeight = 0,
+    uint TargetTotalWidth = 0,
+    uint TargetTotalHeight = 0,
+    ulong TargetPixelRate = 0,
+    uint TargetHSyncNumerator = 0,
+    uint TargetHSyncDenominator = 0,
+    uint TargetVSyncNumerator = 0,
+    uint TargetVSyncDenominator = 0)
 {
     public bool IsPrimary => PositionX == 0 && PositionY == 0;
+
+    public string ResolutionText => $"{PixelWidth} × {PixelHeight}";
+
+    public string RefreshText => RefreshDenominator == 0
+        ? "Unknown"
+        : $"{RefreshNumerator / (double)RefreshDenominator:0.###} Hz";
 
     public double RefreshHz => RefreshDenominator == 0
         ? 0
         : RefreshNumerator / (double)RefreshDenominator;
 
-    public string DisplayLabel =>
-        string.IsNullOrWhiteSpace(FriendlyName) ? $"Display {Ordinal}" : FriendlyName;
-
-    public string ResolutionText => $"{PixelWidth} × {PixelHeight}";
-
-    public string RefreshText => $"{RefreshHz:0.#} Hz";
+    public string PositionText => $"({PositionX}, {PositionY})";
 
     public string RotationText => Rotation switch
     {
-        1 => "Landscape",
         2 => "Portrait",
         3 => "Landscape (flipped)",
         4 => "Portrait (flipped)",
-        _ => Rotation.ToString()
-    };
-
-    public string PositionText => $"({PositionX}, {PositionY})";
-
-    public DisplayMonitor WithPosition(int x, int y) => this with { PositionX = x, PositionY = y };
-
-    public DisplayMonitor WithMode(
-        uint width,
-        uint height,
-        uint refreshNumerator,
-        uint refreshDenominator,
-        uint rotation) => this with
-    {
-        PixelWidth = width,
-        PixelHeight = height,
-        RefreshNumerator = refreshNumerator,
-        RefreshDenominator = refreshDenominator,
-        Rotation = rotation
+        _ => "Landscape"
     };
 
     public string TileAutomationName(bool selected, bool staged)
     {
-        var selection = selected ? "selected" : "not selected";
-        var arrangement = staged ? "arrangement staged" : "arrangement not staged";
-        return $"{DisplayLabel}, display {Ordinal}, {ResolutionText}, {selection}, {arrangement}";
+        var name = FriendlyName.Trim();
+        var text = string.IsNullOrEmpty(name)
+            ? $"Display {Ordinal}, {ResolutionText}, {PositionText}"
+            : $"Display {Ordinal}, {name}, {ResolutionText}, {PositionText}";
+        if (selected)
+            text += ", selected";
+        if (staged)
+            text += ", staged";
+        return text;
     }
+
+    public string DisplayLabel
+    {
+        get
+        {
+            var candidate = FriendlyName.Trim();
+            if (candidate.Length > 0 && !candidate.StartsWith(@"\\.\", StringComparison.Ordinal))
+                return candidate;
+            return $"Display {Ordinal}";
+        }
+    }
+
+    public DisplayMonitor WithPosition(int x, int y) => this with { PositionX = x, PositionY = y };
+
+    public DisplayMonitor WithMode(uint width, uint height, uint refreshNumerator, uint refreshDenominator, uint rotation) =>
+        this with
+        {
+            PixelWidth = width,
+            PixelHeight = height,
+            RefreshNumerator = refreshNumerator,
+            RefreshDenominator = refreshDenominator,
+            Rotation = rotation
+        };
 }
 
-public sealed class DisplaySnapshot
+public sealed record DisplaySnapshot(IReadOnlyList<DisplayMonitor> Monitors)
 {
     public static DisplaySnapshot Empty { get; } = new(Array.Empty<DisplayMonitor>());
-
-    public DisplaySnapshot(IEnumerable<DisplayMonitor> monitors)
-    {
-        ArgumentNullException.ThrowIfNull(monitors);
-        Monitors = monitors.ToArray();
-    }
-
-    public IReadOnlyList<DisplayMonitor> Monitors { get; }
 
     public int MinX => Monitors.Count == 0 ? 0 : Monitors.Min(monitor => monitor.PositionX);
 
     public int MinY => Monitors.Count == 0 ? 0 : Monitors.Min(monitor => monitor.PositionY);
 
-    public int Width => Monitors.Count == 0
-        ? 0
-        : Monitors.Max(monitor => monitor.PositionX + (int)monitor.PixelWidth) - MinX;
+    public int MaxX => Monitors.Count == 0 ? 0 : Monitors.Max(monitor => monitor.PositionX + (int)monitor.PixelWidth);
 
-    public int Height => Monitors.Count == 0
-        ? 0
-        : Monitors.Max(monitor => monitor.PositionY + (int)monitor.PixelHeight) - MinY;
+    public int MaxY => Monitors.Count == 0 ? 0 : Monitors.Max(monitor => monitor.PositionY + (int)monitor.PixelHeight);
+
+    public int Width => MaxX - MinX;
+
+    public int Height => MaxY - MinY;
 }
 
 public sealed record DisplayGraphicsMode(
@@ -114,20 +117,18 @@ public sealed record DisplayGraphicsMode(
     public string ResolutionKey => $"{Width}x{Height}";
 }
 
-public sealed record DisplayResolutionOption(
-    uint Width,
-    uint Height,
-    bool IsRecommended,
-    IReadOnlyList<uint> RefreshRates)
+public sealed record DisplayResolutionOption(uint Width, uint Height, bool IsRecommended, IReadOnlyList<uint> RefreshRates)
 {
-    public string Label => IsRecommended ? $"{Width} × {Height} (Recommended)" : $"{Width} × {Height}";
+    public string Label => IsRecommended
+        ? $"{Width} × {Height} (Recommended)"
+        : $"{Width} × {Height}";
 }
 
 public sealed record DisplayRefreshOption(uint RefreshHz, bool ChangesResolution, string ResolutionKey)
 {
     public string Label => ChangesResolution
-        ? $"{RefreshHz:0.#} Hz ({ResolutionKey})"
-        : $"{RefreshHz:0.#} Hz";
+        ? $"{RefreshHz} Hz (also changes resolution)"
+        : $"{RefreshHz} Hz";
 }
 
 public sealed record DisplayOrientationOption(uint CcdRotation, string Label);
@@ -137,15 +138,18 @@ public sealed record DisplayPickedMode(
     DisplayRefreshOption? Refresh,
     DisplayOrientationOption? Orientation)
 {
-    public static DisplayPickedMode Empty { get; } = new(null, null, null);
+    public static readonly DisplayPickedMode Empty = new(null, null, null);
 }
 
 public sealed record DisplayPendingChange(
     string MonitorKey,
-    string FriendlyName,
+    string MonitorName,
     string Setting,
-    string From,
-    string To);
+    string FromValue,
+    string ToValue)
+{
+    public string Summary => $"{MonitorName} · {Setting}: {FromValue} → {ToValue}";
+}
 
 public sealed record DisplayApplyPlan(
     IReadOnlyList<DisplayMonitor> TargetMonitors,

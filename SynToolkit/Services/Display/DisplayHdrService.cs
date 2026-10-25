@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SynToolkit.Services.Display;
@@ -31,6 +32,10 @@ public sealed record DisplayHdrState(
 
 public sealed record DisplayHdrRead(bool Success, DisplayHdrState? State, int ReturnCode);
 
+internal sealed record DisplayHdrTarget(
+    DisplayNative.DisplayConfigPathTargetInfo Target,
+    string MonitorPath);
+
 public sealed record DisplayHdrResult(
     bool Success,
     string Message,
@@ -40,11 +45,16 @@ public sealed record DisplayHdrResult(
 
 public static class DisplayHdrService
 {
+    internal const int VerifyAttempts = 12;
+    internal const int VerifyDelayMs = 250;
+
     public static string StagedConflictMessage() =>
         "Apply or cancel the staged arrangement first. HDR cannot change while an arrangement is waiting to be applied.";
 
     public static string ReadFailureMessage() =>
         "Couldn't read the HDR state. Nothing changed.";
+
+    public const string AlreadyActiveMessage = "That HDR setting is already active. Nothing changed.";
 
     public static string ApplyReadFailureMessage(bool confirmedApplied) => confirmedApplied
         ? "The HDR change was applied, but the follow-up check failed. Keep it or revert it below."
@@ -84,17 +94,27 @@ public static class DisplayHdrService
 
     internal static DisplayHdrRead ReadStateFor(string gdiDeviceName)
     {
-        if (!DisplayService.TryGetSourceForMonitor(gdiDeviceName, out var source))
+        if (!TryGetTargetForMonitor(gdiDeviceName, out var target))
             return new DisplayHdrRead(false, null, -1);
 
-        return ReadState(source);
+        return ReadState(target);
     }
 
-    internal static DisplayHdrRead ReadState(DisplayNative.DisplayConfigPathSourceInfo source) =>
+    internal static bool TryGetTargetForMonitor(string gdiDeviceName, out DisplayHdrTarget target)
+    {
+        target = default!;
+        if (!DisplayService.TryGetTargetForMonitor(gdiDeviceName, out var targetInfo, out var monitorPath))
+            return false;
+
+        target = new DisplayHdrTarget(targetInfo, monitorPath);
+        return true;
+    }
+
+    internal static DisplayHdrRead ReadState(DisplayHdrTarget target) =>
         ReadStateWith(
-            () => ReadAdvancedColorInfo2(source),
-            () => ReadAdvancedColorInfo(source),
-            () => ReadEdidSupport(source));
+            () => ReadAdvancedColorInfo2(target.Target),
+            () => ReadAdvancedColorInfo(target.Target),
+            () => ReadEdidSupport(target.MonitorPath));
 
     internal static DisplayHdrRead ReadStateWith(
         Func<DisplayHdrRead> readHdrInfo,
@@ -113,7 +133,7 @@ public static class DisplayHdrService
         if (!read.Success || state is null)
             return read;
 
-        if (state.Supported)
+        if (state.Supported || state.WideColorEnforced)
             return read;
 
         return edidSupportsHdr()
@@ -122,20 +142,24 @@ public static class DisplayHdrService
     }
 
     internal static Task<DisplayHdrResult> SetEnabledAsync(
-        DisplayNative.DisplayConfigPathSourceInfo source,
+        DisplayHdrTarget target,
         bool requestedState,
         bool previousState) =>
         Task.Run(() => ExecuteHdrChange(
             requestedState,
             previousState,
-            () => ReadState(source),
-            enable => WriteEnabled(source, enable)));
+            () => ReadState(target),
+            enable => WriteEnabled(target, enable),
+            VerifyAttempts,
+            VerifyDelayMs));
 
     internal static DisplayHdrResult ExecuteHdrChange(
         bool requestedState,
         bool previousState,
         Func<DisplayHdrRead> read,
-        Func<bool, int> write)
+        Func<bool, int> write,
+        int verifyAttempts = 1,
+        int verifyDelayMs = 0)
     {
         ArgumentNullException.ThrowIfNull(read);
         ArgumentNullException.ThrowIfNull(write);
@@ -148,7 +172,7 @@ public static class DisplayHdrService
             return new DisplayHdrResult(false, "This display doesn't support HDR. Nothing changed.", before.ReturnCode, 0, 0);
 
         if (before.State.Enabled == requestedState)
-            return new DisplayHdrResult(true, "That HDR setting is already active. Nothing changed.", 0, 0, 0);
+            return new DisplayHdrResult(true, AlreadyActiveMessage, 0, 0, 0);
 
         if (before.State.ForceDisabled && requestedState)
             return new DisplayHdrResult(false, "HDR is turned off by system policy on this display, so it can't be changed here. Nothing changed.", before.ReturnCode, 0, 0);
@@ -157,14 +181,14 @@ public static class DisplayHdrService
         if (setRc != DisplayNative.ErrorSuccess)
             return new DisplayHdrResult(false, "Couldn't change HDR. No further change was attempted.", 0, setRc, 0);
 
-        var verify = read();
+        var verify = ReadUntilEnabled(read, requestedState, verifyAttempts, verifyDelayMs);
         if (verify.Success && verify.State is not null && verify.State.Enabled == requestedState)
             return new DisplayHdrResult(true, requestedState ? "HDR turned on." : "HDR turned off.", 0, 0, 0);
 
         var seen = verify.Success && verify.State is not null ? verify.State.Enabled : (bool?)null;
         var verifyRc = verify.Success ? 0 : verify.ReturnCode;
         write(previousState);
-        var reverify = read();
+        var reverify = ReadUntilEnabled(read, previousState, verifyAttempts, verifyDelayMs);
         var reverifyRc = reverify.Success ? 0 : reverify.ReturnCode;
         var restored = reverify.Success && reverify.State is not null && reverify.State.Enabled == previousState;
         var tail = restored
@@ -176,10 +200,32 @@ public static class DisplayHdrService
         return new DisplayHdrResult(false, $"{detail} {tail}", 0, 0, verifyRc != 0 ? verifyRc : reverifyRc);
     }
 
-    internal static int WriteEnabled(DisplayNative.DisplayConfigPathSourceInfo source, bool enable) =>
+    internal static DisplayHdrRead ReadUntilEnabled(
+        Func<DisplayHdrRead> read,
+        bool expected,
+        int attempts,
+        int delayMs)
+    {
+        ArgumentNullException.ThrowIfNull(read);
+
+        var last = read();
+        for (var i = 1; i < attempts; i++)
+        {
+            if (last.Success && last.State is not null && last.State.Enabled == expected)
+                break;
+
+            if (delayMs > 0)
+                Thread.Sleep(delayMs);
+            last = read();
+        }
+
+        return last;
+    }
+
+    internal static int WriteEnabled(DisplayHdrTarget target, bool enable) =>
         WriteEnabledWith(
-            () => WriteHdrState(source, enable),
-            () => WriteAdvancedColorState(source, enable));
+            () => WriteHdrState(target, enable),
+            () => WriteAdvancedColorState(target, enable));
 
     internal static int WriteEnabledWith(Func<int> writeHdrState, Func<int> writeAdvancedColorState)
     {
@@ -190,49 +236,49 @@ public static class DisplayHdrService
         return hdrRc == DisplayNative.ErrorSuccess ? hdrRc : writeAdvancedColorState();
     }
 
-    internal static int WriteHdrState(DisplayNative.DisplayConfigPathSourceInfo source, bool enable)
+    internal static int WriteHdrState(DisplayHdrTarget target, bool enable)
     {
-        var packet = CreateHdrSetPacket(source, enable);
+        var packet = CreateHdrSetPacket(target, enable);
         return DisplayNative.DisplayConfigSetDeviceInfo(ref packet);
     }
 
-    internal static int WriteAdvancedColorState(DisplayNative.DisplayConfigPathSourceInfo source, bool enable)
+    internal static int WriteAdvancedColorState(DisplayHdrTarget target, bool enable)
     {
-        var packet = CreateSetPacket(source, enable);
+        var packet = CreateSetPacket(target, enable);
         return DisplayNative.DisplayConfigSetDeviceInfo(ref packet);
     }
 
     internal static DisplayNative.DisplayConfigSetHdrState CreateHdrSetPacket(
-        DisplayNative.DisplayConfigPathSourceInfo source, bool enable) => new()
+        DisplayHdrTarget target, bool enable) => new()
     {
         Header = DisplayNative.CreateHeader(
             DisplayNative.DeviceInfoSetHdrState,
             DisplayNative.SizeOf<DisplayNative.DisplayConfigSetHdrState>(),
-            source.AdapterId,
-            source.Id),
+            target.Target.AdapterId,
+            target.Target.Id),
         Value = enable ? 1u : 0u
     };
 
     internal static DisplayNative.DisplayConfigSetAdvancedColorState CreateSetPacket(
-        DisplayNative.DisplayConfigPathSourceInfo source, bool enable) => new()
+        DisplayHdrTarget target, bool enable) => new()
     {
         Header = DisplayNative.CreateHeader(
             DisplayNative.DeviceInfoSetAdvancedColorState,
             DisplayNative.SizeOf<DisplayNative.DisplayConfigSetAdvancedColorState>(),
-            source.AdapterId,
-            source.Id),
+            target.Target.AdapterId,
+            target.Target.Id),
         Value = enable ? 1u : 0u
     };
 
-    private static DisplayHdrRead ReadAdvancedColorInfo2(DisplayNative.DisplayConfigPathSourceInfo source)
+    private static DisplayHdrRead ReadAdvancedColorInfo2(DisplayNative.DisplayConfigPathTargetInfo target)
     {
         var packet = new DisplayNative.DisplayConfigGetAdvancedColorInfo2
         {
             Header = DisplayNative.CreateHeader(
                 DisplayNative.DeviceInfoGetAdvancedColorInfo2,
                 DisplayNative.SizeOf<DisplayNative.DisplayConfigGetAdvancedColorInfo2>(),
-                source.AdapterId,
-                source.Id)
+                target.AdapterId,
+                target.Id)
         };
         var rc = DisplayNative.DisplayConfigGetDeviceInfo(ref packet);
         if (rc != DisplayNative.ErrorSuccess)
@@ -241,15 +287,15 @@ public static class DisplayHdrService
         return new DisplayHdrRead(true, DisplayHdrState.DecodeHdr(packet.Value, packet.ActiveColorMode), 0);
     }
 
-    private static DisplayHdrRead ReadAdvancedColorInfo(DisplayNative.DisplayConfigPathSourceInfo source)
+    private static DisplayHdrRead ReadAdvancedColorInfo(DisplayNative.DisplayConfigPathTargetInfo target)
     {
         var packet = new DisplayNative.DisplayConfigGetAdvancedColorInfo
         {
             Header = DisplayNative.CreateHeader(
                 DisplayNative.DeviceInfoGetAdvancedColorInfo,
                 DisplayNative.SizeOf<DisplayNative.DisplayConfigGetAdvancedColorInfo>(),
-                source.AdapterId,
-                source.Id)
+                target.AdapterId,
+                target.Id)
         };
         var rc = DisplayNative.DisplayConfigGetDeviceInfo(ref packet);
         if (rc != DisplayNative.ErrorSuccess)
@@ -258,11 +304,11 @@ public static class DisplayHdrService
         return new DisplayHdrRead(true, DisplayHdrState.Decode(packet.Value), 0);
     }
 
-    private static bool ReadEdidSupport(DisplayNative.DisplayConfigPathSourceInfo source)
+    private static bool ReadEdidSupport(string monitorPath)
     {
         try
         {
-            return DisplayHdrCapabilityService.IsHdrSupportedByEdid(DisplayService.ReadMonitorDevicePath(source));
+            return DisplayHdrCapabilityService.IsHdrSupportedByEdid(monitorPath);
         }
         catch (Exception)
         {

@@ -2,9 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using SynToolkit.Models.Display;
 
@@ -12,35 +11,9 @@ namespace SynToolkit.Services.Display;
 
 public sealed record DisplayRevertFaultOutcome(string Message, bool HasRevertFailed);
 
-public sealed record DisplayExportMonitor(
-    int Ordinal,
-    string GdiDeviceName,
-    string FriendlyName,
-    uint PixelWidth,
-    uint PixelHeight,
-    uint RefreshNumerator,
-    uint RefreshDenominator,
-    uint Rotation,
-    int PositionX,
-    int PositionY,
-    bool IsPrimary,
-    int ScalePercent);
-
-public sealed record DisplayExportRecord(string? Outcome, DisplayExportMonitor[]? Monitors);
 
 public static class DisplayApplyService
 {
-    internal const string ExportOutcomePending = "pending";
-    internal const string ExportOutcomeKept = "kept";
-    internal const string ExportOutcomeReverted = "reverted";
-    internal const string ExportOutcomeFailed = "failed";
-    internal const string ExportOutcomeAbandoned = "abandoned";
-
-    internal static string ExportDirectoryPath => ExportDirectory;
-    private static readonly string ExportDirectory = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-        "SynToolkit",
-        "Exports");
 
     public static Task<DisplayApplyResult> ValidateAsync(DisplayApplyPlan plan) =>
         Task.Run(() => ApplyInternal(plan, persist: false, validateOnly: true));
@@ -298,76 +271,49 @@ public static class DisplayApplyService
                 orientation.CcdRotation));
     }
 
+    internal static bool ModeDiffers(DisplayMonitor live, DisplayMonitor target)
+    {
+        ArgumentNullException.ThrowIfNull(live);
+        ArgumentNullException.ThrowIfNull(target);
+
+        return live.PixelWidth != target.PixelWidth ||
+            live.PixelHeight != target.PixelHeight ||
+            live.Rotation != target.Rotation ||
+            !DisplayModeCatalog.SameRefreshRate(live.RefreshHz, target.RefreshHz);
+    }
+
+    private static bool WaitForMode(DisplayMonitor target, int attempts = 10, int delayMs = 100)
+    {
+        for (var attempt = 0; attempt < attempts; attempt++)
+        {
+            var snapshot = DisplayService.Load();
+            var current = snapshot.Monitors.FirstOrDefault(monitor =>
+                string.Equals(monitor.GdiDeviceName, target.GdiDeviceName, StringComparison.OrdinalIgnoreCase));
+            if (current is not null && !ModeDiffers(current, target))
+                return true;
+
+            if (attempt + 1 < attempts)
+                Thread.Sleep(delayMs);
+        }
+
+        return false;
+    }
+
     public static uint BuildFlags(bool validateOnly, bool persist)
     {
         if (validateOnly)
             return DisplayNative.SdcValidate | DisplayNative.SdcUseSuppliedDisplayConfig | DisplayNative.SdcAllowChanges;
 
-        var flags = DisplayNative.SdcApply | DisplayNative.SdcUseSuppliedDisplayConfig | DisplayNative.SdcAllowChanges;
+        var flags = DisplayNative.SdcApply | DisplayNative.SdcUseSuppliedDisplayConfig;
         if (persist)
             flags |= DisplayNative.SdcSaveToDatabase;
 
         return flags;
     }
 
-    public static string NextAvailableExportPath(string directory, DateTime timestamp)
-    {
-        var candidate = Path.Combine(directory, $"display-{timestamp:yyyyMMdd-HHmmss-fff}.json");
-        for (var attempt = 2; File.Exists(candidate); attempt++)
-            candidate = Path.Combine(directory, $"display-{timestamp:yyyyMMdd-HHmmss-fff}-{attempt}.json");
-        return candidate;
-    }
 
-    public static string ExportSnapshot(DisplaySnapshot snapshot)
-    {
-        ArgumentNullException.ThrowIfNull(snapshot);
-        return ExportSnapshotTo(ExportDirectory, snapshot);
-    }
 
-    internal static string ExportSnapshotTo(string directory, DisplaySnapshot snapshot)
-    {
-        ArgumentNullException.ThrowIfNull(snapshot);
-        Directory.CreateDirectory(directory);
-        var path = NextAvailableExportPath(directory, DateTime.Now);
-        var payload = new DisplayExportRecord(
-            ExportOutcomePending,
-            snapshot.Monitors.Select(monitor => new DisplayExportMonitor(
-                monitor.Ordinal,
-                monitor.GdiDeviceName,
-                monitor.FriendlyName,
-                monitor.PixelWidth,
-                monitor.PixelHeight,
-                monitor.RefreshNumerator,
-                monitor.RefreshDenominator,
-                monitor.Rotation,
-                monitor.PositionX,
-                monitor.PositionY,
-                monitor.IsPrimary,
-                monitor.ScalePercent)).ToArray());
-        File.WriteAllText(path, JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true }));
-        return path;
-    }
 
-    internal static bool TryStampExportOutcome(string path, string outcome)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(File.ReadAllText(path));
-            if (document.RootElement.ValueKind != JsonValueKind.Object)
-                return false;
-
-            if (!document.RootElement.TryGetProperty("Monitors", out var monitorsElement) ||
-                monitorsElement.ValueKind != JsonValueKind.Array)
-                return false;
-
-            File.WriteAllText(path, $"{{\"Outcome\":{JsonSerializer.Serialize(outcome)},\"Monitors\":{monitorsElement.GetRawText()}}}");
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
 
     public static string ValidateFailureMessage(string displayText, string modeText) =>
         $"That mode didn't validate ({displayText}, {modeText}). Nothing changed. Re-apply from the pickers to try again; if it repeats, that mode isn't reachable on this machine right now.";
@@ -377,6 +323,13 @@ public static class DisplayApplyService
 
     public static string PreviewFailureMessage(string previewDisplayText) =>
         $"Couldn't preview that mode ({previewDisplayText}). Nothing on screen changed. Your settings are as they were. Try again or pick another mode.";
+
+    public static string ModeUnavailableMessage(DisplayMonitor target) =>
+        $"{target.DisplayLabel} doesn't offer {target.PixelWidth} × {target.PixelHeight} at {target.RefreshHz:0.###} Hz. Nothing changed.";
+
+    public static string ModeChangeFailureMessage(DisplayMonitor target, int code) => code == DisplayNative.DispChangeRestart
+        ? "That mode can't be used in this session. Nothing changed."
+        : $"Couldn't set {target.DisplayLabel} to {target.PixelWidth} × {target.PixelHeight} at {target.RefreshHz:0.###} Hz. Windows returned code {code}. Nothing changed.";
 
     public static string ValidationSuccessMessage() =>
         "Configuration validated.";
@@ -465,6 +418,45 @@ public static class DisplayApplyService
                 return new DisplayApplyResult(false, incoherent, null);
         }
 
+        var live = DisplayService.Load();
+        var modeTargets = plan.TargetMonitors
+            .Where(target =>
+            {
+                var current = live.Monitors.FirstOrDefault(monitor =>
+                    string.Equals(monitor.GdiDeviceName, target.GdiDeviceName, StringComparison.OrdinalIgnoreCase));
+                return current is not null && ModeDiffers(current, target);
+            })
+            .ToArray();
+
+        foreach (var target in modeTargets)
+        {
+            if (!DisplayService.TryGetModeDevMode(
+                    target.GdiDeviceName,
+                    target.PixelWidth,
+                    target.PixelHeight,
+                    target.RefreshHz,
+                    target.Rotation,
+                    out var mode))
+                return new DisplayApplyResult(false, ModeUnavailableMessage(target), null);
+
+            var modeFlags = validateOnly ? DisplayNative.CdsTest : 0u;
+            var modeResult = DisplayNative.ChangeDisplaySettingsEx(
+                target.GdiDeviceName,
+                ref mode,
+                IntPtr.Zero,
+                modeFlags,
+                IntPtr.Zero);
+
+            if (modeResult != DisplayNative.DispChangeSuccessful)
+                return new DisplayApplyResult(false, ModeChangeFailureMessage(target, modeResult), null);
+
+            if (!validateOnly && !WaitForMode(target))
+                return new DisplayApplyResult(false, ModeChangeFailureMessage(target, -1), null);
+        }
+
+        if (!validateOnly)
+            return ApplyPositionsInternal(plan.TargetMonitors, persist);
+
         var (paths, modes) = DisplayService.QueryActivePaths();
         if (paths.Length == 0)
             return new DisplayApplyResult(false, NoActivePathsMessage(), null);
@@ -505,44 +497,22 @@ public static class DisplayApplyService
                 return new DisplayApplyResult(false, InactivePathMessage(target.DisplayLabel), null);
         }
 
-        var flags = BuildFlags(validateOnly, persist);
-
         var result = DisplayNative.SetDisplayConfig(
             (uint)paths.Length,
             paths,
             (uint)modes.Length,
             modes,
-            flags);
+            BuildFlags(validateOnly: true, persist: false));
 
         if (result != DisplayNative.ErrorSuccess)
         {
-            if (validateOnly)
-            {
-                var displayText = string.Join(", ", plan.TargetMonitors.Select(target => target.DisplayLabel));
-                var modeText = string.Join(", ", plan.TargetMonitors.Select(target =>
-                    $"{target.PixelWidth} × {target.PixelHeight}@{target.RefreshHz:0.#} Hz"));
-                return new DisplayApplyResult(false, ValidateFailureMessage(displayText, modeText), null);
-            }
-
-            if (persist)
-                return new DisplayApplyResult(false, PersistFailureMessage(), null);
-
-            var previewDisplayText = string.Join(", ", plan.TargetMonitors.Select(target => target.DisplayLabel));
-            return new DisplayApplyResult(false, PreviewFailureMessage(previewDisplayText), null);
+            var displayText = string.Join(", ", plan.TargetMonitors.Select(target => target.DisplayLabel));
+            var modeText = string.Join(", ", plan.TargetMonitors.Select(target =>
+                $"{target.PixelWidth} × {target.PixelHeight}@{target.RefreshHz:0.#} Hz"));
+            return new DisplayApplyResult(false, ValidateFailureMessage(displayText, modeText), null);
         }
 
-        if (validateOnly)
-            return new DisplayApplyResult(true, ValidationSuccessMessage(), null);
-
-        var readBack = DisplayService.Load();
-        if (!PositionsMatch(plan, readBack))
-        {
-            var realigned = ApplyPositionsInternal(plan.TargetMonitors, persist);
-            if (realigned.Success && realigned.ReadBack is not null)
-                readBack = realigned.ReadBack;
-        }
-
-        return new DisplayApplyResult(true, ApplySuccessMessage(persist), readBack);
+        return new DisplayApplyResult(true, ValidationSuccessMessage(), null);
     }
 
     private static DisplayApplyResult ApplyPositionsInternal(IReadOnlyList<DisplayMonitor> targets, bool persist)

@@ -2,9 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using SynToolkit.Models.Display;
 
 namespace SynToolkit.Services.Display;
@@ -37,299 +35,7 @@ public enum ScaleApplyRecovery
     Unconfirmed
 }
 
-public static class DisplayReentrancyTrail
-{
-    private static readonly object _gate = new();
-    private static readonly object _fileGate = new();
-    private static readonly List<string> _trail = new();
-    private const int MaxTrailEntries = 32;
-    private static int _peakDepth;
-    private static string _peakPath = string.Empty;
-    internal static readonly string DefaultPeakFilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-        "SynToolkit",
-        "Exports",
-        "display-reentrancy-peak.log");
-    internal static string PeakFilePath = DefaultPeakFilePath;
-    internal static int PeakFileByteCap = 262144;
-    internal static int PeakFilePairByteCap = 524288;
-    private static bool _peakFileDisabled;
 
-    internal static string ReservePeakFilePath(string path) => path + ".prev";
-
-    public static int PeakDepth
-    {
-        get
-        {
-            try { lock (_gate) { return _peakDepth; } }
-            catch { return 0; }
-        }
-    }
-
-    public static string PeakPath
-    {
-        get
-        {
-            try { lock (_gate) { return _peakPath; } }
-            catch { return string.Empty; }
-        }
-    }
-
-    public static DisplayReentrancyScope Track(string step)
-    {
-        Enter(step);
-        return default;
-    }
-
-    public static void Reset()
-    {
-        try
-        {
-            lock (_gate)
-            {
-                _trail.Clear();
-                _peakDepth = 0;
-                _peakPath = string.Empty;
-                _peakFileDisabled = false;
-            }
-        }
-        catch { }
-    }
-
-    public static void Enter(string step)
-    {
-        string? line = null;
-        try
-        {
-            lock (_gate)
-            {
-                if (_trail.Count >= MaxTrailEntries)
-                    return;
-
-                _trail.Add(string.IsNullOrEmpty(step) ? "?" : step);
-                if (_trail.Count > _peakDepth)
-                {
-                    _peakDepth = _trail.Count;
-                    _peakPath = string.Join(" > ", _trail);
-                    line = DateTime.UtcNow.ToString("O") + " depth=" + _peakDepth + " " + _peakPath;
-                }
-            }
-        }
-        catch { return; }
-        if (line is not null)
-            AppendPeakLine(line);
-    }
-
-    private static void AppendPeakLine(string line)
-    {
-        try
-        {
-            lock (_fileGate)
-            {
-                string? path;
-                int cap;
-                lock (_gate)
-                {
-                    if (_peakFileDisabled)
-                        return;
-                    path = PeakFilePath;
-                    cap = PeakFileByteCap;
-                }
-                if (string.IsNullOrEmpty(path))
-                    return;
-                try
-                {
-                    var existing = new FileInfo(path);
-                    if (existing.Exists && existing.Length >= cap)
-                        RotatePeakFile(path);
-                }
-                catch
-                {
-                    DisablePeakFile();
-                    return;
-                }
-                try
-                {
-                    var directory = Path.GetDirectoryName(path);
-                    if (!string.IsNullOrEmpty(directory))
-                        Directory.CreateDirectory(directory);
-                }
-                catch
-                {
-                }
-                try
-                {
-                    var bytes = Encoding.UTF8.GetBytes(line + Environment.NewLine);
-                    using var stream = new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, FileOptions.WriteThrough);
-                    stream.Write(bytes, 0, bytes.Length);
-                    stream.Flush(true);
-                }
-                catch
-                {
-                    DisablePeakFile();
-                }
-            }
-        }
-        catch
-        {
-        }
-    }
-
-    private static void RotatePeakFile(string path)
-    {
-        var reserve = ReservePeakFilePath(path);
-        try
-        {
-            if (File.Exists(reserve))
-                File.Delete(reserve);
-        }
-        catch
-        {
-        }
-        File.Move(path, reserve);
-    }
-
-    public static void LogCanvasRefusal(DisplaySnapshot? live, DisplaySnapshot composed, bool hasStage, DisplayGeometryIssueKind kind)
-    {
-        string line;
-        try
-        {
-            line = DateTime.UtcNow.ToString("O")
-                + " canvas-refusal kind=" + kind
-                + " stage=" + (hasStage ? "present" : "absent")
-                + " composed=[" + DescribeTiles(composed) + "]"
-                + " live=[" + DescribeTiles(live) + "]";
-        }
-        catch
-        {
-            return;
-        }
-        AppendPeakLine(line);
-    }
-
-    public static void LogPickedMode(DisplayPickedMode? mode, DisplaySnapshot? staged = null)
-    {
-        string line;
-        try
-        {
-            if (mode is null)
-                return;
-            var resolution = mode.Resolution is null ? "?" : $"{mode.Resolution.Width}x{mode.Resolution.Height}";
-            var refresh = mode.Refresh is null ? "?" : $"{mode.Refresh.RefreshHz}Hz";
-            var orientation = mode.Orientation is null ? "?" : mode.Orientation.Label;
-            line = DateTime.UtcNow.ToString("O")
-                + " plan-build picked=[" + resolution + " @" + refresh + " " + orientation + "]"
-                + " stage=[" + DescribeTiles(staged) + "]";
-        }
-        catch
-        {
-            return;
-        }
-        AppendPeakLine(line);
-    }
-
-    public static void LogTargetSignalPair(DisplayApplyPlan? plan, DisplaySnapshot? readBack, uint flags)
-    {
-        string line;
-        try
-        {
-            if (plan is null || readBack is null)
-                return;
-            var (_, detail) = DisplayChainPolicy.DescribeMismatch(plan, readBack);
-            if (detail is null)
-                return;
-            line = DateTime.UtcNow.ToString("O")
-                + " target-signal-pair flags=" + flags
-                + " requested=[" + DescribeSignalMonitors(plan.TargetMonitors) + "]"
-                + " readback=[" + DescribeSignalMonitors(readBack.Monitors) + "]";
-        }
-        catch
-        {
-            return;
-        }
-        AppendPeakLine(line);
-    }
-
-    private static string DescribeSignalMonitors(IReadOnlyList<DisplayMonitor> monitors)
-    {
-        try
-        {
-            var parts = new List<string>(monitors.Count);
-            foreach (var monitor in monitors)
-                parts.Add(DescribeSignalMonitor(monitor));
-            return string.Join("; ", parts);
-        }
-        catch
-        {
-            return "?";
-        }
-    }
-
-    private static string DescribeSignalMonitor(DisplayMonitor monitor)
-    {
-        return "Display " + monitor.Ordinal
-            + " " + monitor.PixelWidth + "x" + monitor.PixelHeight
-            + " rot=" + monitor.Rotation
-            + " active=" + monitor.TargetActiveWidth + "x" + monitor.TargetActiveHeight
-            + " total=" + monitor.TargetTotalWidth + "x" + monitor.TargetTotalHeight
-            + " pixelrate=" + monitor.TargetPixelRate
-            + " hsync=" + monitor.TargetHSyncNumerator + "/" + monitor.TargetHSyncDenominator
-            + " vsync=" + monitor.TargetVSyncNumerator + "/" + monitor.TargetVSyncDenominator;
-    }
-
-    private static string DescribeTiles(DisplaySnapshot? snapshot)
-    {
-        try
-        {
-            if (snapshot is null)
-                return "?";
-            var parts = new List<string>(snapshot.Monitors.Count);
-            foreach (var monitor in snapshot.Monitors)
-                parts.Add("Display " + monitor.Ordinal + "@" + monitor.PositionX + "," + monitor.PositionY + " " + monitor.PixelWidth + "x" + monitor.PixelHeight);
-            return string.Join("; ", parts);
-        }
-        catch
-        {
-            return "?";
-        }
-    }
-
-    private static void DisablePeakFile()
-    {
-        try { lock (_gate) { _peakFileDisabled = true; } }
-        catch { }
-    }
-
-    public static void Exit()
-    {
-        try
-        {
-            lock (_gate)
-            {
-                if (_trail.Count > 0)
-                    _trail.RemoveAt(_trail.Count - 1);
-            }
-        }
-        catch { }
-    }
-
-    public static string DescribePeak()
-    {
-        try
-        {
-            lock (_gate)
-            {
-                return _peakDepth == 0 ? "none recorded" : $"deepest nesting {_peakDepth} ({_peakPath})";
-            }
-        }
-        catch { return string.Empty; }
-    }
-}
-
-public readonly struct DisplayReentrancyScope : IDisposable
-{
-    public void Dispose() => DisplayReentrancyTrail.Exit();
-}
 
 public enum DisplayNoticeKind
 {
@@ -377,7 +83,6 @@ public sealed class DisplayChainPolicy
 
     public DisplayApplyPlan? StageRestorePlan { get; private set; }
 
-    public bool ExportedThisChain { get; private set; }
 
     public DateTimeOffset DeadlineUtc { get; private set; }
 
@@ -412,7 +117,6 @@ public sealed class DisplayChainPolicy
             default:
                 ChainBaseline = chainBaselineIfNew;
                 RevertRetryBaseline = null;
-                ExportedThisChain = false;
                 _persistedThisChain = false;
                 StoredRemainingSeconds = CountdownSecondsTotal;
                 _coalescedPlan = null;
@@ -438,7 +142,6 @@ public sealed class DisplayChainPolicy
 
         ChainBaseline = chainBaselineIfNew;
         RevertRetryBaseline = null;
-        ExportedThisChain = false;
         _persistedThisChain = false;
         StoredRemainingSeconds = CountdownSecondsTotal;
         _coalescedPlan = null;
@@ -526,7 +229,6 @@ public sealed class DisplayChainPolicy
         return pending;
     }
 
-    public void MarkExported() => ExportedThisChain = true;
 
     public int SecondsRemaining(DateTimeOffset nowUtc)
     {
@@ -651,7 +353,6 @@ public sealed class DisplayChainPolicy
         var refusal = hasStage
             ? CanvasRefusalMessage(blocking[0].Kind)
             : CanvasPickerRefusalMessage(blocking[0].Kind);
-        DisplayReentrancyTrail.LogCanvasRefusal(baseline, composed, hasStage, blocking[0].Kind);
         return (lastValid ?? composed, refusal);
     }
 
@@ -1220,7 +921,7 @@ public sealed class DisplayChainPolicy
                 !DisplayModeCatalog.SameRefreshRate(actualVSyncHz, requestedVSyncHz) &&
                 actual.TargetVSyncNumerator > 0 && actual.TargetVSyncDenominator > 0 &&
                 target.TargetVSyncNumerator > 0 && target.TargetVSyncDenominator > 0)
-                details.Add($"{name} is showing vertical sync {actualVSyncHz:0.#} Hz instead of the requested {requestedVSyncHz:0.#} Hz");
+                details.Add($"{name} is showing vertical sync {actualVSyncHz:0.###} Hz instead of the requested {requestedVSyncHz:0.###} Hz");
         }
 
         if (missing is not null)

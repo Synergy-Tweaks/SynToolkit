@@ -129,6 +129,56 @@ public static class DisplayService
         return modes;
     }
 
+    internal static bool ModeMatches(
+        DisplayGraphicsMode mode,
+        uint width,
+        uint height,
+        uint rotation,
+        double refreshHz)
+    {
+        ArgumentNullException.ThrowIfNull(mode);
+
+        return mode.Width == width &&
+            mode.Height == height &&
+            mode.Orientation == rotation &&
+            DisplayModeCatalog.SameRefreshRate(mode.RefreshHz, refreshHz);
+    }
+
+    internal static bool TryGetModeDevMode(
+        string gdiDeviceName,
+        uint width,
+        uint height,
+        double refreshHz,
+        uint rotation,
+        out DisplayNative.DevModeW devMode)
+    {
+        devMode = default;
+        if (string.IsNullOrWhiteSpace(gdiDeviceName))
+            return false;
+
+        for (uint index = 0; ; index++)
+        {
+            var candidate = DisplayNative.CreateDevMode();
+            if (!DisplayNative.EnumDisplaySettingsEx(gdiDeviceName, index, ref candidate, DisplayNative.EdsRotatedMode))
+                break;
+
+            var mode = new DisplayGraphicsMode(
+                candidate.dmPelsWidth,
+                candidate.dmPelsHeight,
+                candidate.dmDisplayFrequency,
+                candidate.dmBitsPerPel,
+                DisplayNative.DmdoToCcdRotation(candidate.dmDisplayOrientation));
+
+            if (!ModeMatches(mode, width, height, rotation, refreshHz))
+                continue;
+
+            devMode = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
     internal static (DisplayNative.DisplayConfigPathInfo[] Paths, DisplayNative.DisplayConfigModeInfo[] Modes) QueryActivePaths() =>
         QueryPaths(DisplayNative.QdcOnlyActivePaths);
 
@@ -289,23 +339,31 @@ public static class DisplayService
         return false;
     }
 
-    internal static string ReadMonitorDevicePath(DisplayNative.DisplayConfigPathSourceInfo source)
+    internal static bool TryGetTargetForMonitor(
+        string gdiDeviceName,
+        out DisplayNative.DisplayConfigPathTargetInfo target,
+        out string monitorPath)
     {
+        target = default;
+        monitorPath = string.Empty;
+        if (string.IsNullOrWhiteSpace(gdiDeviceName))
+            return false;
+
         var (paths, _) = QueryActivePaths();
         foreach (var path in paths)
         {
             if ((path.Flags & DisplayNative.DisplayConfigPathActive) == 0)
                 continue;
 
-            if (path.SourceInfo.AdapterId.LowPart == source.AdapterId.LowPart &&
-                path.SourceInfo.AdapterId.HighPart == source.AdapterId.HighPart &&
-                path.SourceInfo.Id == source.Id)
+            if (string.Equals(ReadGdiDeviceName(path.SourceInfo), gdiDeviceName, StringComparison.OrdinalIgnoreCase))
             {
-                return ReadTargetName(path.TargetInfo).MonitorPath;
+                target = path.TargetInfo;
+                monitorPath = ReadTargetName(path.TargetInfo).MonitorPath;
+                return true;
             }
         }
 
-        return string.Empty;
+        return false;
     }
 
     internal static int ReadScalePercent(int positionX, int positionY, uint width, uint height)

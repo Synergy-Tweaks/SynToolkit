@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Diagnostics;
 using Microsoft.Win32;
 
 namespace SynToolkit.Services.Display;
@@ -57,8 +58,9 @@ internal static class DisplayHdrCapabilityService
                     return edid;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.WriteLine($"HDR capability read failed: {ex.Message}");
         }
 
         return null;

@@ -29,7 +29,7 @@ public static class DisplayModeCatalog
 
     public const double RefreshRateToleranceHz = 1.0;
 
-    private const double LiveLabelEpsilon = 1e-9;
+    private const double LiveLabelEpsilon = 0.02;
 
     public static uint RefreshLabel(double hz) =>
         hz <= 0 ? 0u : (uint)Math.Floor(hz + LiveLabelEpsilon);
