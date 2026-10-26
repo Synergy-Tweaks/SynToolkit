@@ -1,11 +1,12 @@
 #nullable enable
 
+using SynToolkit.Models.Display;
+using SynToolkit.Services.Display;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SynToolkit.Models.Display;
 
 namespace SynToolkit.Services.Display;
 
@@ -41,12 +42,12 @@ public static class DisplayApplyService
             live.VSyncFreq = refresh;
             var total = live.TotalSize;
             live.TotalSize = new DisplayNative.DisplayConfig2DRegion { Cx = total.Cy, Cy = total.Cx };
-            var quotient = (double)live.PixelRate / live.TotalSize.Cx;
-            if (quotient <= uint.MaxValue)
+            var quotient = live.TotalSize.Cx == 0 ? 0 : (double)live.PixelRate / live.TotalSize.Cx;
+            if (quotient > 0 && quotient <= uint.MaxValue)
                 live.HSyncFreq = new DisplayNative.DisplayConfigRational
                 {
                     Numerator = (uint)Math.Round(quotient, MidpointRounding.AwayFromZero),
-                    Denominator = live.HSyncFreq.Denominator
+                    Denominator = 1
                 };
 
             return live;
@@ -260,15 +261,25 @@ public static class DisplayApplyService
             refreshDenominator,
             monitor.RefreshNumerator,
             monitor.RefreshDenominator);
-        return WithTargetSignal(
-            working,
-            ComposeTargetSignal(
-                TargetSignalOf(monitor),
+        var signal = ComposeTargetSignal(
+            TargetSignalOf(monitor),
+            effectiveWidth,
+            effectiveHeight,
+            requestRefresh,
+            monitor.Rotation,
+            orientation.CcdRotation);
+        if (!DisplayModeCatalog.SamePanelShape(
+                monitor.TargetActiveWidth,
+                monitor.TargetActiveHeight,
                 effectiveWidth,
-                effectiveHeight,
-                requestRefresh,
-                monitor.Rotation,
-                orientation.CcdRotation));
+                effectiveHeight))
+        {
+            signal.TotalSize = new DisplayNative.DisplayConfig2DRegion();
+            signal.PixelRate = 0;
+            signal.HSyncFreq = new DisplayNative.DisplayConfigRational();
+            signal.VSyncFreq = new DisplayNative.DisplayConfigRational();
+        }
+        return WithTargetSignal(working, signal);
     }
 
     internal static bool ModeDiffers(DisplayMonitor live, DisplayMonitor target)
@@ -282,14 +293,14 @@ public static class DisplayApplyService
             !DisplayModeCatalog.SameRefreshRate(live.RefreshHz, target.RefreshHz);
     }
 
-    private static bool WaitForMode(DisplayMonitor target, int attempts = 10, int delayMs = 100)
+    private static bool WaitForMode(DisplayMonitor target, int attempts = 12, int delayMs = 250) =>
+        WaitForMode(target, attempts, delayMs, () => ReadTargetMonitor(target));
+
+    internal static bool WaitForMode(DisplayMonitor target, int attempts, int delayMs, Func<DisplayMonitor?> read)
     {
         for (var attempt = 0; attempt < attempts; attempt++)
         {
-            var snapshot = DisplayService.Load();
-            var current = snapshot.Monitors.FirstOrDefault(monitor =>
-                string.Equals(monitor.GdiDeviceName, target.GdiDeviceName, StringComparison.OrdinalIgnoreCase));
-            if (current is not null && !ModeDiffers(current, target))
+            if (ModeIsLive(read(), target))
                 return true;
 
             if (attempt + 1 < attempts)
@@ -297,6 +308,22 @@ public static class DisplayApplyService
         }
 
         return false;
+    }
+
+    internal static bool ModeIsLive(DisplayMonitor? live, DisplayMonitor target) =>
+        live is not null && !ModeDiffers(live, target);
+
+    private static DisplayMonitor? ReadTargetMonitor(DisplayMonitor target)
+    {
+        try
+        {
+            return DisplayService.Load().Monitors.FirstOrDefault(monitor =>
+                string.Equals(monitor.GdiDeviceName, target.GdiDeviceName, StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public static uint BuildFlags(bool validateOnly, bool persist)
@@ -327,9 +354,19 @@ public static class DisplayApplyService
     public static string ModeUnavailableMessage(DisplayMonitor target) =>
         $"{target.DisplayLabel} doesn't offer {target.PixelWidth} × {target.PixelHeight} at {target.RefreshHz:0.###} Hz. Nothing changed.";
 
-    public static string ModeChangeFailureMessage(DisplayMonitor target, int code) => code == DisplayNative.DispChangeRestart
-        ? "That mode can't be used in this session. Nothing changed."
-        : $"Couldn't set {target.DisplayLabel} to {target.PixelWidth} × {target.PixelHeight} at {target.RefreshHz:0.###} Hz. Windows returned code {code}. Nothing changed.";
+    public const int ModeWriteRetryDelayMs = 500;
+
+    public static bool ShouldRetryModeWrite(int resultCode, bool validateOnly) =>
+        !validateOnly && resultCode == DisplayNative.DispChangeFailed;
+
+    public static string ModeChangeResultMessage(DisplayMonitor target, int code, bool modeConfirmed) =>
+        code == DisplayNative.DispChangeRestart
+            ? "That mode can't be used in this session. Nothing changed."
+            : code == DisplayNative.DispChangeSuccessful
+                ? $"Windows reported success setting {target.DisplayLabel} to {target.PixelWidth} × {target.PixelHeight} at {target.RefreshHz:0.###} Hz, but the follow-up read never saw that mode. Try again, and check how the screen looks."
+                : modeConfirmed
+                    ? $"Windows returned code {code} while setting {target.DisplayLabel} to {target.PixelWidth} × {target.PixelHeight} at {target.RefreshHz:0.###} Hz, but the display now reports that mode. It applied anyway."
+                    : $"Couldn't set {target.DisplayLabel} to {target.PixelWidth} × {target.PixelHeight} at {target.RefreshHz:0.###} Hz. Windows returned code {code}. Nothing changed.";
 
     public static string ValidationSuccessMessage() =>
         "Configuration validated.";
@@ -447,11 +484,29 @@ public static class DisplayApplyService
                 modeFlags,
                 IntPtr.Zero);
 
-            if (modeResult != DisplayNative.DispChangeSuccessful)
-                return new DisplayApplyResult(false, ModeChangeFailureMessage(target, modeResult), null);
+            if (ShouldRetryModeWrite(modeResult, validateOnly))
+            {
+                Thread.Sleep(ModeWriteRetryDelayMs);
+                modeResult = DisplayNative.ChangeDisplaySettingsEx(
+                    target.GdiDeviceName,
+                    ref mode,
+                    IntPtr.Zero,
+                    modeFlags,
+                    IntPtr.Zero);
+            }
+
+            if (modeResult == DisplayNative.DispChangeRestart)
+                return new DisplayApplyResult(false, ModeChangeResultMessage(target, modeResult, false), null);
+
+            var confirmed = modeResult == DisplayNative.DispChangeSuccessful;
+            if (!confirmed && !validateOnly)
+                confirmed = WaitForMode(target);
+
+            if (!confirmed)
+                return new DisplayApplyResult(false, ModeChangeResultMessage(target, modeResult, false), null);
 
             if (!validateOnly && !WaitForMode(target))
-                return new DisplayApplyResult(false, ModeChangeFailureMessage(target, -1), null);
+                return new DisplayApplyResult(false, ModeChangeResultMessage(target, DisplayNative.DispChangeSuccessful, false), null);
         }
 
         if (!validateOnly)

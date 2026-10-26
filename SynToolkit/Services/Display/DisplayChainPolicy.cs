@@ -290,7 +290,24 @@ public sealed class DisplayChainPolicy
             return "This display is already your main display.";
 
         if (stagePending)
-            return "A main-display swap is already staged. Apply the staged arrangement to finish.";
+            return "A main-display change is already staged. Apply the staged arrangement to finish.";
+
+        return DisabledControlsMessage(isBusy, isApplying, isCountdown, isSettling);
+    }
+
+    public static bool AreModeControlsEnabled(bool isBusy, bool isApplying, bool isCountdown, bool isSettling, bool hasPendingArrangement) =>
+        !isBusy && !isApplying && !isCountdown && !isSettling && !hasPendingArrangement;
+
+    public static string StagedControlsDisabledMessage() =>
+        "Apply or cancel the staged arrangement first.";
+
+    public static string ModeControlsDisabledReason(bool isBusy, bool isApplying, bool isCountdown, bool isSettling, bool hasPendingArrangement)
+    {
+        if (isApplying || isCountdown || isSettling || isBusy)
+            return DisabledControlsMessage(isBusy, isApplying, isCountdown, isSettling);
+
+        if (hasPendingArrangement)
+            return StagedControlsDisabledMessage();
 
         return DisabledControlsMessage(isBusy, isApplying, isCountdown, isSettling);
     }
@@ -473,6 +490,8 @@ public sealed class DisplayChainPolicy
 
     public static bool ShouldRevertScale(bool scaleRevertArmed, bool hasRevertFailed, string? scaleMonitorKey) =>
         scaleRevertArmed || (hasRevertFailed && !string.IsNullOrWhiteSpace(scaleMonitorKey));
+
+    public static bool ShouldShowBannerForNotice(DisplayNoticeKind kind) => kind != DisplayNoticeKind.Staged;
 
     public static DisplayBannerSeverity SeverityForNotice(DisplayNoticeKind kind) => kind switch
     {
@@ -909,7 +928,7 @@ public sealed class DisplayChainPolicy
                 if (actual.TargetPixelRate != target.TargetPixelRate && actual.TargetPixelRate > 0 && target.TargetPixelRate > 0)
                     details.Add($"{name} is showing pixel rate {actual.TargetPixelRate} instead of the requested {target.TargetPixelRate}");
 
-                if ((actual.TargetHSyncNumerator != target.TargetHSyncNumerator || actual.TargetHSyncDenominator != target.TargetHSyncDenominator) &&
+                if (!SameHorizontalSync(actual, target) &&
                     actual.TargetHSyncNumerator > 0 && actual.TargetHSyncDenominator > 0 &&
                     target.TargetHSyncNumerator > 0 && target.TargetHSyncDenominator > 0)
                     details.Add($"{name} is showing horizontal sync {actual.TargetHSyncNumerator}/{actual.TargetHSyncDenominator} instead of the requested {target.TargetHSyncNumerator}/{target.TargetHSyncDenominator}");
@@ -953,6 +972,19 @@ public sealed class DisplayChainPolicy
 
     public static string MismatchAdjustmentMessage(string mismatchDetail) =>
         $"That change needed a small adjustment to apply ({mismatchDetail}). Keep it if it looks right, or let it revert.";
+
+    private const double HorizontalSyncToleranceHz = 1.0;
+
+    private static bool SameHorizontalSync(DisplayMonitor actual, DisplayMonitor target)
+    {
+        var actualHz = actual.TargetHSyncDenominator == 0
+            ? 0
+            : actual.TargetHSyncNumerator / (double)actual.TargetHSyncDenominator;
+        var requestedHz = target.TargetHSyncDenominator == 0
+            ? 0
+            : target.TargetHSyncNumerator / (double)target.TargetHSyncDenominator;
+        return Math.Abs(actualHz - requestedHz) <= HorizontalSyncToleranceHz;
+    }
 
     private static bool RequestAuthoredTimings(DisplayMonitor target)
     {
