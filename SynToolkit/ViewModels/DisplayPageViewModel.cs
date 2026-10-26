@@ -1,17 +1,17 @@
 #nullable enable
 
-using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Controls;
 using SynToolkit.Models.Display;
 using SynToolkit.Services.Display;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using DispatcherQueuePriority = Microsoft.UI.Dispatching.DispatcherQueuePriority;
 using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
@@ -191,6 +191,8 @@ public sealed partial class DisplayPageViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsStageActionsVisible))]
     [NotifyPropertyChangedFor(nameof(IsHdrToggleEnabled))]
     [NotifyPropertyChangedFor(nameof(HdrToggleTip))]
+    [NotifyPropertyChangedFor(nameof(AreModeControlsEnabled))]
+    [NotifyPropertyChangedFor(nameof(ModeControlsDisabledTip))]
     public partial bool IsBusy { get; set; }
 
     [ObservableProperty]
@@ -206,6 +208,8 @@ public sealed partial class DisplayPageViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(DiscardStagedCommand))]
     [NotifyPropertyChangedFor(nameof(IsHdrToggleEnabled))]
     [NotifyPropertyChangedFor(nameof(HdrToggleTip))]
+    [NotifyPropertyChangedFor(nameof(AreModeControlsEnabled))]
+    [NotifyPropertyChangedFor(nameof(ModeControlsDisabledTip))]
     public partial bool IsApplying { get; set; }
 
     [ObservableProperty]
@@ -268,6 +272,8 @@ public sealed partial class DisplayPageViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(DiscardStagedCommand))]
     [NotifyPropertyChangedFor(nameof(IsHdrToggleEnabled))]
     [NotifyPropertyChangedFor(nameof(HdrToggleTip))]
+    [NotifyPropertyChangedFor(nameof(AreModeControlsEnabled))]
+    [NotifyPropertyChangedFor(nameof(ModeControlsDisabledTip))]
     public partial bool IsCountdownActive { get; set; }
 
     [ObservableProperty]
@@ -277,6 +283,8 @@ public sealed partial class DisplayPageViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(RevertNowCommand))]
     [NotifyPropertyChangedFor(nameof(IsHdrToggleEnabled))]
     [NotifyPropertyChangedFor(nameof(HdrToggleTip))]
+    [NotifyPropertyChangedFor(nameof(AreModeControlsEnabled))]
+    [NotifyPropertyChangedFor(nameof(ModeControlsDisabledTip))]
     public partial bool HasRevertFailed { get; set; }
 
     public bool IsRevertAvailable => IsCountdownActive || HasRevertFailed;
@@ -300,6 +308,8 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             OnPropertyChanged(nameof(IsStageActionsVisible));
             OnPropertyChanged(nameof(IsHdrToggleEnabled));
             OnPropertyChanged(nameof(HdrToggleTip));
+            OnPropertyChanged(nameof(AreModeControlsEnabled));
+            OnPropertyChanged(nameof(ModeControlsDisabledTip));
             LoadCommand.NotifyCanExecuteChanged();
             KeepCommand.NotifyCanExecuteChanged();
             RevertNowCommand.NotifyCanExecuteChanged();
@@ -317,6 +327,12 @@ public sealed partial class DisplayPageViewModel : ObservableObject
     public string? DisabledControlsTip => AreControlsEnabled
         ? null
         : DisplayChainPolicy.DisabledControlsMessage(IsBusy, IsApplying, IsCountdownActive, IsSettling);
+
+    public bool AreModeControlsEnabled => DisplayChainPolicy.AreModeControlsEnabled(IsBusy, IsApplying, IsCountdownActive, IsSettling, HasPendingArrangement);
+
+    public string? ModeControlsDisabledTip => AreModeControlsEnabled
+        ? null
+        : DisplayChainPolicy.ModeControlsDisabledReason(IsBusy, IsApplying, IsCountdownActive, IsSettling, HasPendingArrangement);
 
     public string? MakePrimaryDisabledTip => IsMakePrimaryEnabled
         ? null
@@ -338,11 +354,11 @@ public sealed partial class DisplayPageViewModel : ObservableObject
     [ObservableProperty]
     public partial DisplayHdrState? HdrState { get; set; }
 
-    public bool IsHdrToggleEnabled => AreControlsEnabled && HdrState is { Supported: true, ForceDisabled: false };
+    public bool IsHdrToggleEnabled => AreModeControlsEnabled && HdrState is { Supported: true, ForceDisabled: false };
 
     public string? HdrToggleTip => IsHdrToggleEnabled
         ? null
-        : DisabledControlsTip ?? DisplayHdrService.ToggleDisabledReason(HdrState);
+        : ModeControlsDisabledTip ?? DisplayHdrService.ToggleDisabledReason(HdrState);
 
     partial void OnIsHdrOnChanged(bool value)
     {
@@ -504,7 +520,9 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         if (Snapshot is null)
             return DisplaySnapshot.Empty;
 
-        var swap = PrimarySwap();
+        var reanchored = _makePrimaryPending && SelectedMonitor is not null
+            ? DisplayArrangement.ReanchorToOrigin(Snapshot, SelectedMonitor.GdiDeviceName)
+            : null;
         var picked = SelectedMode;
         var monitors = Snapshot.Monitors.Select(monitor =>
         {
@@ -519,7 +537,7 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                 working = DisplayApplyService.ComposeSelectedMonitorMode(working, picked);
             }
 
-            if (picked is not null && swap is null && !_makePrimaryPending &&
+            if (picked is not null && !_makePrimaryPending &&
                 !PendingPositions.ContainsKey(monitor.GdiDeviceName) &&
                 displayKey is not null &&
                 string.Equals(monitor.GdiDeviceName, displayKey, StringComparison.OrdinalIgnoreCase) &&
@@ -531,16 +549,11 @@ public sealed partial class DisplayPageViewModel : ObservableObject
                 working = DisplayGeometry.KeepSharedEdge(monitor, working, neighbours.Monitors);
             }
 
-            if (swap is not null &&
-                string.Equals(monitor.GdiDeviceName, swap.Value.Key, StringComparison.OrdinalIgnoreCase))
+            if (reanchored is not null)
             {
-                working = working.WithPosition(swap.Value.X, swap.Value.Y);
-            }
-            else if (_makePrimaryPending &&
-                SelectedMonitor is not null &&
-                string.Equals(monitor.GdiDeviceName, SelectedMonitor.GdiDeviceName, StringComparison.OrdinalIgnoreCase))
-            {
-                working = working.WithPosition(0, 0);
+                var placed = reanchored.Monitors.First(candidate =>
+                    string.Equals(candidate.GdiDeviceName, working.GdiDeviceName, StringComparison.OrdinalIgnoreCase));
+                working = working.WithPosition(placed.PositionX, placed.PositionY);
             }
 
             return working;
@@ -564,24 +577,6 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         ShowStatus(refusal, DisplayNoticeKind.Refusal);
         Announce(refusal);
         return resolved;
-    }
-
-    private (string Key, int X, int Y)? PrimarySwap()
-    {
-        if (!_makePrimaryPending || Snapshot is null || SelectedMonitor is null)
-            return null;
-
-        var selectedKey = SelectedMonitor.GdiDeviceName;
-        var oldPrimary = Snapshot.Monitors.FirstOrDefault(monitor =>
-            monitor.IsPrimary &&
-            !string.Equals(monitor.GdiDeviceName, selectedKey, StringComparison.OrdinalIgnoreCase));
-        if (oldPrimary is null)
-            return null;
-
-        if (PendingPositions.TryGetValue(selectedKey, out var pending))
-            return (oldPrimary.GdiDeviceName, pending.X, pending.Y);
-
-        return (oldPrimary.GdiDeviceName, SelectedMonitor.PositionX, SelectedMonitor.PositionY);
     }
 
     public bool StageArrangement(DisplaySnapshot arrangement)
@@ -633,6 +628,8 @@ public sealed partial class DisplayPageViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(HasPendingArrangement));
         OnPropertyChanged(nameof(IsStageActionsVisible));
+        OnPropertyChanged(nameof(AreModeControlsEnabled));
+        OnPropertyChanged(nameof(ModeControlsDisabledTip));
         ApplyStagedCommand.NotifyCanExecuteChanged();
         DiscardStagedCommand.NotifyCanExecuteChanged();
     }
@@ -1203,25 +1200,23 @@ public sealed partial class DisplayPageViewModel : ObservableObject
 
     private bool RestoreStageAfterFailure(DisplayApplyPlan? plan, DisplaySnapshot? baseline, bool excludePrimarySwap)
     {
-        string? selectedKey = excludePrimarySwap ? SelectedMonitor?.GdiDeviceName : null;
-        string? oldPrimaryKey = null;
-        if (excludePrimarySwap && SelectedMonitor is not null && baseline is not null)
+        if (excludePrimarySwap)
         {
-            oldPrimaryKey = baseline.Monitors.FirstOrDefault(monitor =>
-                monitor.IsPrimary &&
-                !string.Equals(monitor.GdiDeviceName, SelectedMonitor.GdiDeviceName, StringComparison.OrdinalIgnoreCase))?.GdiDeviceName;
-        }
+            PendingPositions.Clear();
+            if (_makePrimaryPending)
+            {
+                _makePrimaryPending = false;
+            }
 
-        var stageRestored = DisplayArrangementComposer.RestoreStageExcludingSwap(plan?.TargetMonitors, baseline, PendingPositions, selectedKey, oldPrimaryKey, excludePrimarySwap);
-        if (excludePrimarySwap && _makePrimaryPending)
-        {
-            _makePrimaryPending = false;
             OnPropertyChanged(nameof(CanMakePrimary));
             OnPropertyChanged(nameof(IsMakePrimaryEnabled));
             OnPropertyChanged(nameof(MakePrimaryDisabledTip));
             MakePrimaryCommand.NotifyCanExecuteChanged();
+            RaiseStageChanged();
+            return false;
         }
 
+        var stageRestored = DisplayArrangementComposer.RestoreStageExcludingSwap(plan?.TargetMonitors, baseline, PendingPositions, null, null, false);
         OnPropertyChanged(nameof(CanMakePrimary));
         OnPropertyChanged(nameof(IsMakePrimaryEnabled));
         OnPropertyChanged(nameof(MakePrimaryDisabledTip));
@@ -2639,7 +2634,7 @@ public sealed partial class DisplayPageViewModel : ObservableObject
             DisplayBannerSeverity.Error => InfoBarSeverity.Error,
             _ => InfoBarSeverity.Informational
         };
-        IsStatusOpen = true;
+        IsStatusOpen = DisplayChainPolicy.ShouldShowBannerForNotice(kind);
     }
 
     public void Announce(string message)

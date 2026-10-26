@@ -57,6 +57,7 @@ internal static class DisplayNative
     public const uint CdsTest = 0x00000002;
     public const int DispChangeSuccessful = 0;
     public const int DispChangeRestart = 1;
+    public const int DispChangeFailed = -1;
 
     public const uint DmPosition = 0x00000020;
     public const uint DmDisplayOrientation = 0x00000080;

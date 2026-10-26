@@ -203,9 +203,9 @@
                             <ComboBox
                                 Grid.Column="1"
                                 HorizontalAlignment="Stretch"
-                                AutomationProperties.HelpText="{x:Bind ViewModel.DisabledControlsTip, Mode=OneWay}"
+                                AutomationProperties.HelpText="{x:Bind ViewModel.ModeControlsDisabledTip, Mode=OneWay}"
                                 DisplayMemberPath="Label"
-                                IsEnabled="{x:Bind ViewModel.AreControlsEnabled, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.AreModeControlsEnabled, Mode=OneWay}"
                                 ItemsSource="{x:Bind ViewModel.ScaleOptions, Mode=OneWay}"
                                 SelectedItem="{x:Bind ViewModel.SelectedScaleOption, Mode=TwoWay}"
                                 Visibility="{x:Bind ViewModel.IsScaleEmpty, Mode=OneWay, Converter={StaticResource InverseBoolToVisibility}}" />
@@ -229,9 +229,9 @@
                             <ComboBox
                                 Grid.Column="1"
                                 HorizontalAlignment="Stretch"
-                                AutomationProperties.HelpText="{x:Bind ViewModel.DisabledControlsTip, Mode=OneWay}"
+                                AutomationProperties.HelpText="{x:Bind ViewModel.ModeControlsDisabledTip, Mode=OneWay}"
                                 DisplayMemberPath="Label"
-                                IsEnabled="{x:Bind ViewModel.AreControlsEnabled, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.AreModeControlsEnabled, Mode=OneWay}"
                                 ItemsSource="{x:Bind ViewModel.Resolutions, Mode=OneWay}"
                                 SelectedItem="{x:Bind ViewModel.SelectedResolution, Mode=TwoWay}" />
                         </Grid>
@@ -249,9 +249,9 @@
                             <ComboBox
                                 Grid.Column="1"
                                 HorizontalAlignment="Stretch"
-                                AutomationProperties.HelpText="{x:Bind ViewModel.DisabledControlsTip, Mode=OneWay}"
+                                AutomationProperties.HelpText="{x:Bind ViewModel.ModeControlsDisabledTip, Mode=OneWay}"
                                 DisplayMemberPath="Label"
-                                IsEnabled="{x:Bind ViewModel.AreControlsEnabled, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.AreModeControlsEnabled, Mode=OneWay}"
                                 ItemsSource="{x:Bind ViewModel.RefreshRates, Mode=OneWay}"
                                 SelectedItem="{x:Bind ViewModel.SelectedRefresh, Mode=TwoWay}" />
                         </Grid>
@@ -271,9 +271,9 @@
                             <ComboBox
                                 Grid.Column="1"
                                 HorizontalAlignment="Stretch"
-                                AutomationProperties.HelpText="{x:Bind ViewModel.DisabledControlsTip, Mode=OneWay}"
+                                AutomationProperties.HelpText="{x:Bind ViewModel.ModeControlsDisabledTip, Mode=OneWay}"
                                 DisplayMemberPath="Label"
-                                IsEnabled="{x:Bind ViewModel.AreControlsEnabled, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.AreModeControlsEnabled, Mode=OneWay}"
                                 ItemsSource="{x:Bind ViewModel.OrientationOptions, Mode=OneWay}"
                                 SelectedItem="{x:Bind ViewModel.SelectedOrientation, Mode=TwoWay}" />
                         </Grid>

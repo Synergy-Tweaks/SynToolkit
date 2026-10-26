@@ -1,9 +1,10 @@
 #nullable enable
 
+using SynToolkit.Models.Display;
+using SynToolkit.Services.Display;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SynToolkit.Models.Display;
 
 namespace SynToolkit.Services.Display;
 
@@ -117,5 +118,23 @@ public static class DisplayArrangement
         var moved = result.Arrangement.Monitors.First(monitor =>
             string.Equals(monitor.GdiDeviceName, movingKey, StringComparison.OrdinalIgnoreCase));
         return (moved.PositionX, moved.PositionY);
+    }
+
+    public static DisplaySnapshot ReanchorToOrigin(DisplaySnapshot snapshot, string primaryKey)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        var primary = snapshot.Monitors.FirstOrDefault(monitor =>
+            !string.IsNullOrWhiteSpace(primaryKey) &&
+            string.Equals(monitor.GdiDeviceName, primaryKey, StringComparison.OrdinalIgnoreCase));
+        if (primary is null)
+            return snapshot;
+
+        return new DisplaySnapshot(
+            snapshot.Monitors
+                .Select(monitor => monitor.WithPosition(
+                    monitor.PositionX - primary.PositionX,
+                    monitor.PositionY - primary.PositionY))
+                .ToArray());
     }
 }

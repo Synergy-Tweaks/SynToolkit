@@ -27,6 +27,18 @@ public static class DisplayModeCatalog
     public static (uint Width, uint Height) EffectiveModeSize(uint width, uint height, uint rotation) =>
         SwapsDimensions(rotation) ? (height, width) : (width, height);
 
+    public static bool SamePanelShape(uint liveWidth, uint liveHeight, uint nextWidth, uint nextHeight) =>
+        Math.Min(liveWidth, liveHeight) == Math.Min(nextWidth, nextHeight) &&
+        Math.Max(liveWidth, liveHeight) == Math.Max(nextWidth, nextHeight);
+
+    public static bool SameFraction(ulong leftNumerator, uint leftDenominator, ulong rightNumerator, uint rightDenominator)
+    {
+        if (leftDenominator == 0 || rightDenominator == 0)
+            return leftNumerator == rightNumerator && leftDenominator == rightDenominator;
+
+        return (UInt128)leftNumerator * rightDenominator == (UInt128)rightNumerator * leftDenominator;
+    }
+
     public const double RefreshRateToleranceHz = 1.0;
 
     private const double LiveLabelEpsilon = 0.02;
