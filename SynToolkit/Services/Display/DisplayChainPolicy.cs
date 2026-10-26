@@ -973,12 +973,18 @@ public sealed class DisplayChainPolicy
     public static string MismatchAdjustmentMessage(string mismatchDetail) =>
         $"That change needed a small adjustment to apply ({mismatchDetail}). Keep it if it looks right, or let it revert.";
 
-    private static bool SameHorizontalSync(DisplayMonitor actual, DisplayMonitor target) =>
-        DisplayModeCatalog.SameFraction(
-            actual.TargetHSyncNumerator,
-            actual.TargetHSyncDenominator,
-            target.TargetHSyncNumerator,
-            target.TargetHSyncDenominator);
+    private const double HorizontalSyncToleranceHz = 1.0;
+
+    private static bool SameHorizontalSync(DisplayMonitor actual, DisplayMonitor target)
+    {
+        var actualHz = actual.TargetHSyncDenominator == 0
+            ? 0
+            : actual.TargetHSyncNumerator / (double)actual.TargetHSyncDenominator;
+        var requestedHz = target.TargetHSyncDenominator == 0
+            ? 0
+            : target.TargetHSyncNumerator / (double)target.TargetHSyncDenominator;
+        return Math.Abs(actualHz - requestedHz) <= HorizontalSyncToleranceHz;
+    }
 
     private static bool RequestAuthoredTimings(DisplayMonitor target)
     {
