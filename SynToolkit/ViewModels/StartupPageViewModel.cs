@@ -325,7 +325,7 @@ namespace SynToolkit.ViewModels
             IEnumerable<StartupEntry> query = _allEntries;
             if (HighRiskOnly)
             {
-                query = query.Where(entry => entry.Risk is RiskLevel.High or RiskLevel.Medium);
+                query = query.Where(entry => entry.Risk == RiskLevel.High);
             }
 
             if (!string.IsNullOrWhiteSpace(SearchText))

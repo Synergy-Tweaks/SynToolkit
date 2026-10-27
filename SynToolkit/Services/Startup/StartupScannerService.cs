@@ -8,6 +8,7 @@ using System.ServiceProcess;
 using System.Threading;
 using Microsoft.Win32;
 using SynToolkit.Models.Startup;
+using SynToolkit.Utils;
 
 namespace SynToolkit.Services.Startup
 {
@@ -136,6 +137,10 @@ namespace SynToolkit.Services.Startup
             entries.AddRange(ScanRegistryKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", false, cancellationToken, failures));
             entries.AddRange(ScanRegistryKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce", false, cancellationToken, failures));
             entries.AddRange(ScanRegistryKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true, cancellationToken, failures));
+            // 32-bit machine-wide autostarts; the scanner otherwise misses every
+            // entry written by a 32-bit installer.
+            entries.AddRange(ScanRegistryKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run", true, cancellationToken, failures));
+            entries.AddRange(ScanRegistryKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce", true, cancellationToken, failures));
             return entries;
         }
 
@@ -157,8 +162,9 @@ namespace SynToolkit.Services.Startup
                         string command = key.GetValue(valueName)?.ToString() ?? "";
                         if (!TryResolveInstalledFile(command, out string filePath))
                         {
-                            App.logger.Debug("[Startup] Skipping leftover registry value {Name}. Command: {Command}", valueName, command);
-                            continue;
+                            // Keep orphans: they are the main reason to open a startup
+                            // manager, and AssessRisk flags the missing file as High.
+                            App.logger.Debug("[Startup] Found leftover registry value {Name}. Command: {Command}", valueName, command);
                         }
 
                         bool enabled = IsStartupApprovedEnabled(hive, StartupApprovedLeaf(keyPath), valueName);
@@ -184,8 +190,7 @@ namespace SynToolkit.Services.Startup
                         string command = disabledKey.GetValue(valueName)?.ToString() ?? "";
                         if (!TryResolveInstalledFile(command, out string filePath))
                         {
-                            App.logger.Debug("[Startup] Skipping leftover disabled registry value {Name}. Command: {Command}", valueName, command);
-                            continue;
+                            App.logger.Debug("[Startup] Found leftover disabled registry value {Name}. Command: {Command}", valueName, command);
                         }
 
                         entries.Add(CreateRegistryEntry(valueName, command, filePath, $"{hivePrefix}\\{disabledKeyPath}", false, localMachine));
@@ -337,8 +342,7 @@ namespace SynToolkit.Services.Startup
                 string filePath = "";
                 if (!string.IsNullOrWhiteSpace(rawPath) && !TryResolveInstalledFile(rawPath, out filePath))
                 {
-                    App.logger.Debug("[Startup] Skipping leftover scheduled task {Name}. Path: {Path}", task.Name, rawPath);
-                    continue;
+                    App.logger.Debug("[Startup] Found leftover scheduled task {Name}. Path: {Path}", task.Name, rawPath);
                 }
 
                 entries.Add(new StartupEntry
@@ -368,7 +372,7 @@ namespace SynToolkit.Services.Startup
                 foreach (ServiceController service in services)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    if (service.StartType != ServiceStartMode.Automatic)
+                    if (service.StartType is not (ServiceStartMode.Automatic or ServiceStartMode.Disabled))
                     {
                         continue;
                     }
@@ -380,8 +384,7 @@ namespace SynToolkit.Services.Startup
                         string imagePath = key?.GetValue("ImagePath")?.ToString() ?? "";
                         if (!TryResolveInstalledFile(imagePath, out string filePath))
                         {
-                            App.logger.Debug("[Startup] Skipping leftover service {Service}. Image: {Image}", service.ServiceName, imagePath);
-                            continue;
+                            App.logger.Debug("[Startup] Found leftover service {Service}. Image: {Image}", service.ServiceName, imagePath);
                         }
 
                         string publisher = GetFilePublisher(filePath);
@@ -398,7 +401,7 @@ namespace SynToolkit.Services.Startup
                             Publisher = publisher,
                             Category = StartupCategory.Service,
                             Location = $@"HKLM\{regPath}",
-                            IsEnabled = service.Status == ServiceControllerStatus.Running,
+                            IsEnabled = service.StartType != ServiceStartMode.Disabled,
                             Risk = AssessRisk(service.ServiceName, filePath, imagePath),
                             Description = service.DisplayName,
                             StartupDelay = "On Boot",
@@ -499,10 +502,14 @@ namespace SynToolkit.Services.Startup
             if (file.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase) && enable)
             {
                 string restored = Path.Combine(directory, baseName);
-                if (!File.Exists(restored))
+                if (File.Exists(restored))
                 {
-                    File.Move(file, restored);
+                    // Another file already owns the enabled name. Enabling this
+                    // entry would silently point it at that file instead.
+                    return Failed(entry);
                 }
+
+                File.Move(file, restored);
 
                 if (!File.Exists(restored))
                 {
@@ -591,7 +598,28 @@ namespace SynToolkit.Services.Startup
             }
 
             int previous = Convert.ToInt32(key.GetValue("Start") ?? -1);
-            int requested = entry.IsEnabled ? 4 : 2;
+            int requested;
+            if (entry.IsEnabled)
+            {
+                requested = 4;
+                // Remember the original start type so Enable can put it back
+                // instead of forcing Automatic.
+                if (previous is >= 0 and <= 3)
+                {
+                    RegistryHelper.SetValue(ServiceStartStoreKey, resolvedName, previous, RegistryValueKind.DWord);
+                }
+            }
+            else
+            {
+                requested = 2;
+                if (RegistryHelper.TryReadValue(ServiceStartStoreKey, resolvedName, out object? saved)
+                    && saved is int savedValue
+                    && savedValue is >= 0 and <= 3)
+                {
+                    requested = savedValue;
+                }
+            }
+
             key.SetValue("Start", requested, RegistryValueKind.DWord);
             int actual = Convert.ToInt32(key.GetValue("Start") ?? -1);
             App.logger.Info(
@@ -603,6 +631,11 @@ namespace SynToolkit.Services.Startup
             if (actual != requested)
             {
                 return Failed(entry);
+            }
+
+            if (!entry.IsEnabled)
+            {
+                RegistryHelper.DeleteValue(ServiceStartStoreKey, resolvedName);
             }
 
             return new StartupToggleResult
@@ -763,13 +796,8 @@ namespace SynToolkit.Services.Startup
             {
                 int end = text.IndexOf('"', 1);
                 string quoted = end > 1 ? text[1..end] : text.Trim('"');
-                if (File.Exists(quoted))
-                {
-                    installedPath = quoted;
-                    return true;
-                }
-
-                return false;
+                installedPath = quoted;
+                return File.Exists(quoted);
             }
 
             string[] parts = text.Split(' ');
@@ -810,8 +838,22 @@ namespace SynToolkit.Services.Startup
                 }
             }
 
+            // Best-effort target for orphaned entries: the longest prefix that
+            // looks like an executable, so risk assessment and the UI can show it.
+            installedPath = first;
+            for (int i = 1; i < parts.Length; i++)
+            {
+                string candidate = string.Join(" ", parts, 0, i + 1);
+                if (candidate.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    installedPath = candidate;
+                }
+            }
+
             return false;
         }
+
+        private const string ServiceStartStoreKey = @"HKLM\SOFTWARE\SynToolkit\Startup\ServiceStart";
 
         private static string NormalizeCommand(string command)
         {
