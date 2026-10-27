@@ -116,6 +116,10 @@ namespace SynToolkit
             this.Closed += AppBehaviorHelper.HandleMainWindowClosed;
 
             SubscribeToConfigurationChanges();
+
+            // Probe configuration states only after the window exists. The probes
+            // spawn processes and can take seconds; doing them here keeps startup fast.
+            RefreshConfigurationStatesInBackground();
         }
 
         private void OnMainWindowActivated(object sender, WindowActivatedEventArgs e)
@@ -651,6 +655,52 @@ namespace SynToolkit
             InstallerUpdateBadgeBorder.Visibility = boundedCount > 0
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Probes configuration states in the background and applies them on the UI
+        /// thread. Called once after startup; pages refresh their own items when loaded.
+        /// </summary>
+        private void RefreshConfigurationStatesInBackground()
+        {
+            DispatcherQueue dispatcher = DispatcherQueue;
+            List<ConfigurationItemViewModel> configItems =
+                App._host.Services.GetServices<ConfigurationItemViewModel>().ToList();
+            List<MultiOptionConfigurationItemViewModel> multiItems =
+                App._host.Services.GetServices<MultiOptionConfigurationItemViewModel>().ToList();
+
+            _ = Task.Run(() =>
+            {
+                Parallel.ForEach(configItems, item =>
+                {
+                    try
+                    {
+                        bool detected = item.ProbeCurrentSetting();
+                        dispatcher.TryEnqueue(() => item.ApplyProbedSetting(detected));
+                    }
+                    catch (Exception exception)
+                    {
+                        dispatcher.TryEnqueue(() => item.ApplyProbeFailure(exception));
+                    }
+                });
+
+                Parallel.ForEach(multiItems, item =>
+                {
+                    try
+                    {
+                        string detected = item.ProbeCurrentSetting();
+                        dispatcher.TryEnqueue(() => item.ApplyProbedSetting(detected));
+                    }
+                    catch (Exception exception)
+                    {
+                        dispatcher.TryEnqueue(() => item.ApplyProbeFailure(exception));
+                    }
+                });
+
+                // The stores are keyed services, so ConfigurationStore.CurrentSettingChanged
+                // has no subscribers; refresh the counters once all results are applied.
+                dispatcher.TryEnqueue(UpdateNavigationBadges);
+            });
         }
 
         private async Task RefreshNeedsAttentionBadgeAsync()

@@ -108,9 +108,10 @@ namespace SynToolkit.ViewModels
             _configurationService = configurationService;
             Configuration = configuration;
 
-            _currentSetting = FetchCurrentSetting();
+            // Probing is deferred: the service probes spawn processes and can take
+            // seconds. The window shows immediately and MainWindow refreshes states
+            // in the background; pages refresh again when they load.
             SaveConfigurationCommand = new SaveConfigurationCommand(this, configurationStore, configurationService);
-            
         }
 
         public bool FetchCurrentSetting()
@@ -121,14 +122,7 @@ namespace SynToolkit.ViewModels
             {
                 bool currentSetting = ProbeCurrentSetting();
                 ApplyProbedSetting(currentSetting);
-
-                if (_configurationService is HagsConfigurationService hags
-                    && hags.GetDetectionStatus() is string hagsStatus
-                    && !string.IsNullOrWhiteSpace(hagsStatus))
-                {
-                    _statusMessage = hagsStatus;
-                    OnPropertyChanged(nameof(DisplayDescription));
-                }
+                ApplyDetectionStatus();
 
                 return currentSetting;
             }
@@ -174,6 +168,38 @@ namespace SynToolkit.ViewModels
             bool detectedSetting = FetchCurrentSetting();
             SetProperty(ref _currentSetting, detectedSetting, nameof(CurrentSetting));
             _configurationStore.CurrentSetting = detectedSetting;
+        }
+
+        /// <summary>
+        /// Probes off the UI thread after a change, then applies the result on the UI
+        /// thread. Probing some services spawns processes, which would freeze the UI.
+        /// </summary>
+        public async Task RefreshCurrentSettingAsync()
+        {
+            bool detectedSetting;
+            try
+            {
+                detectedSetting = await Task.Run(ProbeCurrentSetting);
+            }
+            catch (Exception exception)
+            {
+                ApplyProbeFailure(exception);
+                return;
+            }
+
+            ApplyProbedSetting(detectedSetting);
+            ApplyDetectionStatus();
+        }
+
+        private void ApplyDetectionStatus()
+        {
+            if (_configurationService is HagsConfigurationService hags
+                && hags.GetDetectionStatus() is string hagsStatus
+                && !string.IsNullOrWhiteSpace(hagsStatus))
+            {
+                _statusMessage = hagsStatus;
+                OnPropertyChanged(nameof(DisplayDescription));
+            }
         }
 
         public void ClearStatus()

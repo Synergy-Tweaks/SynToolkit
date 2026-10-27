@@ -41,7 +41,7 @@ namespace SynToolkit.Commands
                     if (customValue is null)
                     {
                         _configurationItemViewModel.ErrorMessage = string.Empty;
-                        _configurationItemViewModel.RefreshCurrentSetting();
+                        await _configurationItemViewModel.RefreshCurrentSettingAsync();
                         _configurationItemViewModel.ApplyStatusWarning(prompting.GetStatusWarning());
                         return;
                     }
@@ -54,7 +54,7 @@ namespace SynToolkit.Commands
                 }
 
                 _configurationItemViewModel.ErrorMessage = string.Empty;
-                _configurationItemViewModel.RefreshCurrentSetting();
+                await _configurationItemViewModel.RefreshCurrentSettingAsync();
                 if (_configurationService is IWarnedMultiOptionConfigurationService warnedAfter)
                 {
                     _configurationItemViewModel.ApplyStatusWarning(warnedAfter.GetStatusWarning());
@@ -64,7 +64,7 @@ namespace SynToolkit.Commands
             {
                 App.logger.Error(exception, $"Unable to apply {_configurationItemViewModel.Key} option {currentSetting}.");
                 _configurationItemViewModel.ErrorMessage = exception.Message;
-                _configurationItemViewModel.RefreshCurrentSetting();
+                await _configurationItemViewModel.RefreshCurrentSettingAsync();
                 if (_configurationService is IWarnedMultiOptionConfigurationService warnedError)
                 {
                     _configurationItemViewModel.ApplyStatusWarning(warnedError.GetStatusWarning());

@@ -119,12 +119,7 @@ namespace SynToolkit.ViewModels
             _configurationStore = configurationStore;
             _configurationService = configurationService;
 
-            _currentSetting = FetchCurrentSetting();
-            if (_configurationService is IWarnedMultiOptionConfigurationService warned)
-            {
-                ApplyStatusWarning(warned.GetStatusWarning());
-            }
-
+            // Probing is deferred; see ConfigurationItemViewModel.
             MultiOptionSaveConfigurationCommand = new MultiOptionSaveConfigurationCommand(this, configurationStore, configurationService);
         }
 
@@ -190,6 +185,26 @@ namespace SynToolkit.ViewModels
             {
                 ApplyStatusWarning(warned.GetStatusWarning());
             }
+        }
+
+        /// <summary>
+        /// Probes off the UI thread after a change, then applies the result on the UI
+        /// thread. Probing some services spawns processes, which would freeze the UI.
+        /// </summary>
+        public async System.Threading.Tasks.Task RefreshCurrentSettingAsync()
+        {
+            string detectedSetting;
+            try
+            {
+                detectedSetting = await System.Threading.Tasks.Task.Run(ProbeCurrentSetting);
+            }
+            catch (Exception exception)
+            {
+                ApplyProbeFailure(exception);
+                return;
+            }
+
+            ApplyProbedSetting(detectedSetting);
         }
 
         public void ApplyStatusWarning(string warning)
