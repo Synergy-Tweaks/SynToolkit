@@ -160,14 +160,18 @@ namespace SynToolkit.Services.SynToolkitUpdate
 
                 return document;
             }
-            catch
+            catch (Exception exception)
             {
+                // A corrupt file used to reset every setting silently (updates back
+                // on, skipped version forgotten). Log it so it can be diagnosed.
+                App.logger.Warn(exception, "[Update] Could not read {Path}; starting from defaults.", _settingsPath);
                 return new SynToolkitUpdateSettingsDocument();
             }
         }
 
         private void SaveUnlocked()
         {
+            string tempPath = _settingsPath + ".tmp";
             try
             {
                 string? directory = Path.GetDirectoryName(_settingsPath);
@@ -176,13 +180,28 @@ namespace SynToolkit.Services.SynToolkitUpdate
                     Directory.CreateDirectory(directory);
                 }
 
+                // Write beside the target, then swap, so a crash mid-write can't
+                // leave a truncated settings file behind.
                 File.WriteAllText(
-                    _settingsPath,
+                    tempPath,
                     JsonSerializer.Serialize(_document, SerializerOptions));
+                File.Move(tempPath, _settingsPath, overwrite: true);
             }
-            catch
+            catch (Exception exception)
             {
                 // Persistence failures must never crash the app.
+                App.logger.Debug(exception, "[Update] Could not save update settings to {Path}.", _settingsPath);
+                try
+                {
+                    if (File.Exists(tempPath))
+                    {
+                        File.Delete(tempPath);
+                    }
+                }
+                catch
+                {
+                    // Nothing else to do.
+                }
             }
         }
 
