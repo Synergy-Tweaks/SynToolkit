@@ -56,7 +56,7 @@ namespace SynToolkit.Services
 
             try
             {
-                HashSet<uint> before = ReadSequenceNumbers();
+                HashSet<uint>? before = ReadSequenceNumbers();
                 return await Task.Run(() => CreateCore(trimmed, before, cancellationToken), cancellationToken)
                     .WaitAsync(TimeSpan.FromSeconds(OperationTimeoutSeconds), cancellationToken);
             }
@@ -114,7 +114,7 @@ namespace SynToolkit.Services
             }
         }
 
-        private static RestorePointCreateResult CreateCore(string description, HashSet<uint> existingSequences, CancellationToken cancellationToken)
+        private static RestorePointCreateResult CreateCore(string description, HashSet<uint>? existingSequences, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             RestorePointNativeState begin = CallSetRestorePoint(BeginSystemChange, description, 0);
@@ -126,16 +126,29 @@ namespace SynToolkit.Services
 
             // Always close the change. Cancelling between begin and end would leave System Restore mid-operation.
             RestorePointNativeState end = CallSetRestorePoint(EndSystemChange, description, begin.SequenceNumber);
-            HashSet<uint> after = ReadSequenceNumbers();
-            uint? created = after.FirstOrDefault(sequence => !existingSequences.Contains(sequence));
-            if (created is > 0)
-            {
-                return new RestorePointCreateResult(RestorePointOperationStatus.Success, created);
-            }
 
-            if (begin.SequenceNumber > 0 && !existingSequences.Contains((uint)begin.SequenceNumber) && after.Contains((uint)begin.SequenceNumber))
+            HashSet<uint>? after = ReadSequenceNumbers();
+            if (existingSequences is not null && after is not null)
             {
-                return new RestorePointCreateResult(RestorePointOperationStatus.Success, (uint)begin.SequenceNumber);
+                uint created = after.FirstOrDefault(sequence => !existingSequences.Contains(sequence));
+                if (created > 0)
+                {
+                    return new RestorePointCreateResult(RestorePointOperationStatus.Success, created);
+                }
+
+                if (begin.SequenceNumber > 0 &&
+                    !existingSequences.Contains((uint)begin.SequenceNumber) &&
+                    after.Contains((uint)begin.SequenceNumber))
+                {
+                    return new RestorePointCreateResult(RestorePointOperationStatus.Success, (uint)begin.SequenceNumber);
+                }
+            }
+            else
+            {
+                // Without both snapshots, a "new" sequence number could be an old
+                // point, so never report Success from an unverified read.
+                App.logger.Warn("[RestorePoint] Could not verify the new restore point; the restore-point list was unreadable.");
+                return new RestorePointCreateResult(RestorePointOperationStatus.Failed, null);
             }
 
             if (end.Status != ErrorSuccess)
@@ -175,7 +188,7 @@ namespace SynToolkit.Services
             return points;
         }
 
-        private static HashSet<uint> ReadSequenceNumbers()
+        private static HashSet<uint>? ReadSequenceNumbers()
         {
             try
             {
@@ -184,7 +197,7 @@ namespace SynToolkit.Services
             catch (Exception exception)
             {
                 App.logger.Warn(exception, "[RestorePoint] Could not read restore point sequence numbers.");
-                return new HashSet<uint>();
+                return null;
             }
         }
 
