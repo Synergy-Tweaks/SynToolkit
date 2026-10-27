@@ -144,9 +144,18 @@ namespace SynToolkit.Views
 
         private void RefreshAmdTweakStates()
         {
-            foreach (ConfigurationItemViewModel item in _viewModel.AmdGpuTweaks)
+            _ = RefreshAmdTweakStatesAsync();
+        }
+
+        private async Task RefreshAmdTweakStatesAsync()
+        {
+            try
             {
-                item.RefreshCurrentSetting();
+                await Task.WhenAll(_viewModel.AmdGpuTweaks.Select(item => item.RefreshCurrentSettingAsync()));
+            }
+            catch (Exception exception)
+            {
+                App.logger.Warn(exception, "[GPU] AMD tweak states could not be refreshed.");
             }
         }
 

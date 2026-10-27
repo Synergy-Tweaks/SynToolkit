@@ -22,6 +22,7 @@ namespace SynToolkit.Views
         public SpecsPage()
         {
             InitializeComponent();
+            NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Required;
 
             try
             {

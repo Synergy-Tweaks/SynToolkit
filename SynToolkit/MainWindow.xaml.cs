@@ -49,6 +49,7 @@ namespace SynToolkit
         private int _synergyOsUpdateCheckRunning;
         private SynToolkitCachedRelease _pendingSynToolkitRelease;
         private int _synToolkitUpdateCheckRunning;
+        private int _badgeUpdatePending;
 
         public MainWindow()
         {
@@ -510,12 +511,15 @@ namespace SynToolkit
         {
             try
             {
-                var stores = App._host?.Services?.GetServices<Stores.ConfigurationStore>();
-                if (stores == null) return;
+                // Stores are registered as keyed singletons, so GetServices<ConfigurationStore>()
+                // returns nothing. Subscribe through the view models that own each store.
+                IEnumerable<ConfigurationItemViewModel> items =
+                    App._host?.Services?.GetServices<ConfigurationItemViewModel>();
+                if (items == null) return;
 
-                foreach (var store in stores)
+                foreach (ConfigurationItemViewModel item in items)
                 {
-                    store.CurrentSettingChanged += OnConfigurationChanged;
+                    item.Store.CurrentSettingChanged += OnConfigurationChanged;
                 }
             }
             catch (Exception ex)
@@ -526,7 +530,21 @@ namespace SynToolkit
 
         private void OnConfigurationChanged()
         {
-            DispatcherQueue?.TryEnqueue(() => UpdateNavigationBadges());
+            // Probes can raise this many times in a row (startup refresh, profile apply).
+            // Coalesce them into one badge update instead of one per item.
+            if (Interlocked.CompareExchange(ref _badgeUpdatePending, 1, 0) != 0)
+            {
+                return;
+            }
+
+            if (DispatcherQueue?.TryEnqueue(() =>
+                {
+                    Volatile.Write(ref _badgeUpdatePending, 0);
+                    UpdateNavigationBadges();
+                }) != true)
+            {
+                Volatile.Write(ref _badgeUpdatePending, 0);
+            }
         }
 
         public void LoadExperiments()
