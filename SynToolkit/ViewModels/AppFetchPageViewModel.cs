@@ -31,6 +31,8 @@ namespace SynToolkit.ViewModels
         private CancellationTokenSource? _installQueueCancellationTokenSource;
         private bool _applyingInstallerStates;
         private CancellationTokenSource? _catalogSearchCancellation;
+        private bool _installerStateRefreshPending;
+        private int _installerStateEpoch;
 
         public event Action<int>? AvailableInstallerUpdateCountChanged;
 
@@ -430,10 +432,15 @@ namespace SynToolkit.ViewModels
         {
             if (IsRefreshingInstallerStates || IsInstallingQueue)
             {
+                // Queue one follow-up refresh instead of dropping the request: the
+                // refresh that runs after an install used to vanish behind a
+                // refresh that was still in flight.
+                _installerStateRefreshPending = !IsInstallingQueue;
                 return;
             }
 
             IsRefreshingInstallerStates = true;
+            int epoch = ++_installerStateEpoch;
             InstallerStatusSummary = "Checking installed apps and available updates...";
 
             try
@@ -474,6 +481,13 @@ namespace SynToolkit.ViewModels
                             cancellationToken);
                         portableStatuses[installer.PackageIdentifier] = basicStatus;
                     }
+                }
+
+                if (epoch != _installerStateEpoch)
+                {
+                    // An install or uninstall started after this snapshot was taken.
+                    // Its own refresh is queued, so keep the newer state on screen.
+                    return;
                 }
 
                 ApplyInstallerStateUpdates(() =>
@@ -567,6 +581,11 @@ namespace SynToolkit.ViewModels
             finally
             {
                 IsRefreshingInstallerStates = false;
+                if (_installerStateRefreshPending)
+                {
+                    _installerStateRefreshPending = false;
+                    _ = RefreshInstallerStatesAsync(CancellationToken.None);
+                }
             }
         }
 
@@ -644,6 +663,7 @@ namespace SynToolkit.ViewModels
             }
 
             installer.IsUninstalling = true;
+            _installerStateEpoch++;
             HasError = false;
             try
             {
@@ -710,6 +730,7 @@ namespace SynToolkit.ViewModels
 
             IsQueueVisible = true;
             IsInstallingQueue = true;
+            _installerStateEpoch++;
             QueueSummary = "Preparing installation queue...";
 
             try
@@ -738,7 +759,7 @@ namespace SynToolkit.ViewModels
                             queueItem.Installer.PortableAppDefinition,
                             new Progress<double>(value =>
                             {
-                                queueItem.Progress = value;
+                                queueItem.Progress = value * 100;
                                 queueItem.Detail = value < 0.8
                                     ? $"Downloading {value * 100:0}%"
                                     : value < 1.0 ? "Verifying" : "Finishing";

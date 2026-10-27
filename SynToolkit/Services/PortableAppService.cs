@@ -78,6 +78,16 @@ namespace SynToolkit.Services
                     await DownloadFileAsync(asset.BrowserDownloadUrl, tempPath, progress, cancellationToken);
                     progress?.Report(0.8);
 
+                    // A truncated download used to be accepted when the release
+                    // published no digest.
+                    long downloadedSize = new FileInfo(tempPath).Length;
+                    if (asset.Size > 0 && downloadedSize != asset.Size)
+                    {
+                        return new PortableAppInstallResult(
+                            false,
+                            $"Download incomplete: expected {asset.Size} bytes, got {downloadedSize}.");
+                    }
+
                     // Verify SHA-256 if provided in release metadata
                     string? expectedSha256 = asset.Digest?.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase) == true
                         ? asset.Digest.Substring(7)
@@ -310,6 +320,14 @@ namespace SynToolkit.Services
 
             try
             {
+                // Delete the app directory first: if the files are locked (app is
+                // running) the uninstall fails without also destroying shortcuts.
+                string appDirectory = GetAppDirectory(definition.AppName);
+                if (Directory.Exists(appDirectory))
+                {
+                    Directory.Delete(appDirectory, recursive: true);
+                }
+
                 // Delete desktop shortcut
                 string desktopShortcutPath = GetDesktopShortcutPath(definition.AppName);
                 if (File.Exists(desktopShortcutPath))
@@ -337,15 +355,6 @@ namespace SynToolkit.Services
                         App.logger.Debug(exception, "[PortableApp] Failed to delete start menu shortcut for {AppName}", definition.AppName);
                     }
                 }
-
-                // Delete app directory
-                string appDirectory = GetAppDirectory(definition.AppName);
-                if (Directory.Exists(appDirectory))
-                {
-                    Directory.Delete(appDirectory, recursive: true);
-                }
-
-                TryDeleteDesktopShortcut(definition.AppName);
 
                 return Task.FromResult(new PortableAppInstallResult(true, $"Uninstalled {definition.AppName}"));
             }
@@ -410,6 +419,13 @@ namespace SynToolkit.Services
                 finally
                 {
                     System.Runtime.InteropServices.Marshal.FinalReleaseComObject(shell);
+                }
+
+                // Keep the elevated-app behaviour that install sets up; a toggled
+                // shortcut used to lose the RunAsUser flag.
+                if (definition.RequiresElevation)
+                {
+                    SetShortcutRunAsAdmin(GetDesktopShortcutPath(definition.AppName));
                 }
 
                 return true;
@@ -550,47 +566,54 @@ namespace SynToolkit.Services
                         return (false, "Failed to create shortcut object");
                     }
 
-                    Type shortcutType = shortcut.GetType();
+                    try
+                    {
+                        Type shortcutType = shortcut.GetType();
 
-                    // Set TargetPath
-                    shortcutType.InvokeMember(
-                        "TargetPath",
-                        BindingFlags.SetProperty,
-                        null,
-                        shortcut,
-                        [targetPath]);
+                        // Set TargetPath
+                        shortcutType.InvokeMember(
+                            "TargetPath",
+                            BindingFlags.SetProperty,
+                            null,
+                            shortcut,
+                            [targetPath]);
 
-                    // Set WorkingDirectory
-                    shortcutType.InvokeMember(
-                        "WorkingDirectory",
-                        BindingFlags.SetProperty,
-                        null,
-                        shortcut,
-                        [workingDirectory]);
+                        // Set WorkingDirectory
+                        shortcutType.InvokeMember(
+                            "WorkingDirectory",
+                            BindingFlags.SetProperty,
+                            null,
+                            shortcut,
+                            [workingDirectory]);
 
-                    // Set IconLocation (use the exe itself)
-                    shortcutType.InvokeMember(
-                        "IconLocation",
-                        BindingFlags.SetProperty,
-                        null,
-                        shortcut,
-                        [$"{targetPath},0"]);
+                        // Set IconLocation (use the exe itself)
+                        shortcutType.InvokeMember(
+                            "IconLocation",
+                            BindingFlags.SetProperty,
+                            null,
+                            shortcut,
+                            [$"{targetPath},0"]);
 
-                    // Set Description
-                    shortcutType.InvokeMember(
-                        "Description",
-                        BindingFlags.SetProperty,
-                        null,
-                        shortcut,
-                        [$"Launch {appName} (installed by SynToolkit)"]);
+                        // Set Description
+                        shortcutType.InvokeMember(
+                            "Description",
+                            BindingFlags.SetProperty,
+                            null,
+                            shortcut,
+                            [$"Launch {appName} (installed by SynToolkit)"]);
 
-                    // Save the shortcut
-                    shortcutType.InvokeMember(
-                        "Save",
-                        BindingFlags.InvokeMethod,
-                        null,
-                        shortcut,
-                        null);
+                        // Save the shortcut
+                        shortcutType.InvokeMember(
+                            "Save",
+                            BindingFlags.InvokeMethod,
+                            null,
+                            shortcut,
+                            null);
+                    }
+                    finally
+                    {
+                        Marshal.FinalReleaseComObject(shortcut);
+                    }
 
                     // If elevation is required, set the "Run as administrator" flag
                     // This is done by modifying the .lnk file header directly
