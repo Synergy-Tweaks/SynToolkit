@@ -246,7 +246,7 @@ namespace SynToolkit.Utils
             if (!expected.StartsWith(sha256Prefix, StringComparison.OrdinalIgnoreCase))
             {
                 // GitHub only publishes sha256 digests today; anything else can't be checked.
-                App.logger.Warn("[Update] Ignoring unsupported digest algorithm: {Digest}", expectedDigest);
+                App.logger.Warn($"[Update] Ignoring unsupported digest algorithm: {expectedDigest}");
                 return true;
             }
 

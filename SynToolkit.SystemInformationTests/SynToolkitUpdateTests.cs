@@ -17,6 +17,7 @@ internal static class SynToolkitUpdateTests
         RunStep(nameof(TestLegacyCachedTagUrlMigrated), TestLegacyCachedTagUrlMigrated);
         RunStep(nameof(TestParsePrefersAssetVersionAndIgnoresHtmlUrl), TestParsePrefersAssetVersionAndIgnoresHtmlUrl);
         RunStep(nameof(TestHelperAndCheckerAgreeOnNewer), TestHelperAndCheckerAgreeOnNewer);
+        RunStep(nameof(TestManualCheckNeverReopensNotice), TestManualCheckNeverReopensNotice);
         Console.WriteLine("SynToolkitUpdateTests: all passed.");
     }
 
@@ -201,6 +202,57 @@ internal static class SynToolkitUpdateTests
         AssertEqual(
             SynToolkitUpdateAvailability.UpToDate,
             SynToolkitUpdateDecision.GetUpdateStatus("1.7.0.0", Release("1.7.0")));
+    }
+
+    private static void TestManualCheckNeverReopensNotice()
+    {
+        string path = Path.Combine(Path.GetTempPath(), "SynToolkit-tests", Guid.NewGuid().ToString("N") + ".json");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+
+        const string releaseJson = """
+        {
+          "tag_name": "v1.8.0",
+          "html_url": "https://github.com/Synergy-Tweaks/SynToolkit/releases/tag/v1.8.0",
+          "published_at": "2026-09-02T00:54:56Z",
+          "draft": false,
+          "prerelease": false,
+          "assets": [
+            { "name": "SynToolkit-Setup-1.8.0-Stable.exe", "browser_download_url": "https://github.com/x/y.exe" }
+          ]
+        }
+        """;
+
+        SynToolkitUpdateChecker NewChecker() => new(
+            new SynToolkitUpdateSettingsStore(path),
+            new HttpClient(new StaticJsonHandler(releaseJson)),
+            () => DateTimeOffset.Parse("2026-10-10T12:00:00Z"),
+            () => "1.7.0.0");
+
+        // Automatic startup check: the user should see the notice once.
+        SynToolkitUpdateCheckResult startup = NewChecker().CheckAsync().GetAwaiter().GetResult();
+        AssertEqual(SynToolkitUpdateCheckOutcome.UpdateAvailable, startup.Outcome);
+        AssertTrue(startup.ShouldNotify);
+
+        // Manual Settings check: refreshes status but must not re-open the notice.
+        SynToolkitUpdateCheckResult manual = NewChecker()
+            .CheckAsync(forceRefresh: true, ignoreSessionGate: true)
+            .GetAwaiter()
+            .GetResult();
+        AssertEqual(SynToolkitUpdateCheckOutcome.UpdateAvailable, manual.Outcome);
+        AssertFalse(manual.ShouldNotify);
+
+        File.Delete(path);
+    }
+
+    private sealed class StaticJsonHandler(string json) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            });
     }
 
     private static SynToolkitCachedRelease Release(string version) =>
