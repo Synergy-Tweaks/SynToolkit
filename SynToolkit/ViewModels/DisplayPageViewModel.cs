@@ -630,6 +630,8 @@ public sealed partial class DisplayPageViewModel : ObservableObject
         OnPropertyChanged(nameof(IsStageActionsVisible));
         OnPropertyChanged(nameof(AreModeControlsEnabled));
         OnPropertyChanged(nameof(ModeControlsDisabledTip));
+        OnPropertyChanged(nameof(IsHdrToggleEnabled));
+        OnPropertyChanged(nameof(HdrToggleTip));
         ApplyStagedCommand.NotifyCanExecuteChanged();
         DiscardStagedCommand.NotifyCanExecuteChanged();
     }
