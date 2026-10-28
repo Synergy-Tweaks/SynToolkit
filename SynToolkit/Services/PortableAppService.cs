@@ -320,12 +320,24 @@ namespace SynToolkit.Services
 
             try
             {
-                // Delete the app directory first: if the files are locked (app is
-                // running) the uninstall fails without also destroying shortcuts.
+                // Move the directory out of the way before deleting: a rename fails
+                // atomically when a file is locked, whereas a recursive delete can
+                // remove part of the app and then fail.
                 string appDirectory = GetAppDirectory(definition.AppName);
                 if (Directory.Exists(appDirectory))
                 {
-                    Directory.Delete(appDirectory, recursive: true);
+                    string doomedDirectory = appDirectory + ".uninstalling-" + Guid.NewGuid().ToString("N");
+                    Directory.Move(appDirectory, doomedDirectory);
+                    try
+                    {
+                        Directory.Delete(doomedDirectory, recursive: true);
+                    }
+                    catch (Exception exception)
+                    {
+                        // The app is already gone from its install path; leave the
+                        // leftover for the next cleanup instead of failing the uninstall.
+                        App.logger.Warn(exception, "[PortableApp] Leftover uninstall directory: {Path}", doomedDirectory);
+                    }
                 }
 
                 // Delete desktop shortcut

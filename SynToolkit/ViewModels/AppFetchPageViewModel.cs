@@ -435,7 +435,7 @@ namespace SynToolkit.ViewModels
                 // Queue one follow-up refresh instead of dropping the request: the
                 // refresh that runs after an install used to vanish behind a
                 // refresh that was still in flight.
-                _installerStateRefreshPending = !IsInstallingQueue;
+                _installerStateRefreshPending |= !IsInstallingQueue;
                 return;
             }
 
