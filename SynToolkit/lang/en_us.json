@@ -222,6 +222,7 @@
   "Restoration_ServiceUnavailable": "System Restore is unavailable. Turn on System Protection for the system drive, then refresh.",
   "Restoration_Timeout": "The request took too long. Refresh the list to see whether Windows created the point.",
   "Restoration_Cancelled": "Restore point creation was cancelled.",
+  "Restoration_Unverified": "Windows accepted the request, but the restore-point list could not be read back. Check the list before creating another point.",
   "Restoration_InvalidDescription": "Enter a description up to 255 characters.",
   "Restoration_TypeApplicationInstall": "Application install",
   "Restoration_TypeApplicationUninstall": "Application uninstall",

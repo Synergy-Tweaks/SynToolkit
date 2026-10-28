@@ -126,6 +126,11 @@ namespace SynToolkit.Services
 
             // Always close the change. Cancelling between begin and end would leave System Restore mid-operation.
             RestorePointNativeState end = CallSetRestorePoint(EndSystemChange, description, begin.SequenceNumber);
+            if (end.Status != ErrorSuccess)
+            {
+                App.logger.Warn("[RestorePoint] End restore point failed with status {Status}.", end.Status);
+                return new RestorePointCreateResult(MapStatus(end.Status), null);
+            }
 
             HashSet<uint>? after = ReadSequenceNumbers();
             if (existingSequences is not null && after is not null)
@@ -145,16 +150,10 @@ namespace SynToolkit.Services
             }
             else
             {
-                // Without both snapshots, a "new" sequence number could be an old
-                // point, so never report Success from an unverified read.
+                // Windows accepted the request, so a point probably exists; we just cannot prove it.
+                // Reporting Failed would invite a retry that duplicates the point or hits the 24h throttle.
                 App.logger.Warn("[RestorePoint] Could not verify the new restore point; the restore-point list was unreadable.");
-                return new RestorePointCreateResult(RestorePointOperationStatus.Failed, null);
-            }
-
-            if (end.Status != ErrorSuccess)
-            {
-                App.logger.Warn("[RestorePoint] End restore point failed with status {Status}.", end.Status);
-                return new RestorePointCreateResult(MapStatus(end.Status), null);
+                return new RestorePointCreateResult(RestorePointOperationStatus.Unverified, null);
             }
 
             App.logger.Info(

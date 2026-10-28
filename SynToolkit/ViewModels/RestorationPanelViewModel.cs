@@ -140,7 +140,9 @@ namespace SynToolkit.ViewModels
                     ShowStatus(MessageFor(result.Status), SeverityFor(result.Status));
                 }
 
-                if (result.Status is RestorePointOperationStatus.Success or RestorePointOperationStatus.Throttled)
+                if (result.Status is RestorePointOperationStatus.Success
+                    or RestorePointOperationStatus.Throttled
+                    or RestorePointOperationStatus.Unverified)
                 {
                     await LoadAsync(_operations.Token);
                 }
@@ -222,6 +224,7 @@ namespace SynToolkit.ViewModels
             RestorePointOperationStatus.ServiceUnavailable => Text("Restoration_ServiceUnavailable"),
             RestorePointOperationStatus.TimedOut => Text("Restoration_Timeout"),
             RestorePointOperationStatus.Cancelled => Text("Restoration_Cancelled"),
+            RestorePointOperationStatus.Unverified => Text("Restoration_Unverified"),
             _ => Text("Restoration_Failed")
         };
 
@@ -229,7 +232,7 @@ namespace SynToolkit.ViewModels
         {
             RestorePointOperationStatus.Success => InfoBarSeverity.Success,
             RestorePointOperationStatus.Cancelled => InfoBarSeverity.Informational,
-            RestorePointOperationStatus.Throttled or RestorePointOperationStatus.ProtectionDisabled or RestorePointOperationStatus.NotElevated => InfoBarSeverity.Warning,
+            RestorePointOperationStatus.Throttled or RestorePointOperationStatus.ProtectionDisabled or RestorePointOperationStatus.NotElevated or RestorePointOperationStatus.Unverified => InfoBarSeverity.Warning,
             _ => InfoBarSeverity.Error
         };
 
