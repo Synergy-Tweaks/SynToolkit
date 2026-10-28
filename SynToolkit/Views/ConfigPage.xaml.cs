@@ -108,26 +108,28 @@ public sealed partial class ConfigPage : Page
                 {
                     if (item is ConfigurationItemViewModel configurationItem)
                     {
+                        int version = configurationItem.StateVersion;
                         try
                         {
                             bool detected = configurationItem.ProbeCurrentSetting();
-                            list.Add(() => configurationItem.ApplyProbedSetting(detected));
+                            list.Add(() => configurationItem.TryApplyProbedSetting(detected, version));
                         }
                         catch (Exception exception)
                         {
-                            list.Add(() => configurationItem.ApplyProbeFailure(exception));
+                            list.Add(() => configurationItem.TryApplyProbeFailure(exception, version));
                         }
                     }
                     else if (item is MultiOptionConfigurationItemViewModel multiOptionItem)
                     {
+                        int version = multiOptionItem.StateVersion;
                         try
                         {
                             string detected = multiOptionItem.ProbeCurrentSetting();
-                            list.Add(() => multiOptionItem.ApplyProbedSetting(detected));
+                            list.Add(() => multiOptionItem.TryApplyProbedSetting(detected, version));
                         }
                         catch (Exception exception)
                         {
-                            list.Add(() => multiOptionItem.ApplyProbeFailure(exception));
+                            list.Add(() => multiOptionItem.TryApplyProbeFailure(exception, version));
                         }
                     }
                 }

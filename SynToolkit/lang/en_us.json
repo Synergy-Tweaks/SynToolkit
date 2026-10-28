@@ -10,6 +10,7 @@
   "SystemInfo_ReadOnly": "Detected locally without changing settings",
   "ToBeTranslated": "Configuring for 0 Delay..",
   "ConfigurationStatus_Applying": "Applying change...",
+  "ConfigurationStatus_Detecting": "Detecting current state...",
   "ConfigurationStatus_Unavailable": "Unavailable",
   "ConfigurationStatus_ApplyFailed": "Could not apply change",
   "Bluetooth": "Bluetooth",

@@ -29,9 +29,11 @@ namespace SynToolkit.ViewModels
             {
                 string status = !string.IsNullOrWhiteSpace(_statusMessage)
                     ? _statusMessage
-                    : IsBusy
-                        ? App.GetValueFromItemList("ConfigurationStatus_Applying")
-                        : string.Empty;
+                    : !IsStateKnown
+                        ? App.GetValueFromItemList("ConfigurationStatus_Detecting")
+                        : IsBusy
+                            ? App.GetValueFromItemList("ConfigurationStatus_Applying")
+                            : string.Empty;
 
                 if (string.IsNullOrWhiteSpace(status))
                 {
@@ -58,6 +60,7 @@ namespace SynToolkit.ViewModels
                     return;
                 }
 
+                _stateVersion++;
                 ClearStatus();
                 _configurationStore.CurrentSetting = CurrentSetting;
                 this.SaveConfigurationCommand.Execute(this);
@@ -80,7 +83,12 @@ namespace SynToolkit.ViewModels
         }
 
         private bool _isStateAvailable = true;
+        private bool _isStateKnown;
         private string _statusMessage = string.Empty;
+        private int _stateVersion;
+
+        /// <summary>Bumped whenever the displayed state changes, so a stale probe result can be dropped.</summary>
+        public int StateVersion => _stateVersion;
 
         public bool IsStateAvailable
         {
@@ -94,7 +102,21 @@ namespace SynToolkit.ViewModels
             }
         }
 
-        public bool CanInteract => IsStateAvailable && !IsBusy;
+        /// <summary>False until the first probe finishes; controls stay disabled while detecting.</summary>
+        public bool IsStateKnown
+        {
+            get => _isStateKnown;
+            private set
+            {
+                if (SetProperty(ref _isStateKnown, value))
+                {
+                    OnPropertyChanged(nameof(CanInteract));
+                    OnPropertyChanged(nameof(DisplayDescription));
+                }
+            }
+        }
+
+        public bool CanInteract => IsStateAvailable && IsStateKnown && !IsBusy;
 
 
         public ICommand SaveConfigurationCommand { get; }
@@ -122,7 +144,6 @@ namespace SynToolkit.ViewModels
             {
                 bool currentSetting = ProbeCurrentSetting();
                 ApplyProbedSetting(currentSetting);
-                ApplyDetectionStatus();
 
                 return currentSetting;
             }
@@ -146,21 +167,53 @@ namespace SynToolkit.ViewModels
         public void ApplyProbedSetting(bool detectedSetting)
         {
             IsStateAvailable = true;
+            IsStateKnown = true;
             ClearStatus();
             SetProperty(ref _currentSetting, detectedSetting, nameof(CurrentSetting));
             _configurationStore.CurrentSetting = detectedSetting;
+            ApplyDetectionStatus();
+            _stateVersion++;
+        }
+
+        /// <summary>
+        /// Applies a probe result only if the state has not changed since the probe
+        /// started; a click that lands mid-probe must win. Must run on the UI thread.
+        /// </summary>
+        public bool TryApplyProbedSetting(bool detectedSetting, int expectedVersion)
+        {
+            if (_stateVersion != expectedVersion)
+            {
+                return false;
+            }
+
+            ApplyProbedSetting(detectedSetting);
+            return true;
         }
 
         /// <summary>Applies a probe failure. Must run on the UI thread.</summary>
         public void ApplyProbeFailure(Exception exception)
         {
             IsStateAvailable = false;
+            IsStateKnown = true;
             SetStatus(
                 App.GetValueFromItemList("ConfigurationStatus_Unavailable"),
                 exception);
             App.logger.Warn(exception, $"Unable to detect current state for {Key}.");
             SetProperty(ref _currentSetting, false, nameof(CurrentSetting));
             _configurationStore.CurrentSetting = false;
+            _stateVersion++;
+        }
+
+        /// <summary>Applies a probe failure unless the state changed since the probe started.</summary>
+        public bool TryApplyProbeFailure(Exception exception, int expectedVersion)
+        {
+            if (_stateVersion != expectedVersion)
+            {
+                return false;
+            }
+
+            ApplyProbeFailure(exception);
+            return true;
         }
 
         public void RefreshCurrentSetting()
@@ -176,6 +229,7 @@ namespace SynToolkit.ViewModels
         /// </summary>
         public async Task RefreshCurrentSettingAsync()
         {
+            int version = _stateVersion;
             bool detectedSetting;
             try
             {
@@ -183,12 +237,11 @@ namespace SynToolkit.ViewModels
             }
             catch (Exception exception)
             {
-                ApplyProbeFailure(exception);
+                TryApplyProbeFailure(exception, version);
                 return;
             }
 
-            ApplyProbedSetting(detectedSetting);
-            ApplyDetectionStatus();
+            TryApplyProbedSetting(detectedSetting, version);
         }
 
         private void ApplyDetectionStatus()

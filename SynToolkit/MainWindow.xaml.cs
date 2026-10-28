@@ -673,27 +673,29 @@ namespace SynToolkit
             {
                 Parallel.ForEach(configItems, item =>
                 {
+                    int version = item.StateVersion;
                     try
                     {
                         bool detected = item.ProbeCurrentSetting();
-                        dispatcher.TryEnqueue(() => item.ApplyProbedSetting(detected));
+                        dispatcher.TryEnqueue(() => item.TryApplyProbedSetting(detected, version));
                     }
                     catch (Exception exception)
                     {
-                        dispatcher.TryEnqueue(() => item.ApplyProbeFailure(exception));
+                        dispatcher.TryEnqueue(() => item.TryApplyProbeFailure(exception, version));
                     }
                 });
 
                 Parallel.ForEach(multiItems, item =>
                 {
+                    int version = item.StateVersion;
                     try
                     {
                         string detected = item.ProbeCurrentSetting();
-                        dispatcher.TryEnqueue(() => item.ApplyProbedSetting(detected));
+                        dispatcher.TryEnqueue(() => item.TryApplyProbedSetting(detected, version));
                     }
                     catch (Exception exception)
                     {
-                        dispatcher.TryEnqueue(() => item.ApplyProbeFailure(exception));
+                        dispatcher.TryEnqueue(() => item.TryApplyProbeFailure(exception, version));
                     }
                 });
 

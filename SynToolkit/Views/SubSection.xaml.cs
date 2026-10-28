@@ -173,27 +173,29 @@ namespace SynToolkit.Views
                     var list = new System.Collections.Generic.List<System.Action>();
                     foreach (ConfigurationItemViewModel item in _viewModel.ConfigurationItems)
                     {
+                        int version = item.StateVersion;
                         try
                         {
                             bool detected = item.ProbeCurrentSetting();
-                            list.Add(() => item.ApplyProbedSetting(detected));
+                            list.Add(() => item.TryApplyProbedSetting(detected, version));
                         }
                         catch (Exception exception)
                         {
-                            list.Add(() => item.ApplyProbeFailure(exception));
+                            list.Add(() => item.TryApplyProbeFailure(exception, version));
                         }
                     }
 
                     foreach (MultiOptionConfigurationItemViewModel item in _viewModel.MultiOptionConfigurationItems)
                     {
+                        int version = item.StateVersion;
                         try
                         {
                             string detected = item.ProbeCurrentSetting();
-                            list.Add(() => item.ApplyProbedSetting(detected));
+                            list.Add(() => item.TryApplyProbedSetting(detected, version));
                         }
                         catch (Exception exception)
                         {
-                            list.Add(() => item.ApplyProbeFailure(exception));
+                            list.Add(() => item.TryApplyProbeFailure(exception, version));
                         }
                     }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using SynToolkit.Models;
 using SynToolkit.Models.ProfileModels;
 using SynToolkit.ViewModels;
@@ -11,6 +12,39 @@ namespace SynToolkit.Utils
 {
     public static class ProfileSerializing
     {
+        /// <summary>
+        /// Creates a .json profile with the enabled configuration services. Waits for
+        /// any item that has not been probed yet, so an export made right after
+        /// launch cannot record every toggle as off.
+        /// </summary>
+        public static async Task<Profiles> CreateProfileAsync(string profileName)
+        {
+            IEnumerable<ConfigurationItemViewModel> configItems =
+                App._host.Services.GetRequiredService<IEnumerable<ConfigurationItemViewModel>>();
+            IEnumerable<MultiOptionConfigurationItemViewModel> multiItems =
+                App._host.Services.GetRequiredService<IEnumerable<MultiOptionConfigurationItemViewModel>>();
+
+            List<Task> pending = new();
+            foreach (ConfigurationItemViewModel item in configItems)
+            {
+                if (!item.IsStateKnown)
+                {
+                    pending.Add(item.RefreshCurrentSettingAsync());
+                }
+            }
+
+            foreach (MultiOptionConfigurationItemViewModel item in multiItems)
+            {
+                if (!item.IsStateKnown)
+                {
+                    pending.Add(item.RefreshCurrentSettingAsync());
+                }
+            }
+
+            await Task.WhenAll(pending);
+            return CreateProfile(profileName);
+        }
+
         /// <summary>
         /// Creates a .json profile with the enabled configuration services
         /// </summary>
