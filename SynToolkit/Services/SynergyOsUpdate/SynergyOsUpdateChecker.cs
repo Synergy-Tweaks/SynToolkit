@@ -288,7 +288,7 @@ namespace SynToolkit.Services.SynergyOsUpdate
                 snapshot,
                 now,
                 updatesEnabled: true,
-                notifiedThisSession: ignoreSessionGate ? false : _notifiedThisSession);
+                notifiedThisSession: ignoreSessionGate || _notifiedThisSession);
 
             string? messageKey = outcome switch
             {

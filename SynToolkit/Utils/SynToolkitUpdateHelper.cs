@@ -93,7 +93,6 @@ namespace SynToolkit.Utils
                         ? resolved
                         : null;
 
-                _ = assetName;
                 _cachedStatus = new SynToolkitUpdateStatus(currentVersion, version, downloadUrl, size, digest);
                 _cacheExpiresUtc = DateTimeOffset.UtcNow.Add(CacheDuration);
                 return _cachedStatus;
@@ -173,6 +172,11 @@ namespace SynToolkit.Utils
                     {
                         throw new InvalidOperationException("The update download failed its SHA-256 integrity check.");
                     }
+                }
+                else
+                {
+                    // Older releases publish no digest; only the size above was checked.
+                    App.logger.Warn("[Update] The release publishes no SHA-256 digest; only the download size was verified.");
                 }
 
                 using Process? installerProcess = Process.Start(new ProcessStartInfo
