@@ -52,23 +52,19 @@ public static class DisplayService
             var (friendlyName, monitorPath) = ReadTargetName(path.TargetInfo);
             var (preferredWidth, preferredHeight) = ReadPreferredMode(path.TargetInfo);
 
-            // The source mode is the desktop surface, so it is already post-rotation
-            // (a portrait display reports portrait width/height). Target signal sizes
-            // are pre-rotation, hence the swap below.
-            var width = sourceMode?.Width ?? preferredWidth;
-            var height = sourceMode?.Height ?? preferredHeight;
+            // The source mode is reported pre-rotation, so the desktop size comes
+            // from swapping it for portrait/landscape-flipped orientations.
+            var rawWidth = sourceMode?.Width ?? preferredWidth;
+            var rawHeight = sourceMode?.Height ?? preferredHeight;
+            var (width, height) = DisplayModeCatalog.EffectiveModeSize(rawWidth, rawHeight, path.TargetInfo.Rotation);
             var positionX = sourceMode?.PositionX ?? 0;
             var positionY = sourceMode?.PositionY ?? 0;
 
-            var (signalWidth, signalHeight) = DisplayModeCatalog.EffectiveModeSize(
-                width,
-                height,
-                path.TargetInfo.Rotation);
             var effectiveSignal = DisplayModeCatalog.SwapsDimensions(path.TargetInfo.Rotation)
                 ? DisplayApplyService.ComposeTargetSignal(
                     targetSignal,
-                    signalWidth,
-                    signalHeight,
+                    width,
+                    height,
                     path.TargetInfo.RefreshRate,
                     liveRotation: 1,
                     targetRotation: path.TargetInfo.Rotation)

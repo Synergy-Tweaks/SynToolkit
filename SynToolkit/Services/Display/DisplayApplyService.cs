@@ -154,16 +154,11 @@ public static class DisplayApplyService
         mode.Mode.SourceMode = source;
         modes[sourceIdx] = mode;
 
-        // PixelWidth/Height are desktop (post-rotation); the target signal is pre-rotation.
-        var (signalWidth, signalHeight) = DisplayModeCatalog.EffectiveModeSize(
-            target.PixelWidth,
-            target.PixelHeight,
-            target.Rotation);
         mode = modes[targetIdx];
         mode.Mode.TargetMode.TargetVideoSignalInfo = ComposeTargetSignal(
             mode.Mode.TargetMode.TargetVideoSignalInfo,
-            signalWidth,
-            signalHeight,
+            target.PixelWidth,
+            target.PixelHeight,
             path.TargetInfo.RefreshRate,
             liveRotation,
             target.Rotation);
@@ -268,16 +263,16 @@ public static class DisplayApplyService
             monitor.RefreshDenominator);
         var signal = ComposeTargetSignal(
             TargetSignalOf(monitor),
-            resolution.Width,
-            resolution.Height,
+            effectiveWidth,
+            effectiveHeight,
             requestRefresh,
             monitor.Rotation,
             orientation.CcdRotation);
         if (!DisplayModeCatalog.SamePanelShape(
                 monitor.TargetActiveWidth,
                 monitor.TargetActiveHeight,
-                resolution.Width,
-                resolution.Height))
+                effectiveWidth,
+                effectiveHeight))
         {
             signal.TotalSize = new DisplayNative.DisplayConfig2DRegion();
             signal.PixelRate = 0;
@@ -510,11 +505,8 @@ public static class DisplayApplyService
             if (!confirmed)
                 return new DisplayApplyResult(false, ModeChangeResultMessage(target, modeResult, false), null);
 
-            // Don't wait for the CCD read-back here: a GDI rotation can report success
-            // while path.TargetInfo.Rotation still holds the old value until the
-            // SetDisplayConfig call below. That read used to abort the apply before
-            // the positions/rotation were written, leaving the screen rotated and the
-            // app showing an error. SetDisplayConfig's result is the real check.
+            if (!validateOnly && !WaitForMode(target))
+                return new DisplayApplyResult(false, ModeChangeResultMessage(target, DisplayNative.DispChangeSuccessful, false), null);
         }
 
         if (!validateOnly)
