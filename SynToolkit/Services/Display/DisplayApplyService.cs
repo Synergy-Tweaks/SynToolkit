@@ -510,8 +510,11 @@ public static class DisplayApplyService
             if (!confirmed)
                 return new DisplayApplyResult(false, ModeChangeResultMessage(target, modeResult, false), null);
 
-            if (!validateOnly && !WaitForMode(target))
-                return new DisplayApplyResult(false, ModeChangeResultMessage(target, DisplayNative.DispChangeSuccessful, false), null);
+            // Don't wait for the CCD read-back here: a GDI rotation can report success
+            // while path.TargetInfo.Rotation still holds the old value until the
+            // SetDisplayConfig call below. That read used to abort the apply before
+            // the positions/rotation were written, leaving the screen rotated and the
+            // app showing an error. SetDisplayConfig's result is the real check.
         }
 
         if (!validateOnly)
