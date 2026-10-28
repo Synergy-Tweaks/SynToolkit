@@ -140,6 +140,7 @@ namespace SynToolkit.Services.Startup
             // 32-bit machine-wide autostarts; the scanner otherwise misses every
             // entry written by a 32-bit installer.
             entries.AddRange(ScanRegistryKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run", true, cancellationToken, failures));
+            entries.AddRange(ScanRegistryKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\RunOnce", true, cancellationToken, failures));
             entries.AddRange(ScanRegistryKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce", true, cancellationToken, failures));
             return entries;
         }
@@ -611,7 +612,9 @@ namespace SynToolkit.Services.Startup
             }
             else
             {
-                requested = 2;
+                // Services disabled before SynToolkit remembered their start type
+                // have no saved value; Manual is the safe guess, not Automatic.
+                requested = 3;
                 if (RegistryHelper.TryReadValue(ServiceStartStoreKey, resolvedName, out object? saved)
                     && saved is int savedValue
                     && savedValue is >= 0 and <= 3)
