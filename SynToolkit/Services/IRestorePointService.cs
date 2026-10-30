@@ -17,7 +17,9 @@ namespace SynToolkit.Services
         ServiceUnavailable,
         TimedOut,
         Cancelled,
-        Failed
+        Failed,
+        /// <summary>Windows accepted the request but the point list could not be read back.</summary>
+        Unverified
     }
 
     public sealed record RestorePointEntry(
