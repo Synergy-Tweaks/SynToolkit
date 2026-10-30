@@ -277,7 +277,9 @@ namespace SynToolkit.Services.SynToolkitUpdate
                 snapshot,
                 now,
                 updatesEnabled: true,
-                notifiedThisSession: ignoreSessionGate ? false : _notifiedThisSession);
+                // A manual Settings check refreshes the status but must never
+                // re-open the update notice, so treat it as already notified.
+                notifiedThisSession: ignoreSessionGate || _notifiedThisSession);
 
             string? messageKey = outcome switch
             {

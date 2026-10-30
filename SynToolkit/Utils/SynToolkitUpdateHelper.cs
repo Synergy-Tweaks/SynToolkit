@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -17,7 +18,9 @@ namespace SynToolkit.Utils
     public sealed record SynToolkitUpdateStatus(
         Version CurrentVersion,
         Version? AvailableVersion,
-        string? DownloadUrl)
+        string? DownloadUrl,
+        long? ExpectedSize = null,
+        string? ExpectedDigest = null)
     {
         /// <summary>
         /// Uses the same SemVer comparison as the SynToolkit update notice
@@ -59,7 +62,7 @@ namespace SynToolkit.Utils
                 string json = await Client.GetStringAsync(LatestReleaseUrl, cancellationToken);
                 using JsonDocument release = JsonDocument.Parse(json);
 
-                (string? assetName, string? downloadUrl) = release.RootElement
+                (string? assetName, string? downloadUrl, long? size, string? digest) = release.RootElement
                     .GetProperty("assets")
                     .EnumerateArray()
                     .Select(asset =>
@@ -70,17 +73,27 @@ namespace SynToolkit.Utils
                         string? url = asset.TryGetProperty("browser_download_url", out JsonElement urlProperty)
                             ? urlProperty.GetString()
                             : null;
-                        return (name, url);
+                        long? length = asset.TryGetProperty("size", out JsonElement sizeProperty)
+                            && sizeProperty.TryGetInt64(out long parsedSize)
+                                ? parsedSize
+                                : null;
+                        string? assetDigest = asset.TryGetProperty("digest", out JsonElement digestProperty)
+                            ? digestProperty.GetString()
+                            : null;
+                        return (name, url, length, assetDigest);
                     })
-                    .Where(asset => IsSetupExecutable(asset.Item1) && !string.IsNullOrWhiteSpace(asset.Item2))
+                    .Where(asset => IsSetupExecutable(asset.name) && IsTrustedDownloadUrl(asset.url))
                     .FirstOrDefault();
 
-                Version? version = TryResolveReleaseVersion(release.RootElement, out Version? resolved)
-                    ? resolved
-                    : null;
+                // Take the version from the same asset that will be executed, so
+                // the download and the version check can never disagree.
+                Version? version = assetName is not null && TryGetSetupVersion(assetName, out Version? assetVersion)
+                    ? assetVersion
+                    : TryResolveReleaseVersion(release.RootElement, out Version? resolved)
+                        ? resolved
+                        : null;
 
-                _ = assetName;
-                _cachedStatus = new SynToolkitUpdateStatus(currentVersion, version, downloadUrl);
+                _cachedStatus = new SynToolkitUpdateStatus(currentVersion, version, downloadUrl, size, digest);
                 _cacheExpiresUtc = DateTimeOffset.UtcNow.Add(CacheDuration);
                 return _cachedStatus;
             }
@@ -110,31 +123,63 @@ namespace SynToolkit.Utils
                 return false;
             }
 
+            string tempDirectory = Path.Combine(Path.GetTempPath(), "SynToolkit", Guid.NewGuid().ToString("N"));
+            string installerPath = Path.Combine(tempDirectory, "SynToolkit-Setup.exe");
+            bool installerStarted = false;
+
             try
             {
-                string tempDirectory = Path.Combine(Path.GetTempPath(), "SynToolkit", Guid.NewGuid().ToString("N"));
                 Directory.CreateDirectory(tempDirectory);
-                string installerPath = Path.Combine(tempDirectory, "SynToolkit-Setup.exe");
 
-                using HttpResponseMessage response = await Client.GetAsync(
+                using (HttpResponseMessage response = await Client.GetAsync(
                     status.DownloadUrl,
                     HttpCompletionOption.ResponseHeadersRead,
-                    cancellationToken);
-                response.EnsureSuccessStatusCode();
-                await using (Stream source = await response.Content.ReadAsStreamAsync(cancellationToken))
-                await using (FileStream destination = new(
-                    installerPath,
-                    FileMode.Create,
-                    FileAccess.Write,
-                    FileShare.None,
-                    bufferSize: 81920,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan))
+                    cancellationToken))
                 {
+                    response.EnsureSuccessStatusCode();
+
+                    // Redirects are followed automatically, so check where the bytes
+                    // actually came from before writing them to disk.
+                    if (!IsTrustedDownloadUrl(response.RequestMessage?.RequestUri?.AbsoluteUri))
+                    {
+                        throw new InvalidOperationException("The update download came from an untrusted host.");
+                    }
+
+                    await using Stream source = await response.Content.ReadAsStreamAsync(cancellationToken);
+                    await using FileStream destination = new(
+                        installerPath,
+                        FileMode.Create,
+                        FileAccess.Write,
+                        FileShare.None,
+                        bufferSize: 81920,
+                        FileOptions.Asynchronous | FileOptions.SequentialScan);
                     await source.CopyToAsync(destination, cancellationToken);
                     await destination.FlushAsync(cancellationToken);
                 }
 
-                Process? installerProcess = Process.Start(new ProcessStartInfo
+                long downloadedSize = new FileInfo(installerPath).Length;
+                if (downloadedSize == 0 ||
+                    (status.ExpectedSize is long expectedSize && downloadedSize != expectedSize))
+                {
+                    throw new InvalidOperationException(
+                        $"The update download is incomplete ({downloadedSize} of {status.ExpectedSize?.ToString() ?? "unknown"} bytes).");
+                }
+
+                if (!string.IsNullOrWhiteSpace(status.ExpectedDigest))
+                {
+                    string actualDigest = await ComputeSha256Async(installerPath, cancellationToken);
+                    if (!DigestMatches(status.ExpectedDigest, actualDigest))
+                    {
+                        throw new InvalidOperationException("The update download failed its SHA-256 integrity check.");
+                    }
+                }
+                else
+                {
+                    // Older releases publish no digest; only the size above was checked.
+                    App.logger.Warn("[Update] The release publishes no SHA-256 digest; only the download size was verified.");
+                }
+
+                using Process? installerProcess = Process.Start(new ProcessStartInfo
                 {
                     FileName = installerPath,
                     Arguments = "/SILENT /NORESTART",
@@ -145,6 +190,29 @@ namespace SynToolkit.Utils
                 if (installerProcess is null)
                 {
                     throw new InvalidOperationException("The downloaded SynToolkit installer could not be started.");
+                }
+
+                installerStarted = true;
+
+                // Give the installer a moment to fail fast (blocked, bad args), but
+                // don't hold the app open while it replaces our files.
+                using (CancellationTokenSource settleGate = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+                {
+                    settleGate.CancelAfter(TimeSpan.FromSeconds(10));
+                    try
+                    {
+                        await installerProcess.WaitForExitAsync(settleGate.Token);
+                    }
+                    catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                    {
+                        // Still installing; hand over to it.
+                    }
+                }
+
+                if (installerProcess.HasExited && installerProcess.ExitCode != 0)
+                {
+                    throw new InvalidOperationException(
+                        $"The SynToolkit installer stopped with exit code {installerProcess.ExitCode}.");
                 }
 
                 App.ShutdownApplication();
@@ -158,6 +226,52 @@ namespace SynToolkit.Utils
             {
                 App.logger.Error(exception, "Failed to install the SynToolkit update.");
                 return false;
+            }
+            finally
+            {
+                if (!installerStarted)
+                {
+                    TryDeleteDirectory(tempDirectory);
+                }
+            }
+        }
+
+        private static async Task<string> ComputeSha256Async(string path, CancellationToken cancellationToken)
+        {
+            await using FileStream stream = File.OpenRead(path);
+            byte[] hash = await SHA256.HashDataAsync(stream, cancellationToken);
+            return Convert.ToHexString(hash);
+        }
+
+        private static bool DigestMatches(string expectedDigest, string actualHexDigest)
+        {
+            const string sha256Prefix = "sha256:";
+            string expected = expectedDigest.Trim();
+            if (!expected.StartsWith(sha256Prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                // GitHub only publishes sha256 digests today; anything else can't be checked.
+                App.logger.Warn($"[Update] Ignoring unsupported digest algorithm: {expectedDigest}");
+                return true;
+            }
+
+            return string.Equals(
+                expected[sha256Prefix.Length..].Trim(),
+                actualHexDigest,
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static void TryDeleteDirectory(string path)
+        {
+            try
+            {
+                if (Directory.Exists(path))
+                {
+                    Directory.Delete(path, recursive: true);
+                }
+            }
+            catch (Exception exception)
+            {
+                App.logger.Debug(exception, "[Update] Could not clean up {Path}.", path);
             }
         }
 
@@ -205,7 +319,13 @@ namespace SynToolkit.Utils
         private static bool IsSetupExecutable(string? assetName) =>
             !string.IsNullOrWhiteSpace(assetName) &&
             assetName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) &&
-            assetName.Contains("SynToolkit", StringComparison.OrdinalIgnoreCase);
+            assetName.StartsWith("SynToolkit-Setup", StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsTrustedDownloadUrl(string? url) =>
+            Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) &&
+            uri.Scheme == Uri.UriSchemeHttps &&
+            (uri.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase) ||
+             uri.Host.EndsWith(".githubusercontent.com", StringComparison.OrdinalIgnoreCase));
 
         private static bool TryGetSetupVersion(string? assetName, out Version? version)
         {
