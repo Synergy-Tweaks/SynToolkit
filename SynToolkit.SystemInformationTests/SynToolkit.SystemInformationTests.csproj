@@ -17,6 +17,9 @@
     <Compile Include="..\SynToolkit\Commands\AsyncCommandBase.cs" Link="Commands\AsyncCommandBase.cs" />
     <Compile Include="..\SynToolkit\Models\SystemInformationSnapshot.cs" Link="Models\SystemInformationSnapshot.cs" />
     <Compile Include="..\SynToolkit\Models\SystemSpecs.cs" Link="Models\SystemSpecs.cs" />
+    <Compile Include="..\SynToolkit\Models\Display\DisplayModels.cs" Link="Models\Display\DisplayModels.cs" />
+    <Compile Include="..\SynToolkit\Services\Display\DisplayNative.cs" Link="Services\Display\DisplayNative.cs" />
+    <Compile Include="..\SynToolkit\Services\Display\DisplayModeCatalog.cs" Link="Services\Display\DisplayModeCatalog.cs" />
     <Compile Include="..\SynToolkit\Services\AmePlaybookDetector.cs" Link="Services\AmePlaybookDetector.cs" />
     <Compile Include="..\SynToolkit\Services\Bcd\BcdContract.cs" Link="Services\Bcd\BcdContract.cs" />
     <Compile Include="..\SynToolkit\Services\Bcd\IBcdWmiProvider.cs" Link="Services\Bcd\IBcdWmiProvider.cs" />

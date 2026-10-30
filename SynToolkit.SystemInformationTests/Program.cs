@@ -126,6 +126,8 @@ internal static class Program
         Run("SystemResponsiveness detection is fresh each call", SystemResponsivenessTests.DetectionAlwaysUsesFreshInput);
         Run("SystemResponsiveness uint conversion", SystemResponsivenessTests.UIntConversionHandlesSignedNegativeOne);
         Run("Context menu service tests", ContextMenuServiceTests.RunAll);
+        Run("Display rotation swaps only portrait modes", DisplayModeTests.RotationSwapsOnlyPortrait);
+        Run("Display rotation flags match CCD values", DisplayModeTests.SwapsDimensionsMatchesCcdRotations);
 
         Console.WriteLine(_failures == 0
             ? "All SynToolkit service tests passed."

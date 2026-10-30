@@ -42,6 +42,7 @@ public sealed partial class DisplayPage : Page
     private bool _dragPointerSeen;
     private bool _dragCommitted;
     private readonly List<Window> _identifyWindows = [];
+    private int _identifyGeneration;
 
     public DisplayPageViewModel ViewModel { get; }
 
@@ -189,45 +190,61 @@ public sealed partial class DisplayPage : Page
         if (snapshot.Monitors.Count == 0)
             return;
 
-        foreach (var monitor in snapshot.Monitors)
+        int generation = ++_identifyGeneration;
+        try
         {
-            var window = new Window();
-            window.Content = new Border
+            foreach (var monitor in snapshot.Monitors)
             {
-                Background = FindBrush("AccentFillColorDefaultBrush"),
-                Child = new TextBlock
+                var window = new Window();
+                window.Content = new Border
                 {
-                    Text = monitor.Ordinal.ToString(),
-                    FontSize = 72,
-                    FontWeight = FontWeights.Bold,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Foreground = FindBrush("TextFillColorPrimaryBrush")
+                    Background = FindBrush("AccentFillColorDefaultBrush"),
+                    Child = new TextBlock
+                    {
+                        Text = monitor.Ordinal.ToString(),
+                        FontSize = 72,
+                        FontWeight = FontWeights.Bold,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Foreground = FindBrush("TextFillColorPrimaryBrush")
+                    }
+                };
+
+                var hwnd = WindowNative.GetWindowHandle(window);
+                var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+                var appWindow = AppWindow.GetFromWindowId(windowId);
+                appWindow.IsShownInSwitchers = false;
+                if (appWindow.Presenter is OverlappedPresenter presenter)
+                {
+                    presenter.SetBorderAndTitleBar(false, false);
+                    presenter.IsResizable = false;
+                    presenter.IsMinimizable = false;
+                    presenter.IsMaximizable = false;
                 }
-            };
-
-            var hwnd = WindowNative.GetWindowHandle(window);
-            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
-            var appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.IsShownInSwitchers = false;
-            if (appWindow.Presenter is OverlappedPresenter presenter)
-            {
-                presenter.SetBorderAndTitleBar(false, false);
-                presenter.IsResizable = false;
-                presenter.IsMinimizable = false;
-                presenter.IsMaximizable = false;
+                var width = Math.Min(220, Math.Max(120, (int)monitor.PixelWidth / 8));
+                var height = Math.Min(220, Math.Max(120, (int)monitor.PixelHeight / 8));
+                var x = monitor.PositionX + (((int)monitor.PixelWidth - width) / 2);
+                var y = monitor.PositionY + (((int)monitor.PixelHeight - height) / 2);
+                appWindow.MoveAndResize(new RectInt32(x, y, width, height));
+                window.Activate();
+                _identifyWindows.Add(window);
             }
-            var width = Math.Min(220, Math.Max(120, (int)monitor.PixelWidth / 8));
-            var height = Math.Min(220, Math.Max(120, (int)monitor.PixelHeight / 8));
-            var x = monitor.PositionX + (((int)monitor.PixelWidth - width) / 2);
-            var y = monitor.PositionY + (((int)monitor.PixelHeight - height) / 2);
-            appWindow.MoveAndResize(new RectInt32(x, y, width, height));
-            window.Activate();
-            _identifyWindows.Add(window);
-        }
 
-        await Task.Delay(2500);
-        CloseIdentifyWindows();
+            await Task.Delay(2500);
+        }
+        catch (Exception exception)
+        {
+            // Never let an async void handler take the process down mid display change.
+            App.logger.Error(exception, "[Display] Couldn't show display numbers.");
+            ViewModel.ShowStatus("Couldn't show the display numbers. Nothing changed.", DisplayNoticeKind.Failure);
+        }
+        finally
+        {
+            if (generation == _identifyGeneration)
+            {
+                CloseIdentifyWindows();
+            }
+        }
     }
 
     private void CloseIdentifyWindows()

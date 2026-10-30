@@ -27,7 +27,8 @@ public sealed record DisplayHdrState(
         (value & 0x10) != 0,
         (value & 0x20) != 0 || activeColorMode == 2,
         false,
-        false);
+        // Bit 3 of DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2 (advancedColorLimitedByPolicy).
+        (value & 0b1000) != 0);
 }
 
 public sealed record DisplayHdrRead(bool Success, DisplayHdrState? State, int ReturnCode);

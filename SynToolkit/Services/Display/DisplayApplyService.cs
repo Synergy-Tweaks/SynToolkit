@@ -622,7 +622,22 @@ public static class DisplayApplyService
         if (result != DisplayNative.ErrorSuccess)
             return new DisplayApplyResult(false, "Couldn't put the displays back where they belong. The settings on screen may not match what you picked.", null);
 
-        return new DisplayApplyResult(true, ApplySuccessMessage(persist), DisplayService.Load());
+        return new DisplayApplyResult(true, ApplySuccessMessage(persist), TryLoadAfterApply());
+    }
+
+    private static DisplaySnapshot? TryLoadAfterApply()
+    {
+        // The write already succeeded. A transient topology read failure must not
+        // turn a successful apply into a reported failure (and a revert).
+        try
+        {
+            return DisplayService.Load();
+        }
+        catch (Exception exception)
+        {
+            App.logger.Warn(exception, "[Display] Applied settings but could not read them back.");
+            return null;
+        }
     }
 
     private static DisplayApplyResult RevertToDatabase(DisplaySnapshot? baseline)
