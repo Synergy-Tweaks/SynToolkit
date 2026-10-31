@@ -19,6 +19,8 @@ namespace SynToolkit.ViewModels
         private readonly ConfigurationStore _configurationStore;
         private readonly IConfigurationService _configurationService;
 
+        internal ConfigurationStore Store => _configurationStore;
+
         public Configuration Configuration { get; set; }
         public string Name => Configuration.Name;
         public string Key => Configuration.Key;
