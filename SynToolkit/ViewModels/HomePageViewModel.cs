@@ -66,7 +66,7 @@ namespace SynToolkit.ViewModels
         }
 
         [RelayCommand]
-        private void AddProfile()
+        private async System.Threading.Tasks.Task AddProfile()
         {
             string profileName = Name.Trim();
             if (string.IsNullOrWhiteSpace(profileName))
@@ -76,7 +76,7 @@ namespace SynToolkit.ViewModels
 
             try
             {
-                Profiles profile = ProfileSerializing.CreateProfile(profileName);
+                Profiles profile = await ProfileSerializing.CreateProfileAsync(profileName);
                 ProfilesList.Add(profile);
                 ProfileSelected = profile;
                 Name = string.Empty;

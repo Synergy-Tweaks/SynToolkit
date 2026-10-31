@@ -43,12 +43,12 @@ namespace SynToolkit.Commands
                     ? _configurationService.Enable
                     : _configurationService.Disable);
 
-                _configurationItemViewModel.RefreshCurrentSetting();
+                await _configurationItemViewModel.RefreshCurrentSettingAsync();
             }
             catch (Exception exception)
             {
                 App.logger.Error(exception, $"Unable to apply {_configurationItemViewModel.Key}.");
-                _configurationItemViewModel.RefreshCurrentSetting();
+                await _configurationItemViewModel.RefreshCurrentSettingAsync();
                 _configurationItemViewModel.ShowApplyFailure(exception);
             }
             finally

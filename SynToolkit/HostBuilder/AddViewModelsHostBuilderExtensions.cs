@@ -261,15 +261,12 @@ namespace SynToolkit.HostBuilder
             {
                 services.AddSingleton<IEnumerable<MultiOptionConfigurationItemViewModel>>(provider =>
                 {
-                    // Probes (registry/powercfg/WMI) are independent reads: run them
-                    // in parallel so cold startup pays the slowest probe, not the sum.
-                    KeyValuePair<string, MultiOptionConfiguration>[] entries = configurationDictionary.ToArray();
-                    MultiOptionConfigurationItemViewModel[] viewModels = new MultiOptionConfigurationItemViewModel[entries.Length];
-                    System.Threading.Tasks.Parallel.For(0, entries.Length, i =>
+                    List<MultiOptionConfigurationItemViewModel> viewModels = new();
+                    foreach (KeyValuePair<string, MultiOptionConfiguration> entry in configurationDictionary)
                     {
-                        viewModels[i] = CreateMultiOptionConfigurationItemViewModel(provider, entries[i].Key, entries[i].Value);
-                    });
-                    App.logger.Info($"[VMHostBuilder] Successfully loaded {viewModels.Length} multi-configuration entries");
+                        viewModels.Add(CreateMultiOptionConfigurationItemViewModel(provider, entry.Key, entry.Value));
+                    }
+                    App.logger.Info($"[VMHostBuilder] Successfully loaded {viewModels.Count} multi-configuration entries");
                     return viewModels;
                 });
             });
@@ -404,14 +401,12 @@ namespace SynToolkit.HostBuilder
             {
                 services.AddSingleton<IEnumerable<ConfigurationItemViewModel>>(provider =>
                 {
-                    // See multi-option factory above: probe in parallel.
-                    KeyValuePair<string, Configuration>[] entries = configurationDictionary.ToArray();
-                    ConfigurationItemViewModel[] viewModels = new ConfigurationItemViewModel[entries.Length];
-                    System.Threading.Tasks.Parallel.For(0, entries.Length, i =>
+                    List<ConfigurationItemViewModel> viewModels = new();
+                    foreach (KeyValuePair<string, Configuration> entry in configurationDictionary)
                     {
-                        viewModels[i] = CreateConfigurationItemViewModel(provider, entries[i].Key, entries[i].Value);
-                    });
-                    App.logger.Info($"[VMHostBuilder] Successfully loaded {viewModels.Length} configuration entries");
+                        viewModels.Add(CreateConfigurationItemViewModel(provider, entry.Key, entry.Value));
+                    }
+                    App.logger.Info($"[VMHostBuilder] Successfully loaded {viewModels.Count} configuration entries");
                     return viewModels;
                 });
             });
