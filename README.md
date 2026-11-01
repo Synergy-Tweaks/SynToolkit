@@ -100,3 +100,13 @@ SynToolkit is licensed under the [GNU General Public License v3.0](LICENSE).
 - **Discord:** [dsc.gg/kwanteks](https://dsc.gg/kwanteks)
 - **YouTube:** [youtube.com/@kwanteks](https://youtube.com/@kwanteks)
 - **Repository:** [github.com/Synergy-Tweaks/SynToolkit](https://github.com/Synergy-Tweaks/SynToolkit)
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=synergy-tweaks%2Fsyntoolkit&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=synergy-tweaks/syntoolkit&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=synergy-tweaks/syntoolkit&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=synergy-tweaks/syntoolkit&type=date&legend=top-left" />
+ </picture>
+</a>
