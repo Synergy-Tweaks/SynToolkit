@@ -858,7 +858,12 @@ namespace SynToolkit.Services
                 "--disable-interactivity"
             ];
 
-            if (!string.IsNullOrWhiteSpace(installMetadata.Scope))
+            // An upgrade must target the scope that is actually installed. Packages such as Git
+            // publish both a user and a machine installer, and the manifest order says nothing
+            // about which one is on this PC; forcing the first one makes winget fail with
+            // "No installed package found matching input criteria". Winget matches the
+            // installed entry by itself when no scope is given.
+            if (!isUpdate && !string.IsNullOrWhiteSpace(installMetadata.Scope))
             {
                 arguments.Add("--scope");
                 arguments.Add(installMetadata.Scope);

@@ -11,40 +11,31 @@ using System.Text;
 namespace SynToolkit.Utils
 {
     /// <summary>
-    /// Launches a process in the interactive console user's desktop session rather than
-    /// SynToolkit's own elevated (Administrator) session. Some per-user operations (notably
-    /// the Set-WinUserLanguageList PowerShell cmdlet) act on the caller's own profile; running
-    /// them inline while SynToolkit is elevated would silently apply to the Administrator
-    /// token's profile instead of the signed-in user's. This uses the standard Windows
-    /// technique for that: duplicate the console session's user token and pass it to
-    /// CreateProcessAsUser.
+    /// Launches a process as the signed-in desktop user rather than with SynToolkit's own
+    /// elevated (Administrator) token. Some per-user operations (notably the
+    /// Set-WinUserLanguageList PowerShell cmdlet, and winget packages that must not run
+    /// elevated) act on the caller's own profile; running them inline while SynToolkit is
+    /// elevated would silently apply to the Administrator token's profile instead of the
+    /// signed-in user's.
     /// </summary>
     public static class InteractiveUserProcessHelper
     {
         // MAXIMUM_ALLOWED grants exactly the rights available on the token; requesting
         // GENERIC_ALL can fail if it asks for more than is actually grantable.
         private const uint MAXIMUM_ALLOWED = 0x02000000;
+        private const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+        private const uint TOKEN_ASSIGN_PRIMARY = 0x0001;
+        private const uint TOKEN_DUPLICATE = 0x0002;
+        private const uint TOKEN_QUERY = 0x0008;
+        private const uint LOGON_WITH_PROFILE = 0x00000001;
 
         public static int RunAsInteractiveUser(string fileName, string arguments, int timeoutMilliseconds = 30_000)
         {
-            uint sessionId = WTSGetActiveConsoleSessionId();
-            if (sessionId == 0xFFFFFFFF)
-            {
-                throw new InvalidOperationException("No user is currently signed in to the active console session.");
-            }
+            IntPtr userToken = GetShellUserToken();
 
-            if (!WTSQueryUserToken(sessionId, out IntPtr userToken))
-            {
-                throw new Win32Exception(Marshal.GetLastWin32Error(), "Unable to query the console user's token.");
-            }
-
-            // CreateProcessAsUser does not itself load the target user's registry hive into
-            // HKEY_USERS, but LoadUserProfile is unnecessary here: this always targets the
-            // *active console session* via WTSGetActiveConsoleSessionId, and per Microsoft's
-            // LoadUserProfile documentation, "When a user logs on interactively, the system
-            // automatically loads the user's profile" — that's already true for whoever is
-            // signed in on the console we just queried, so HKEY_CURRENT_USER resolves
-            // correctly for the launched process without an extra LoadUserProfile call.
+            // LOGON_WITH_PROFILE makes CreateProcessWithTokenW load the user's profile, so
+            // HKEY_CURRENT_USER and %APPDATA% resolve to the signed-in user, not to the
+            // elevated Administrator token SynToolkit is running under.
             IntPtr primaryToken = IntPtr.Zero;
             IntPtr environmentBlock = IntPtr.Zero;
             try
@@ -53,7 +44,7 @@ namespace SynToolkit.Utils
                         userToken,
                         MAXIMUM_ALLOWED,
                         IntPtr.Zero,
-                        SECURITY_IMPERSONATION_LEVEL.SecurityIdentification,
+                        SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation,
                         TOKEN_TYPE.TokenPrimary,
                         out primaryToken))
                 {
@@ -68,28 +59,23 @@ namespace SynToolkit.Utils
                 STARTUPINFO startupInfo = new();
                 startupInfo.cb = Marshal.SizeOf<STARTUPINFO>();
 
-                SECURITY_ATTRIBUTES processAttributes = new() { nLength = Marshal.SizeOf<SECURITY_ATTRIBUTES>() };
-                SECURITY_ATTRIBUTES threadAttributes = new() { nLength = Marshal.SizeOf<SECURITY_ATTRIBUTES>() };
-
                 string commandLine = string.IsNullOrEmpty(arguments) ? $"\"{fileName}\"" : $"\"{fileName}\" {arguments}";
 
                 const uint CREATE_NO_WINDOW = 0x08000000;
                 const uint CREATE_UNICODE_ENVIRONMENT = 0x00000400;
 
-                if (!CreateProcessAsUser(
+                if (!CreateProcessWithTokenW(
                         primaryToken,
+                        LOGON_WITH_PROFILE,
                         null,
                         commandLine,
-                        ref processAttributes,
-                        ref threadAttributes,
-                        false,
                         CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT,
                         environmentBlock,
                         null,
                         ref startupInfo,
                         out PROCESS_INFORMATION processInformation))
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Unable to start the process in the console user's session.");
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Unable to start the process as the signed-in user.");
                 }
 
                 try
@@ -119,6 +105,39 @@ namespace SynToolkit.Utils
                     CloseHandle(primaryToken);
                 }
                 CloseHandle(userToken);
+            }
+        }
+
+        // WTSQueryUserToken requires SeTcbPrivilege (SYSTEM only), so an elevated-but-not-SYSTEM
+        // app always fails it with error 1314. The desktop shell already runs as the signed-in
+        // user at medium integrity, which is exactly the context these operations need.
+        private static IntPtr GetShellUserToken()
+        {
+            IntPtr shellWindow = GetShellWindow();
+            if (shellWindow == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("The Windows desktop shell is not running, so the operation cannot be run as the signed-in user.");
+            }
+
+            GetWindowThreadProcessId(shellWindow, out uint shellProcessId);
+            IntPtr shellProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, shellProcessId);
+            if (shellProcess == IntPtr.Zero)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "Unable to open the desktop shell process.");
+            }
+
+            try
+            {
+                if (!OpenProcessToken(shellProcess, TOKEN_QUERY | TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY, out IntPtr shellToken))
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Unable to open the signed-in user's shell token.");
+                }
+
+                return shellToken;
+            }
+            finally
+            {
+                CloseHandle(shellProcess);
             }
         }
 
@@ -201,11 +220,29 @@ namespace SynToolkit.Utils
             }
         }
 
-        [DllImport("kernel32.dll")]
-        private static extern uint WTSGetActiveConsoleSessionId();
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetShellWindow();
 
-        [DllImport("wtsapi32.dll", SetLastError = true)]
-        private static extern bool WTSQueryUserToken(uint sessionId, out IntPtr token);
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr OpenProcess(uint desiredAccess, bool inheritHandle, uint processId);
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        private static extern bool OpenProcessToken(IntPtr process, uint desiredAccess, out IntPtr token);
+
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern bool CreateProcessWithTokenW(
+            IntPtr token,
+            uint logonFlags,
+            string? applicationName,
+            string commandLine,
+            uint creationFlags,
+            IntPtr environment,
+            string? currentDirectory,
+            ref STARTUPINFO startupInfo,
+            out PROCESS_INFORMATION processInformation);
 
         [DllImport("advapi32.dll", SetLastError = true)]
         private static extern bool DuplicateTokenEx(
@@ -221,20 +258,6 @@ namespace SynToolkit.Utils
 
         [DllImport("userenv.dll", SetLastError = true)]
         private static extern bool DestroyEnvironmentBlock(IntPtr environment);
-
-        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern bool CreateProcessAsUser(
-            IntPtr token,
-            string? applicationName,
-            string commandLine,
-            ref SECURITY_ATTRIBUTES processAttributes,
-            ref SECURITY_ATTRIBUTES threadAttributes,
-            bool inheritHandles,
-            uint creationFlags,
-            IntPtr environment,
-            string? currentDirectory,
-            ref STARTUPINFO startupInfo,
-            out PROCESS_INFORMATION processInformation);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern uint WaitForSingleObject(IntPtr handle, uint milliseconds);
@@ -259,14 +282,6 @@ namespace SynToolkit.Utils
         {
             TokenPrimary = 1,
             TokenImpersonation
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct SECURITY_ATTRIBUTES
-        {
-            public int nLength;
-            public IntPtr lpSecurityDescriptor;
-            public int bInheritHandle;
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
