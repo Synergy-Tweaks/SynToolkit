@@ -5,7 +5,7 @@ Post-installation control panel for [SynergyOS](https://github.com/kwanteks/syne
 SynToolkit is a WinUI 3 (C#) toolkit built by [Kwanteks](https://github.com/kwanteks) under [Synergy-Tweaks](https://github.com/Synergy-Tweaks). After you install SynergyOS, use it as the control panel to shape the system to your liking: tweaks, apps, power plans, hardware info, and day-to-day fixes.
 
 <p align="center">
-  <img width="1919" height="1094" alt="SynToolkit Preview" src="https://github.com/user-attachments/assets/0f403bcb-0be6-4805-9f7d-3959a9586abe" />
+  <img width="2356" height="1280" alt="SynToolkit 1 7" src="https://github.com/user-attachments/assets/74cee825-bc9a-4cd5-8332-2428b4df501e" />
 </p>
 
 <p align="center">
