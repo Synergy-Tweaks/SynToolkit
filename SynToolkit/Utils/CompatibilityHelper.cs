@@ -1,19 +1,21 @@
 #nullable enable
 
+using SynToolkit.Services;
 using System;
 
 namespace SynToolkit.Utils
 {
     public static class CompatibilityHelper
     {
-        public const int MinimumWindowsBuild = 17763;
+        /// <summary>SynergyOS / SynToolkit floor: Windows 10 2004 (build 19041).</summary>
+        public const int MinimumWindowsBuild = WindowsVersionService.MinimumSupportedBuild;
         public const string SynergyOsReleasesUrl = CommunityLinks.SynergyOsReleasesUrl;
 
         private const string OemInformationPath = @"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation";
         private const string SynergyOsOemManufacturer = "Kwanteks";
 
-        // SynergyOS installs may use either the short SOS marker or the full name.
-        private static readonly string[] SynergyOsOemModels = ["SOS 11", "SYNERGYOS"];
+        // SynergyOS OEM Model: SOS 10 (Win10), SOS 11 (Win11), or full name.
+        private static readonly string[] SynergyOsOemModels = ["SOS 10", "SOS 11", "SYNERGYOS"];
 
         // Written by the SynergyOS playbook as OEMInformation\SupportURL.
         // Accept the current dsc.gg invite plus the legacy discord.gg form.
@@ -24,16 +26,17 @@ namespace SynToolkit.Utils
         ];
 
         /// <summary>
-        /// SynToolkit requires 64-bit Windows 10 version 1809 or newer.
+        /// SynToolkit requires 64-bit Windows 10 2004 (build 19041) or newer,
+        /// including Windows 10 22H2 and Windows 11. Uses the registry build,
+        /// not ProductName / Environment.OSVersion.
         /// </summary>
         public static bool IsWindowsCompatible() =>
-            Environment.Is64BitOperatingSystem &&
-            OperatingSystem.IsWindowsVersionAtLeast(10, 0, MinimumWindowsBuild);
+            Environment.Is64BitOperatingSystem && WindowsVersionService.IsSupported;
 
         /// <summary>
         /// SynToolkit requires a SynergyOS installation identified by the OEM
         /// registry markers written by the SynergyOS playbook:
-        /// Model = SOS 11 (or SYNERGYOS), Manufacturer = Kwanteks,
+        /// Model = SOS 10, SOS 11, or SYNERGYOS; Manufacturer = Kwanteks;
         /// SupportURL = https://dsc.gg/kwanteks (or legacy discord.gg/kwanteks).
         /// </summary>
         public static bool IsSynergyOsCompatible()

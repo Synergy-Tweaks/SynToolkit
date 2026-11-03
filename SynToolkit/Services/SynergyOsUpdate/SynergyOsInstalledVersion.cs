@@ -11,7 +11,7 @@ namespace SynToolkit.Services.SynergyOsUpdate
     /// Single entry point for reading the installed SynergyOS playbook version.
     /// Source: AME/OEM playbook metadata via <see cref="ISystemInformationService"/>,
     /// gated by <see cref="CompatibilityHelper.IsSynergyOsCompatible"/> OEM markers
-    /// (Manufacturer=Kwanteks, Model=SOS 11|SYNERGYOS, SupportURL=dsc.gg/kwanteks).
+    /// (Manufacturer=Kwanteks, Model=SOS 10|SOS 11|SYNERGYOS, SupportURL=dsc.gg/kwanteks).
     /// </summary>
     public static class SynergyOsInstalledVersion
     {

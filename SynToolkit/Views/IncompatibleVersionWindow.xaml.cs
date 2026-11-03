@@ -1,4 +1,6 @@
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using SynToolkit.Services;
 using SynToolkit.Utils;
 using System;
 using System.Runtime.InteropServices;
@@ -22,14 +24,58 @@ namespace SynToolkit
             ExtendsContentIntoTitleBar = true;
             InitializeComponent();
             LoadText(reason);
+            if (reason == IncompatibleVersionReason.Windows)
+            {
+                Activated += OnActivatedShowUnsupportedDialog;
+            }
+        }
+
+        private async void OnActivatedShowUnsupportedDialog(object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                return;
+            }
+
+            if (Content?.XamlRoot is null)
+            {
+                return;
+            }
+
+            Activated -= OnActivatedShowUnsupportedDialog;
+
+            WindowsVersionInfo info = WindowsVersionService.Current;
+            string detected = WindowsVersionService.FormatDetected(info);
+            string required =
+                "SynToolkit requires 64-bit Windows 10 version 2004 (build 19041) or newer, including Windows 10 22H2 and Windows 11.";
+
+            ContentDialog dialog = new()
+            {
+                XamlRoot = Content.XamlRoot,
+                Title = "Unsupported Windows version",
+                Content = $"{detected}\r\n\r\n{required}",
+                CloseButtonText = "OK",
+                DefaultButton = ContentDialogButton.Close
+            };
+
+            try
+            {
+                await dialog.ShowAsync();
+            }
+            catch (Exception exception)
+            {
+                App.logger.Warn(exception, "Unable to show unsupported Windows ContentDialog.");
+            }
         }
 
         private void LoadText(IncompatibleVersionReason reason)
         {
             if (reason == IncompatibleVersionReason.Windows)
             {
+                WindowsVersionInfo info = WindowsVersionService.Current;
+                string detected = WindowsVersionService.FormatDetected(info);
                 IncompatibleVer.Text =
-                    "This version of Windows is not supported by SynToolkit.\r\nSynToolkit requires 64-bit Windows 10 version 1809 (build 17763) or newer.";
+                    $"This version of Windows is not supported by SynToolkit.\r\n{detected}\r\nSynToolkit requires 64-bit Windows 10 version 2004 (build 19041) or newer.";
                 ReleasesLink.Content = CompatibilityHelper.SynergyOsReleasesUrl;
                 ReleasesLink.NavigateUri = new Uri(CompatibilityHelper.SynergyOsReleasesUrl);
                 return;

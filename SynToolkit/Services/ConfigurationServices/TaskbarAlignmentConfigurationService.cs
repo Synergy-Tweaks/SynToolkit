@@ -34,7 +34,9 @@ namespace SynToolkit.Services.ConfigurationServices
         {
             if (!IsWindows11())
             {
-                throw new NotSupportedException("Requires Windows 11");
+                // Win11-only: skip instead of failing the whole page on Windows 10.
+                _store.CurrentSetting = TaskbarAlignmentValues.LabelUnknown;
+                return;
             }
 
             if (status < 0 || status >= TaskbarAlignmentValues.Presets.Count)
@@ -52,7 +54,8 @@ namespace SynToolkit.Services.ConfigurationServices
         {
             if (!IsWindows11())
             {
-                throw new NotSupportedException("Requires Windows 11");
+                _store.CurrentSetting = TaskbarAlignmentValues.LabelUnknown;
+                return _store.CurrentSetting;
             }
 
             TaskbarAlignmentValues.DetectionResult detection = DetectCurrentState();
@@ -84,7 +87,8 @@ namespace SynToolkit.Services.ConfigurationServices
         {
             if (!IsWindows11())
             {
-                throw new NotSupportedException("Requires Windows 11");
+                _store.CurrentSetting = TaskbarAlignmentValues.LabelUnknown;
+                return;
             }
 
             TaskbarAlignmentValues.DetectionResult before = DetectCurrentState();
@@ -119,8 +123,7 @@ namespace SynToolkit.Services.ConfigurationServices
             App.ContentDialogCaller("restartExplorer");
         }
 
-        private static bool IsWindows11() =>
-            OperatingSystem.IsWindowsVersionAtLeast(10, 0, TaskbarAlignmentValues.MinimumWindows11Build);
+        private static bool IsWindows11() => WindowsVersionService.IsWindows11;
 
         private static void NotifyShellSettingChanged()
         {

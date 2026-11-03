@@ -194,9 +194,8 @@ namespace SynToolkit.Views
                 ISystemInformationService detector = App._host.Services.GetRequiredService<ISystemInformationService>();
                 SystemInformationSnapshot snapshot = detector.Detect();
 
-                WindowsIdentityText.Text = $"{App.GetValueFromItemList("SystemInfo_Windows")}: "
-                    + $"{snapshot.WindowsProductName} • {snapshot.WindowsDisplayVersion} • "
-                    + $"{snapshot.WindowsBuild} • {snapshot.Architecture}";
+                WindowsIdentityText.Text = WindowsVersionService.FormatDetected(WindowsVersionService.Current)
+                    + $" • {snapshot.Architecture}";
 
                 if (snapshot.CustomWindowsBuild is not null)
                 {

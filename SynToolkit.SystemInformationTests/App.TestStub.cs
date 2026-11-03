@@ -27,6 +27,7 @@ internal sealed class TestLogger
     internal void Info<T1, T2>(string message, T1 arg1, T2 arg2) { }
 
     internal void Warn(string message) { }
+    internal void Warn<T>(string message, T arg) { }
     internal void Warn(Exception exception, string message) { }
     internal void Warn<T>(Exception exception, string message, T arg) { }
 

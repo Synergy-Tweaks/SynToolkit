@@ -83,6 +83,8 @@ internal static class Program
         Run("Taskbar alignment detection rules", TaskbarAlignmentTests.DetectionRules);
         Run("Taskbar alignment Windows version gate", TaskbarAlignmentTests.WindowsVersionGate);
         Run("Taskbar alignment detection is fresh", TaskbarAlignmentTests.DetectionIsFreshEachCall);
+        Run("Windows version classification", WindowsVersionServiceTests.ClassificationRules);
+        Run("Windows version detected label", WindowsVersionServiceTests.FormatDetectedLabel);
         Run("Favorite ID migration maps FsoAndGameBar", FavoriteIdMigrationTests.LegacyFsoMapsToSplitIds);
         Run("Favorite ID migration ignores unknown", FavoriteIdMigrationTests.UnknownIdsPassthroughOrIgnored);
         Run("Favorite ID profile expansion", FavoriteIdMigrationTests.ProfileKeyExpansion);

@@ -48,8 +48,8 @@ namespace SynToolkit.Services.ConfigurationServices
         {
             try
             {
-                // Windows 10 and earlier already use the legacy menu by default.
-                if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+                // Windows 10 already uses the legacy menu by default.
+                if (!WindowsVersionService.IsWindows11)
                 {
                     return true;
                 }
