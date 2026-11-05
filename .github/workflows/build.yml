@@ -6,14 +6,33 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Build and publish a GitHub Release
+        type: boolean
+        default: false
 
 jobs:
   build:
     runs-on: windows-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      installer: ${{ steps.installer.outputs.name }}
 
     steps:
       - name: Check out source
         uses: actions/checkout@v6
+
+      - name: Read application version
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content -Raw -LiteralPath SynToolkit\SynToolkit.csproj
+          $version = @($project.Project.PropertyGroup.Version | Where-Object { $_ })[0]
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            throw 'The SynToolkit version could not be read from the project file.'
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Set up .NET 8
         uses: actions/setup-dotnet@v5
@@ -39,6 +58,19 @@ jobs:
       - name: Publish SynToolkit
         run: msbuild SynToolkit\SynToolkit.csproj /t:Publish /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=true /p:PublishDir="${{ github.workspace }}\artifacts\publish\"
 
+      - name: Sync installer version
+        shell: pwsh
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $path = 'Installer\setup.iss'
+          $text = Get-Content -Raw -LiteralPath $path
+          $text = $text -replace '#define MyAppVersion "[^"\r\n]*"', "#define MyAppVersion `"$env:APP_VERSION`""
+          if ($text -notmatch [regex]::Escape("#define MyAppVersion `"$env:APP_VERSION`"")) {
+            throw 'Could not set MyAppVersion in Installer\setup.iss'
+          }
+          Set-Content -LiteralPath $path -Value $text
+
       - name: Compile setup wizard
         uses: robin24/inno-setup-action@v1
         with:
@@ -61,3 +93,50 @@ jobs:
           name: ${{ steps.installer.outputs.name }}
           path: ${{ steps.installer.outputs.path }}
           if-no-files-found: error
+
+  release:
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download installer
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.installer }}
+
+      - name: Create checksums
+        run: sha256sum *.exe > SHA256SUMS.txt
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "::error::Release $VERSION already exists"
+            exit 1
+          fi
+
+          gh release create "$VERSION" *.exe SHA256SUMS.txt \
+            --target "$GITHUB_SHA" \
+            --title "SynToolkit $VERSION" \
+            --generate-notes \
+            --latest
+
+          gh release view "$VERSION" --json body -q .body > release-body.md
+          {
+            echo
+            echo "### SHA-256"
+            echo '```'
+            cat SHA256SUMS.txt
+            echo '```'
+          } >> release-body.md
+          gh release edit "$VERSION" --notes-file release-body.md
