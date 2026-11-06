@@ -17,7 +17,14 @@ namespace SynToolkit.Services
     /// </summary>
     public static class JunkFileCleanerService
     {
-        private sealed record JunkLocation(string Directory, string SearchPattern, SearchOption SearchOption);
+        // MinAge keeps a sweep away from files something is still writing: installers unpack
+        // into %TEMP%, and SynToolkit's own interactive-user helper stages its .cmd and .log
+        // there while a queue item runs. Deleting those mid-run fails the install.
+        private sealed record JunkLocation(
+            string Directory,
+            string SearchPattern,
+            SearchOption SearchOption,
+            TimeSpan MinAge = default);
 
         public static List<JunkCategoryScanResult> Scan()
         {
@@ -67,10 +74,12 @@ namespace SynToolkit.Services
 
             return category switch
             {
+                // Ten minutes is longer than any single installer step waits on a temp file and
+                // shorter than what a user would call "leftover junk".
                 JunkCategory.TempFiles => new[]
                 {
-                    new JunkLocation(Path.GetTempPath(), "*", SearchOption.AllDirectories),
-                    new JunkLocation(Path.Combine(windowsDirectory, "Temp"), "*", SearchOption.AllDirectories),
+                    new JunkLocation(Path.GetTempPath(), "*", SearchOption.AllDirectories, TimeSpan.FromMinutes(10)),
+                    new JunkLocation(Path.Combine(windowsDirectory, "Temp"), "*", SearchOption.AllDirectories, TimeSpan.FromMinutes(10)),
                 },
                 JunkCategory.BrowserCaches => new[]
                 {
@@ -146,11 +155,19 @@ namespace SynToolkit.Services
                     continue;
                 }
 
+                DateTime cutoffUtc = DateTime.UtcNow - location.MinAge;
+
                 foreach (string file in EnumerateFilesSafely(location))
                 {
                     try
                     {
-                        totalSize += (ulong)new FileInfo(file).Length;
+                        FileInfo info = new(file);
+                        if (info.LastWriteTimeUtc > cutoffUtc)
+                        {
+                            continue;
+                        }
+
+                        totalSize += (ulong)info.Length;
                         totalCount++;
                     }
                     catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
@@ -174,11 +191,19 @@ namespace SynToolkit.Services
                     continue;
                 }
 
+                DateTime cutoffUtc = DateTime.UtcNow - location.MinAge;
+
                 foreach (string file in EnumerateFilesSafely(location))
                 {
                     try
                     {
-                        long length = new FileInfo(file).Length;
+                        FileInfo info = new(file);
+                        if (info.LastWriteTimeUtc > cutoffUtc)
+                        {
+                            continue;
+                        }
+
+                        long length = info.Length;
                         File.Delete(file);
                         freedBytes += (ulong)length;
                     }
