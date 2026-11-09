@@ -65,6 +65,10 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationService, BluetoothConfigurationService>("Bluetooth");
                 services.AddKeyedTransient<IConfigurationService, XboxServicesConfigurationService>("XboxServices");
                 services.AddKeyedTransient<IConfigurationService, FullScreenOptimizationsConfigurationService>("FullScreenOptimizations");
+            services.AddKeyedTransient<IConfigurationService, MmcssGamesTaskConfigurationService>("MmcssGamesTask");
+            services.AddKeyedTransient<IConfigurationService, NetworkThrottlingConfigurationService>("NetworkThrottling");
+            services.AddKeyedTransient<IConfigurationService, PowerThrottlingConfigurationService>("PowerThrottling");
+            services.AddKeyedTransient<IConfigurationService, LatencyPowerPlanConfigurationService>("LatencyPowerPlan");
                 services.AddKeyedTransient<IConfigurationService, XboxGameBarConfigurationService>("XboxGameBar");
                 services.AddKeyedTransient<IConfigurationService, LanmanWorkstationConfigurationService>("LanmanWorkstation");
                 services.AddKeyedTransient<IConfigurationService, SearchIndexingConfigurationService>("SearchIndexing");
@@ -189,6 +193,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationSubMenu, FileSharingSubMenu>("FileSharingSubMenu");
                 services.AddKeyedTransient<IConfigurationSubMenu, WindowsUpdateSubMenu>("WindowsUpdate");
                 services.AddKeyedTransient<IConfigurationSubMenu, TweaksPerformanceSubMenu>("TweaksPerformanceSubMenu");
+            services.AddKeyedTransient<IConfigurationSubMenu, LatencyTweaksSubMenu>("LatencyTweaksSubMenu");
                 services.AddKeyedTransient<IConfigurationSubMenu, TweaksNetworkPowerSubMenu>("TweaksNetworkPowerSubMenu");
                 services.AddKeyedTransient<IConfigurationSubMenu, TweaksPrivacySubMenu>("TweaksPrivacySubMenu");
                 services.AddKeyedTransient<IConfigurationSubMenu, TweaksInterfaceSubMenu>("TweaksInterfaceSubMenu");

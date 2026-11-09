@@ -28,6 +28,10 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<ConfigurationStore>("Bluetooth");
                 services.AddKeyedSingleton<ConfigurationStore>("XboxServices");
                 services.AddKeyedSingleton<ConfigurationStore>("FullScreenOptimizations");
+            services.AddKeyedSingleton<ConfigurationStore>("MmcssGamesTask");
+            services.AddKeyedSingleton<ConfigurationStore>("NetworkThrottling");
+            services.AddKeyedSingleton<ConfigurationStore>("PowerThrottling");
+            services.AddKeyedSingleton<ConfigurationStore>("LatencyPowerPlan");
                 services.AddKeyedSingleton<ConfigurationStore>("XboxGameBar");
                 services.AddKeyedSingleton<ConfigurationStore>("LanmanWorkstation");
                 services.AddKeyedSingleton<ConfigurationStore>("SearchIndexing");
@@ -153,6 +157,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("FileSharingSubMenu");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("WindowsUpdate");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("TweaksPerformanceSubMenu");
+            services.AddKeyedSingleton<ConfigurationStoreSubMenu>("LatencyTweaksSubMenu");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("TweaksNetworkPowerSubMenu");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("TweaksPrivacySubMenu");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("TweaksInterfaceSubMenu");

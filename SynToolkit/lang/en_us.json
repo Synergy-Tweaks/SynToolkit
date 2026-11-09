@@ -1074,5 +1074,17 @@
   "GpuPage_AmdTweaksDescription": "AMD Radeon driver DWORD optimizations based on imribiy's amd-gpu-tweaks. Apply only on AMD systems; a restart is required for most changes.",
   "GpuPage_AmdTweaksUnavailableTitle": "No AMD GPU Detected",
   "PortableApp_Launch": "Launch",
-  "PortableApp_OpenFolder": "Open folder"
+  "PortableApp_OpenFolder": "Open folder",
+  "LatencyTweaksSubMenu": "Latency / Gaming performance",
+  "LatencyTweaksSubMenuDescription": "Low-latency settings used by the SynergyOS latency set. Every toggle can be turned back off, and Restore Windows defaults reverts the whole group.",
+  "MmcssGamesTask": "MMCSS Games scheduling profile",
+  "MmcssGamesTaskDescription": "Gives the Games multimedia task high scheduling priority and marks it latency sensitive. Off writes the Windows defaults.",
+  "NetworkThrottling": "Disable network throttling",
+  "NetworkThrottlingDescription": "Sets NetworkThrottlingIndex to 0xFFFFFFFF so Windows stops throttling multimedia network traffic to 10 packets per millisecond. Off restores 10.",
+  "PowerThrottling": "Disable power throttling (EcoQoS)",
+  "PowerThrottlingDescription": "Stops Windows from throttling background processes for power savings. Off removes PowerThrottlingOff.",
+  "LatencyPowerPlan": "Latency power-plan values",
+  "LatencyPowerPlanDescription": "Applies ASPM off, USB selective suspend off, core parking 100%, boost mode Aggressive and minimum processor state 20% to the active plan. The previous AC values are saved the first time and restored when you turn it off.",
+  "RevertLatencyTweaks": "Restore Windows defaults",
+  "RevertLatencyTweaksDescription": "Reverts every toggle in this group, including fullscreen optimizations, and puts the saved power-plan values back."
 }

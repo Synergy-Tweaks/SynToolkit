@@ -43,6 +43,7 @@ namespace SynToolkit.Enums
         TweaksPrivacySubMenu,
         TweaksInterfaceSubMenu,
         AmdGpuTweaksSubMenu,
+        LatencyTweaksSubMenu,
     }
 
     public static class EnumExtensions

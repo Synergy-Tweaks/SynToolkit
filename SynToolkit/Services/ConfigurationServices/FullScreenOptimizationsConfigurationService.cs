@@ -151,11 +151,17 @@ namespace SynToolkit.Services.ConfigurationServices
             try
             {
                 RegistryHelper.SetValue(GameConfigStoreKey, "GameDVR_FSEBehaviorMode", DisabledModeValue, RegistryValueKind.DWord);
+                // Same three values the SynergyOS latency set writes when it turns FSO off, so
+                // the toolkit and the playbook stay in sync. GameDVR_Enabled belongs to the
+                // Xbox Game Bar toggle and is deliberately left alone here.
+                RegistryHelper.SetValue(GameConfigStoreKey, "GameDVR_HonorUserFSEBehaviorMode", 1, RegistryValueKind.DWord);
+                RegistryHelper.SetValue(GameConfigStoreKey, "GameDVR_DXGIHonorFSEWindowsCompatible", 1, RegistryValueKind.DWord);
+                RegistryHelper.SetValue(GameConfigStoreKey, "GameDVR_EFSEFeatureFlags", 0, RegistryValueKind.DWord);
             }
             catch (Exception ex) when (IsRegistryException(ex))
             {
-                App.logger.Error(ex, "[FSO] Failed to write GameDVR_FSEBehaviorMode");
-                throw new InvalidOperationException("Full Screen Optimizations: failed to write GameDVR_FSEBehaviorMode.", ex);
+                App.logger.Error(ex, "[FSO] Failed to write the fullscreen optimisation values");
+                throw new InvalidOperationException("Full Screen Optimizations: failed to write the FSO values.", ex);
             }
 
             FsoDetectionResult after = DetectCurrentState();
