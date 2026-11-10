@@ -149,16 +149,8 @@ namespace SynToolkit.Views
             {
                 await Task.Run(async () =>
                 {
-                    // Kill TiWorker if running
-                    foreach (Process proc in Process.GetProcessesByName("TiWorker"))
-                    {
-                        try
-                        {
-                            proc.Kill();
-                            await proc.WaitForExitAsync();
-                        }
-                        catch { }
-                    }
+                    // Cleaning up must not touch TiWorker (Windows Modules Installer Worker):
+                    // killing it mid-servicing leaves the component store half-written.
 
                     // Clean temp directories
                     CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Logs"));
