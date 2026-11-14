@@ -72,6 +72,9 @@ if (-not $SkipBuild) {
 
     # Build and publish
     Write-Host "[3/4] Building and publishing SynToolkit ($Configuration, x64)..." -ForegroundColor Yellow
+    # PathMap + CI flags keep local folder names (Users\<you>, hostname paths) out of
+    # ReadyToRun/IL metadata. DebugType=none avoids shipping PDBs with absolute paths.
+    $pathMap = "$ScriptDir=X:\src"
     dotnet publish $ProjectFile `
         -c $Configuration `
         -r win-x64 `
@@ -79,6 +82,11 @@ if (-not $SkipBuild) {
         -p:PublishSingleFile=false `
         -p:SelfContained=true `
         -p:PublishReadyToRun=true `
+        -p:Deterministic=true `
+        -p:ContinuousIntegrationBuild=true `
+        -p:DebugType=none `
+        -p:DebugSymbols=false `
+        -p:PathMap=$pathMap `
         --output $PublishDir
     
     if ($LASTEXITCODE -ne 0) {
@@ -90,6 +98,11 @@ if (-not $SkipBuild) {
 } else {
     Write-Host "[1-3/4] Skipping build (using existing build)..." -ForegroundColor Yellow
     Write-Host ""
+}
+
+if (Test-Path -LiteralPath $PublishDir) {
+    Get-ChildItem -LiteralPath $PublishDir -Filter *.pdb -Recurse -File -ErrorAction SilentlyContinue |
+        Remove-Item -Force
 }
 
 if (-not $SkipInstaller) {

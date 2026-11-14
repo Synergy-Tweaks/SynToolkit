@@ -61,7 +61,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "{commonappdata}\Synergy\Profiles"; Permissions: users-modify; Flags: uninsneveruninstall
 
 [Files]
-Source: "..\artifacts\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Exclude PDBs — they can embed the build machine's absolute source paths.
+Source: "..\artifacts\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb"
 Source: "..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 Source: "Synergy\*"; DestDir: "{commonappdata}\Synergy"; Flags: ignoreversion recursesubdirs createallsubdirs
 

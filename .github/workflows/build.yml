@@ -56,7 +56,24 @@ jobs:
         run: dotnet run --project SynToolkit.SystemInformationTests\SynToolkit.SystemInformationTests.csproj --configuration Release --no-restore
 
       - name: Publish SynToolkit
-        run: msbuild SynToolkit\SynToolkit.csproj /t:Publish /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=true /p:PublishDir="${{ github.workspace }}\artifacts\publish\"
+        run: >
+          msbuild SynToolkit\SynToolkit.csproj /t:Publish
+          /p:Configuration=Release
+          /p:Platform=x64
+          /p:RuntimeIdentifier=win-x64
+          /p:SelfContained=true
+          /p:Deterministic=true
+          /p:ContinuousIntegrationBuild=true
+          /p:DebugType=none
+          /p:DebugSymbols=false
+          /p:PathMap=${{ github.workspace }}=X:\src
+          /p:PublishDir="${{ github.workspace }}\artifacts\publish\"
+
+      - name: Strip PDBs from publish output
+        shell: pwsh
+        run: |
+          Get-ChildItem -LiteralPath artifacts\publish -Filter *.pdb -Recurse -File -ErrorAction SilentlyContinue |
+            Remove-Item -Force
 
       - name: Sync installer version
         shell: pwsh

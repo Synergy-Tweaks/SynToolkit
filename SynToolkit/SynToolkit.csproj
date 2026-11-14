@@ -29,6 +29,13 @@
     <FileVersion>1.8.0.0</FileVersion>
     <Version>1.8.0</Version>
   </PropertyGroup>
+  <!-- Release/publish: no local machine paths (Users\…, drive letters) in shipped binaries. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Converter\**" />
     <Compile Remove="Themes\**" />
