@@ -164,7 +164,8 @@ namespace SynToolkit.ViewModels
             _mediaSessionService.RequestRefresh();
             _isInitialized = true;
 
-            foreach (AudioMixerSessionViewModel session in Sessions)
+            // Awaiting inside the loop lets SessionsChanged rebuild Sessions underneath us.
+            foreach (AudioMixerSessionViewModel session in Sessions.ToList())
             {
                 await session.LoadIconAsync();
             }
@@ -321,7 +322,7 @@ namespace SynToolkit.ViewModels
             _dispatcherQueue.TryEnqueue(async () =>
             {
                 RebuildSessions(sessions);
-                foreach (AudioMixerSessionViewModel session in Sessions.Where(session => !session.HasCustomIcon))
+                foreach (AudioMixerSessionViewModel session in Sessions.Where(session => !session.HasCustomIcon).ToList())
                 {
                     await session.LoadIconAsync();
                 }
