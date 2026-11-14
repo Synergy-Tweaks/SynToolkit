@@ -432,11 +432,30 @@ namespace SynToolkit.Services
                 await CopyPlanToImmutableSnapshotAsync(fullPath, immutablePlanPath, cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await ImportPlanCoreAsync(
-                    immutablePlanPath,
-                    importedSchemeId,
-                    brandAsSynToolkitPlan: false,
-                    CancellationToken.None);
+                try
+                {
+                    await ImportPlanCoreAsync(
+                        immutablePlanPath,
+                        importedSchemeId,
+                        brandAsSynToolkitPlan: false,
+                        CancellationToken.None);
+                }
+                catch (InvalidOperationException)
+                {
+                    // powercfg rejects the entire file when a single value is malformed or out of
+                    // range, which is what some plans exported on older builds hit. If it really
+                    // did not create the scheme, apply the file's settings one by one instead.
+                    if (await SchemeExistsAsync(importedSchemeId, CancellationToken.None))
+                    {
+                        throw;
+                    }
+
+                    await ImportPlanFileAsNewSchemeAsync(
+                        immutablePlanPath,
+                        fullPath,
+                        importedSchemeId,
+                        CancellationToken.None);
+                }
 
                 PowerPlanSnapshot state = await GetStateAsync(CancellationToken.None);
                 return new PowerPlanImportResult(
@@ -1021,6 +1040,131 @@ namespace SynToolkit.Services
             {
                 throw new InvalidDataException(errorMessage);
             }
+        }
+
+        /// <summary>
+        /// Applies a .pow's settings onto a duplicate of the current scheme when powercfg refused
+        /// the file itself. Settings Windows rejects are skipped instead of failing the import;
+        /// the caller reports how many were skipped.
+        /// </summary>
+        private async Task ImportPlanFileAsNewSchemeAsync(
+            string planPath,
+            string displayPath,
+            Guid schemeId,
+            CancellationToken cancellationToken)
+        {
+            PowerPlanInspection inspection = PowerPlanSettingsReader.ReadFile(planPath, null, cancellationToken);
+            PowerPlanSnapshot state = await GetStateAsync(cancellationToken);
+            Guid baseSchemeId = state.ActiveSchemeId ?? BalancedSchemeId;
+
+            App.logger.Warn(
+                "[PowerPlan] powercfg rejected {FileName}; applying its settings to a duplicated plan instead.",
+                Path.GetFileName(displayPath));
+
+            await RunCheckedAsync(
+                cancellationToken,
+                "create a plan for the imported settings",
+                "/duplicatescheme",
+                baseSchemeId.ToString("D"),
+                schemeId.ToString("D"));
+
+            try
+            {
+                int skipped = 0;
+                foreach (PowerPlanSettingInspection setting in inspection.Settings)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    // Plan-wide properties live on the subgroup itself and have no setter.
+                    if (setting.SubgroupId == Guid.Empty)
+                    {
+                        continue;
+                    }
+
+                    if (setting.AcIndex is uint ac)
+                    {
+                        ProcessResult result = await RunPowerCfgAsync(
+                            cancellationToken,
+                            "apply an AC power setting from the imported plan",
+                            "/setacvalueindex",
+                            schemeId.ToString("D"),
+                            setting.SubgroupId.ToString("D"),
+                            setting.SettingId.ToString("D"),
+                            ac.ToString());
+                        if (result.ExitCode != 0)
+                        {
+                            skipped++;
+                        }
+                    }
+
+                    if (setting.DcIndex is uint dc)
+                    {
+                        ProcessResult result = await RunPowerCfgAsync(
+                            cancellationToken,
+                            "apply a DC power setting from the imported plan",
+                            "/setdcvalueindex",
+                            schemeId.ToString("D"),
+                            setting.SubgroupId.ToString("D"),
+                            setting.SettingId.ToString("D"),
+                            dc.ToString());
+                        if (result.ExitCode != 0)
+                        {
+                            skipped++;
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(inspection.Name))
+                {
+                    await RunCheckedAsync(
+                        cancellationToken,
+                        "name the imported power plan",
+                        "/changename",
+                        schemeId.ToString("D"),
+                        inspection.Name,
+                        $"Imported from {Path.GetFileName(displayPath)}");
+                }
+
+                if (state.ActiveSchemeId is Guid previousSchemeId && previousSchemeId != schemeId)
+                {
+                    SaveRegistryGuid(PreviousSchemeValueName, previousSchemeId);
+                }
+
+                await RunCheckedAsync(
+                    cancellationToken,
+                    "activate the imported power plan",
+                    "/setactive",
+                    schemeId.ToString("D"));
+                await VerifyActiveSchemeAsync(schemeId, cancellationToken);
+
+                if (skipped > 0)
+                {
+                    App.logger.Warn(
+                        "[PowerPlan] {Skipped} values from {FileName} were rejected by Windows and were not applied.",
+                        skipped,
+                        Path.GetFileName(displayPath));
+                }
+            }
+            catch
+            {
+                // Leave nothing half-built behind: drop the duplicate this method created.
+                await RunPowerCfgAsync(
+                    CancellationToken.None,
+                    "remove the partially imported power plan",
+                    "/delete",
+                    schemeId.ToString("D"));
+                throw;
+            }
+        }
+
+        private async Task<bool> SchemeExistsAsync(Guid schemeId, CancellationToken cancellationToken)
+        {
+            ProcessResult result = await RunPowerCfgAsync(
+                cancellationToken,
+                "check whether the imported power plan exists",
+                "/query",
+                schemeId.ToString("D"));
+            return result.ExitCode == 0;
         }
 
         private async Task RunCheckedAsync(
