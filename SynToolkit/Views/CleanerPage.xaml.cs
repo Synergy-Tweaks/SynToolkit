@@ -145,6 +145,9 @@ namespace SynToolkit.Views
             RunDiskCleanupButton.IsEnabled = false;
             RunDiskCleanupButton.Content = "Cleaning up...";
 
+            int deletedFiles = 0;
+            int skippedFiles = 0;
+
             try
             {
                 await Task.Run(async () =>
@@ -153,13 +156,23 @@ namespace SynToolkit.Views
                     // killing it mid-servicing leaves the component store half-written.
 
                     // Clean temp directories
-                    CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Logs"));
-                    CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Panther"));
-                    CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "LogFiles"));
-                    CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "SleepStudy"));
-                    CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "SystemTemp"));
-                    CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp"));
-                    CleanDirectory(Path.GetTempPath());
+                    string[] directories =
+                    [
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Logs"),
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Panther"),
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "LogFiles"),
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "SleepStudy"),
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "SystemTemp"),
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp"),
+                        Path.GetTempPath()
+                    ];
+
+                    foreach (string directory in directories)
+                    {
+                        (int deleted, int skipped) = CleanDirectory(directory);
+                        deletedFiles += deleted;
+                        skippedFiles += skipped;
+                    }
 
                     try
                     {
@@ -189,7 +202,9 @@ namespace SynToolkit.Views
 
                 UpdateDrives();
 
-                SuccessInfoBar.Message = "Disk cleanup completed successfully.";
+                SuccessInfoBar.Message = skippedFiles == 0
+                    ? $"Disk cleanup completed. {deletedFiles} files removed."
+                    : $"Disk cleanup finished. {deletedFiles} files removed, {skippedFiles} skipped because they are in use or protected.";
                 SuccessInfoBar.IsOpen = true;
             }
             catch (Exception ex)
@@ -204,15 +219,26 @@ namespace SynToolkit.Views
             }
         }
 
-        private static void CleanDirectory(string path)
+        private static (int Deleted, int Skipped) CleanDirectory(string path)
         {
-            if (!Directory.Exists(path)) return;
+            if (!Directory.Exists(path)) return (0, 0);
+
+            int deleted = 0;
+            int skipped = 0;
 
             try
             {
                 foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
                 {
-                    try { File.Delete(file); } catch { }
+                    try
+                    {
+                        File.Delete(file);
+                        deleted++;
+                    }
+                    catch
+                    {
+                        skipped++;
+                    }
                 }
 
                 foreach (string dir in Directory.EnumerateDirectories(path, "*", SearchOption.AllDirectories).OrderByDescending(d => d.Length))
@@ -221,6 +247,8 @@ namespace SynToolkit.Views
                 }
             }
             catch { }
+
+            return (deleted, skipped);
         }
 
         private async void ScanButton_Click(object sender, RoutedEventArgs e) => await _viewModel.ScanAsync();
