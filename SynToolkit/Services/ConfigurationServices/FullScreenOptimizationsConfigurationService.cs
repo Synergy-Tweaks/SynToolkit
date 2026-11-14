@@ -50,6 +50,10 @@ namespace SynToolkit.Services.ConfigurationServices
         // Backup keys
         private const string StateValue = "state";
         private const string BackupCapturedValue = "BackupCaptured";
+        private const string BackupVersionValue = "BackupVersion";
+        // 2 = every GameConfigStore value is captured with its own kind. Version 1 backups
+        // (written by older builds) only held GameDVR_FSEBehaviorMode, so they are re-captured.
+        private const int BackupVersion = 2;
         private const string CompatLayerBackupExists = "BackupCompatLayerExists";
         private const string CompatLayerBackupKind = "BackupCompatLayerKind";
         private const string CompatLayerBackupValue = "BackupCompatLayerValue";
@@ -77,6 +81,10 @@ namespace SynToolkit.Services.ConfigurationServices
                 _store.CurrentSetting = true;
                 return;
             }
+
+            // The six values may hold per-app settings the user made by hand; keep them so a
+            // failed toggle can put them back instead of leaving a half-applied state.
+            CaptureOriginalSettings();
 
             List<string> failedSteps = [];
 
@@ -116,12 +124,14 @@ namespace SynToolkit.Services.ConfigurationServices
 
             if (failedSteps.Count > 0)
             {
+                RollbackToCapturedSettings();
                 throw new InvalidOperationException(
                     $"Full Screen Optimizations: failed to write {string.Join(", ", failedSteps)}.");
             }
 
             if (after.State != FsoState.Enabled)
             {
+                RollbackToCapturedSettings();
                 throw new InvalidOperationException(
                     "Full Screen Optimizations could not be verified. The registry did not match what was written.");
             }
@@ -155,6 +165,7 @@ namespace SynToolkit.Services.ConfigurationServices
             catch (Exception ex) when (IsRegistryException(ex))
             {
                 App.logger.Error(ex, "[FSO] Failed to write GameDVR_FSEBehaviorMode");
+                RollbackToCapturedSettings();
                 throw new InvalidOperationException("Full Screen Optimizations: failed to write GameDVR_FSEBehaviorMode.", ex);
             }
 
@@ -164,6 +175,7 @@ namespace SynToolkit.Services.ConfigurationServices
 
             if (after.State != FsoState.Disabled)
             {
+                RollbackToCapturedSettings();
                 throw new InvalidOperationException(
                     "Full Screen Optimizations could not be disabled. The registry value did not match.");
             }
@@ -434,44 +446,113 @@ namespace SynToolkit.Services.ConfigurationServices
 
         #region Original Settings Backup (for Disable position)
 
+        /// <summary>
+        /// Captures all six GameConfigStore values, with their kind, before the first write.
+        /// Throws before anything is changed when a value cannot be read, so the toggle never
+        /// starts on a machine whose state it cannot put back.
+        /// </summary>
         private static void CaptureOriginalSettings()
         {
-            if (RegistryHelper.IsMatch(SynToolkitStoreKey, BackupCapturedValue, 1))
+            if (RegistryHelper.IsMatch(SynToolkitStoreKey, BackupVersionValue, BackupVersion))
             {
                 return;
             }
 
-            // Only backup GameDVR_FSEBehaviorMode for the disable position (current behavior)
-            CaptureDword(GameConfigStoreKey, "GameDVR_FSEBehaviorMode", "FsoBehavior");
+            foreach (string valueName in GameConfigStoreValueNames)
+            {
+                CaptureValue(valueName);
+            }
+
             RegistryHelper.SetValue(SynToolkitStoreKey, BackupCapturedValue, 1, RegistryValueKind.DWord);
+            RegistryHelper.SetValue(SynToolkitStoreKey, BackupVersionValue, BackupVersion, RegistryValueKind.DWord);
         }
 
-        private static void CaptureDword(string keyPath, string valueName, string backupName)
+        private static void CaptureValue(string valueName)
         {
-            object? value = RegistryHelper.GetValue(keyPath, valueName);
-            RegistryHelper.SetValue(
-                SynToolkitStoreKey,
-                $"Backup{backupName}Exists",
-                value is null ? 0 : 1,
-                RegistryValueKind.DWord);
+            string prefix = $"Backup{valueName}";
+
+            if (!RegistryHelper.TryReadValueWithKind(GameConfigStoreKey, valueName, out object? value, out RegistryValueKind? kind))
+            {
+                throw new InvalidOperationException(
+                    $"Could not read the existing {valueName} setting. Nothing was changed.");
+            }
+
+            RegistryHelper.SetValue(SynToolkitStoreKey, prefix + "Exists", value is null ? 0 : 1, RegistryValueKind.DWord);
 
             if (value is null)
             {
-                RegistryHelper.DeleteValue(SynToolkitStoreKey, $"Backup{backupName}Value");
+                RegistryHelper.DeleteValue(SynToolkitStoreKey, prefix + "Kind");
+                RegistryHelper.DeleteValue(SynToolkitStoreKey, prefix + "Value");
                 return;
             }
 
-            if (!HagsDetection.TryConvertToUInt32(value, out uint dwordValue))
+            RegistryValueKind valueKind = kind ?? RegistryValueKind.DWord;
+            RegistryHelper.SetValue(SynToolkitStoreKey, prefix + "Kind", (int)valueKind, RegistryValueKind.DWord);
+            RegistryHelper.SetValue(SynToolkitStoreKey, prefix + "Value", value, valueKind);
+        }
+
+        private static void RestoreOriginalSettings()
+        {
+            if (!RegistryHelper.IsMatch(SynToolkitStoreKey, BackupCapturedValue, 1))
             {
-                throw new InvalidOperationException(
-                    $"The existing {valueName} setting is not a DWORD. SynToolkit left it unchanged.");
+                return;
             }
 
-            RegistryHelper.SetValue(
-                SynToolkitStoreKey,
-                $"Backup{backupName}Value",
-                unchecked((int)dwordValue),
-                RegistryValueKind.DWord);
+            foreach (string valueName in GameConfigStoreValueNames)
+            {
+                string prefix = $"Backup{valueName}";
+                bool existed = RegistryHelper.IsMatch(SynToolkitStoreKey, prefix + "Exists", 1);
+                if (!existed)
+                {
+                    RegistryHelper.DeleteValue(GameConfigStoreKey, valueName);
+                    continue;
+                }
+
+                object? kindObj = RegistryHelper.GetValue(SynToolkitStoreKey, prefix + "Kind");
+                object? valueObj = RegistryHelper.GetValue(SynToolkitStoreKey, prefix + "Value");
+                if (kindObj is not int kindInt || valueObj is null)
+                {
+                    App.logger.Warn("[FSO] Backup for {ValueName} is incomplete, leaving it as is.", valueName);
+                    continue;
+                }
+
+                RegistryHelper.SetValue(GameConfigStoreKey, valueName, valueObj, (RegistryValueKind)kindInt);
+            }
+
+            ClearOriginalSettingsBackup();
+        }
+
+        private static void ClearOriginalSettingsBackup()
+        {
+            RegistryHelper.DeleteValue(SynToolkitStoreKey, BackupCapturedValue);
+            RegistryHelper.DeleteValue(SynToolkitStoreKey, BackupVersionValue);
+
+            foreach (string valueName in GameConfigStoreValueNames)
+            {
+                string prefix = $"Backup{valueName}";
+                RegistryHelper.DeleteValue(SynToolkitStoreKey, prefix + "Exists");
+                RegistryHelper.DeleteValue(SynToolkitStoreKey, prefix + "Kind");
+                RegistryHelper.DeleteValue(SynToolkitStoreKey, prefix + "Value");
+            }
+        }
+
+        /// <summary>
+        /// Puts the machine back to the captured state after a failed toggle. Failures here are
+        /// logged, not thrown, so the original error reaches the user.
+        /// </summary>
+        private static void RollbackToCapturedSettings()
+        {
+            try
+            {
+                RestoreOriginalSettings();
+                RestoreCompatLayerFromBackup();
+                BroadcastEnvironmentChange();
+                App.logger.Info("[FSO] Rolled back to the captured settings.");
+            }
+            catch (Exception ex)
+            {
+                App.logger.Error(ex, "[FSO] Rolling back to the captured settings failed.");
+            }
         }
 
         #endregion
