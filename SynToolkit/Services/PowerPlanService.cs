@@ -180,6 +180,34 @@ namespace SynToolkit.Services
             await Task.WhenAll(activeTask, listTask);
             ProcessResult activeResult = await activeTask;
             ProcessResult listResult = await listTask;
+
+            IReadOnlyList<PowerSchemeInfo> schemes = ParseSchemeRecords(listResult.StandardOutput);
+
+            // Windows stores the active scheme by GUID; when that scheme is deleted (a cleanup
+            // tool, or a plan removed while active) every /getactivescheme call answers
+            // "The power scheme, subgroup or setting specified does not exist" and the page was
+            // left on "Power-plan status unavailable" with no way to recover. Re-activate a
+            // scheme that still exists and continue.
+            if (schemes.Count > 0 && IsActiveSchemeMissing(activeResult, schemes))
+            {
+                Guid repairSchemeId = schemes.FirstOrDefault(scheme => scheme.Id == BalancedSchemeId)?.Id
+                    ?? schemes[0].Id;
+                App.logger.Warn(
+                    "[PowerPlan] The active power plan no longer exists. Activating '{SchemeName}' ({SchemeId}) so the page can recover.",
+                    schemes.FirstOrDefault(scheme => scheme.Id == repairSchemeId)?.Name ?? "<unknown>",
+                    repairSchemeId);
+
+                await RunCheckedAsync(
+                    cancellationToken,
+                    "restore the active power plan",
+                    "/setactive",
+                    repairSchemeId.ToString("D"));
+                activeResult = await RunPowerCfgAsync(
+                    cancellationToken,
+                    "read the active power plan",
+                    "/getactivescheme");
+            }
+
             EnsureSuccess(activeResult, "read the active power plan");
 
             Guid? activeSchemeId = ExtractFirstGuid(activeResult.StandardOutput);
@@ -188,7 +216,6 @@ namespace SynToolkit.Services
                 LogPowerCfgFailure("read the active power plan", activeResult);
                 throw CreateMalformedOutputException("read the active power plan", activeResult);
             }
-            IReadOnlyList<PowerSchemeInfo> schemes = ParseSchemeRecords(listResult.StandardOutput);
             PowerSchemeInfo? activeScheme = activeSchemeId is Guid activeId
                 ? schemes.FirstOrDefault(scheme => scheme.Id == activeId)
                 : null;
@@ -217,6 +244,20 @@ namespace SynToolkit.Services
                 hasConflict,
                 previousSchemeId,
                 previousScheme?.Name);
+        }
+
+        private static bool IsActiveSchemeMissing(
+            ProcessResult activeResult,
+            IReadOnlyList<PowerSchemeInfo> schemes)
+        {
+            Guid? reportedId = ExtractFirstGuid(activeResult.StandardOutput);
+            if (reportedId is null)
+            {
+                // A read failure without a GUID cannot be repaired by re-activating.
+                return activeResult.ExitCode != 0;
+            }
+
+            return schemes.All(scheme => scheme.Id != reportedId.Value);
         }
 
         public async Task<IReadOnlyList<InstalledPowerPlan>> GetInstalledPlansAsync(
