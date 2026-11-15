@@ -7,6 +7,8 @@ using Microsoft.UI.Xaml.Navigation;
 using SynToolkit.Services.GpuDrivers;
 using SynToolkit.ViewModels;
 using System.Diagnostics;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Windows.ApplicationModel.DataTransfer;
 using Microsoft.Win32;
@@ -14,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SynToolkit.Views;
 
-public sealed partial class NvidiaPerformanceTweaksPage : Page
+public sealed partial class NvidiaPerformanceTweaksPage : Page, INotifyPropertyChanged
 {
     private readonly INvidiaPerformanceTweaksService _service;
     private readonly Dictionary<string, NvidiaTweakRowViewModel> _rowsById = new(StringComparer.OrdinalIgnoreCase);
@@ -28,10 +30,11 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page
         get => (int)ViewModel.Filter;
         set => ViewModel.Filter = (NvidiaTweaksFilterOption)Math.Clamp(value, 0, 3);
     }
-
     public Visibility NoNvidiaVisibility => ViewModel.HasNvidiaGpu ? Visibility.Collapsed : Visibility.Visible;
     public string NoNvidiaMessage =>
         "No supported NVIDIA GPU driver class key was found on this machine. This page is available only when an NVIDIA adapter is detected.";
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public NvidiaPerformanceTweaksPage()
     {
@@ -60,6 +63,8 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page
             ViewModel.ActiveGpuName = result.ActiveGpuName;
             ViewModel.DriverClassPath = result.DriverClassPath;
             ViewModel.DriverClassMatchedByInf = result.MatchedByInf;
+            ViewModel.CanWrite = result.IsElevated && !ViewModel.IsBusy;
+            OnPropertyChanged(nameof(NoNvidiaVisibility));
             UpdateRowWriteState();
             ViewModel.ShowResult("Scan complete", result.Message, InfoBarSeverity.Informational);
         }
@@ -127,6 +132,10 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page
     private void SetBusy(bool busy)
     {
         ViewModel.IsBusy = busy;
+        ViewModel.IsNotBusy = !busy;
+        ViewModel.CanWrite = ViewModel.IsElevated && !busy;
+        OnPropertyChanged(nameof(IsNotBusy));
+        OnPropertyChanged(nameof(CanWrite));
         UpdateRowWriteState();
         RefreshComputedBindings();
     }
@@ -165,6 +174,8 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page
         ApplyResultSummary(result);
         ViewModel.IsElevated = result.IsElevated;
         ViewModel.ReadOnlyBarOpen = !result.IsElevated;
+        ViewModel.CanWrite = result.IsElevated && !ViewModel.IsBusy;
+        OnPropertyChanged(nameof(CanWrite));
         UpdateRowWriteState();
         ViewModel.ShowResult("Check complete", result.Message, InfoBarSeverity.Informational);
     });
@@ -539,5 +550,10 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page
             "Run SynToolkit as administrator to apply or revert NVIDIA tweaks.",
             InfoBarSeverity.Warning);
         return false;
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

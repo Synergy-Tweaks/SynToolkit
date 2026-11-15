@@ -584,7 +584,6 @@ namespace SynToolkit
             GamesText.Text = App.GetValueFromItemList("Games");
             AdjustmentsText.Text = App.GetValueFromItemList("Adjustments");
             Gpu.Content = App.GetValueFromItemList("Gpu");
-            NvidiaTweaksNav.Content = App.GetValueFromItemList("NvidiaPerformanceTweaks");
             Display.Content = App.GetValueFromItemList("Display");
             Startup.Content = App.GetValueFromItemList("Startup");
             Specs.Content = App.GetValueFromItemList("Specs");
@@ -829,7 +828,6 @@ namespace SynToolkit
                 "SynToolkit.Views.GamesPage" => typeof(GamesPage),
                 "SynToolkit.Views.AdjustmentsPage" => typeof(AdjustmentsPage),
                 "SynToolkit.Views.GpuPage" => typeof(GpuPage),
-                "SynToolkit.Views.NvidiaPerformanceTweaksPage" => typeof(NvidiaPerformanceTweaksPage),
                 "SynToolkit.Views.DisplayPage" => typeof(DisplayPage),
                 "SynToolkit.Views.StartupPage" => typeof(StartupPage),
                 "SynToolkit.Views.SpecsPage" => typeof(SpecsPage),
@@ -1010,7 +1008,6 @@ namespace SynToolkit
                 "SynToolkit.Views.GamesPage" => "Games",
                 "SynToolkit.Views.AdjustmentsPage" => "Adjustments",
                 "SynToolkit.Views.GpuPage" => "GPU",
-                "SynToolkit.Views.NvidiaPerformanceTweaksPage" => "NVIDIA Tweaks",
                 "SynToolkit.Views.DisplayPage" => "Display",
                 "SynToolkit.Views.StartupPage" => "Startup",
                 "SynToolkit.Views.SpecsPage" => "Specs",

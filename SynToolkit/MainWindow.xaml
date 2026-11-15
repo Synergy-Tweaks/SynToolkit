@@ -359,11 +359,6 @@
                         <ImageIcon x:Name="GpuTabIcon" Source="ms-appx:///assets/Icons/Gpu.png" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Name="NvidiaTweaksNav" Tag="SynToolkit.Views.NvidiaPerformanceTweaksPage">
-                    <NavigationViewItem.Icon>
-                        <ImageIcon Source="ms-appx:///assets/Icons/Nvidia.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
                 <NavigationViewItem x:Name="Specs" Tag="SynToolkit.Views.SpecsPage">
                     <NavigationViewItem.Icon>
                         <ImageIcon Source="ms-appx:///assets/Icons/Cpu.png" />

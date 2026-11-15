@@ -89,20 +89,16 @@
                         VerticalAlignment="Center">
                         <Button
                             Click="CheckAllButton_Click"
-                            Content="Check all"
-                            IsEnabled="{x:Bind IsNotBusy, Mode=OneWay}" />
+                            Content="Check all" />
                         <Button
                             Click="VerifyButton_Click"
-                            Content="Verify"
-                            IsEnabled="{x:Bind IsNotBusy, Mode=OneWay}" />
+                            Content="Verify" />
                         <Button
                             Click="ExportRegButton_Click"
-                            Content="Export applied .reg"
-                            IsEnabled="{x:Bind IsNotBusy, Mode=OneWay}" />
+                            Content="Export applied .reg" />
                         <Button
                             Click="RestoreOriginalsButton_Click"
-                            Content="Restore all originals"
-                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}" />
+                            Content="Restore all originals" />
                         <ProgressRing
                             Width="18"
                             Height="18"
@@ -158,12 +154,10 @@
                                         <Button
                                             Click="ApplyGroupButton_Click"
                                             Content="Apply group"
-                                            IsEnabled="{Binding ElementName=RootPage, Path=CanWrite}"
                                             Tag="{x:Bind Group}" />
                                         <Button
                                             Click="RevertGroupButton_Click"
                                             Content="Revert group"
-                                            IsEnabled="{Binding ElementName=RootPage, Path=CanWrite}"
                                             Tag="{x:Bind Group}" />
                                     </StackPanel>
 
@@ -261,19 +255,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </StackPanel>
-
-            <Border
-                Margin="0,16,0,0"
-                Padding="12"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Visibility="{x:Bind NoNvidiaVisibility, Mode=OneWay}">
-                <TextBlock
-                    Text="{x:Bind NoNvidiaMessage, Mode=OneWay}"
-                    TextWrapping="Wrap" />
-            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

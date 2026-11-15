@@ -158,6 +158,15 @@ public partial class NvidiaPerformanceTweaksPageViewModel : ObservableObject
     public partial bool HasNvidiaGpu { get; set; }
 
     [ObservableProperty]
+    public partial bool IsNotBusy { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool CanWrite { get; set; }
+
+    [ObservableProperty]
+    public partial bool ShowNoNvidiaMessage { get; set; }
+
+    [ObservableProperty]
     public partial string ActiveGpuName { get; set; } = string.Empty;
 
     [ObservableProperty]
@@ -194,6 +203,9 @@ public partial class NvidiaPerformanceTweaksPageViewModel : ObservableObject
     [ObservableProperty]
     public partial bool ReadOnlyBarOpen { get; set; }
 
+    public string NoNvidiaMessage =>
+        "No supported NVIDIA GPU driver class key was found on this machine. This page is available only when an NVIDIA adapter is detected.";
+
     public ObservableCollection<NvidiaTweakGroupViewModel> Groups { get; } = [];
 
     partial void OnSearchTextChanged(string value) => RefreshFilter();
@@ -205,6 +217,11 @@ public partial class NvidiaPerformanceTweaksPageViewModel : ObservableObject
         {
             group.ApplyFilter(SearchText.Trim(), Filter);
         }
+    }
+
+    partial void OnHasNvidiaGpuChanged(bool value)
+    {
+        ShowNoNvidiaMessage = !value;
     }
 
     public void ShowResult(string title, string message, Microsoft.UI.Xaml.Controls.InfoBarSeverity severity)
