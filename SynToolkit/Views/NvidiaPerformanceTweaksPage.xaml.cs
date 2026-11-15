@@ -4,11 +4,10 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using SynToolkit.Controls;
 using SynToolkit.Services.GpuDrivers;
 using SynToolkit.ViewModels;
 using System.Diagnostics;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Windows.ApplicationModel.DataTransfer;
 using Microsoft.Win32;
@@ -16,25 +15,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SynToolkit.Views;
 
-public sealed partial class NvidiaPerformanceTweaksPage : Page, INotifyPropertyChanged
+public sealed partial class NvidiaPerformanceTweaksPage : Page
 {
     private readonly INvidiaPerformanceTweaksService _service;
     private readonly Dictionary<string, NvidiaTweakRowViewModel> _rowsById = new(StringComparer.OrdinalIgnoreCase);
 
     public NvidiaPerformanceTweaksPageViewModel ViewModel { get; } = new();
 
-    public bool CanWrite => ViewModel.IsElevated && !ViewModel.IsBusy;
-    public bool IsNotBusy => !ViewModel.IsBusy;
     public int FilterIndex
     {
         get => (int)ViewModel.Filter;
         set => ViewModel.Filter = (NvidiaTweaksFilterOption)Math.Clamp(value, 0, 3);
     }
-    public Visibility NoNvidiaVisibility => ViewModel.HasNvidiaGpu ? Visibility.Collapsed : Visibility.Visible;
-    public string NoNvidiaMessage =>
-        "No supported NVIDIA GPU driver class key was found on this machine. This page is available only when an NVIDIA adapter is detected.";
-
-    public event PropertyChangedEventHandler? PropertyChanged;
 
     public NvidiaPerformanceTweaksPage()
     {
@@ -64,9 +56,11 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page, INotifyPropertyC
             ViewModel.DriverClassPath = result.DriverClassPath;
             ViewModel.DriverClassMatchedByInf = result.MatchedByInf;
             ViewModel.CanWrite = result.IsElevated && !ViewModel.IsBusy;
-            OnPropertyChanged(nameof(NoNvidiaVisibility));
             UpdateRowWriteState();
-            ViewModel.ShowResult("Scan complete", result.Message, InfoBarSeverity.Informational);
+            ViewModel.ShowResult(
+                "Scan complete",
+                string.IsNullOrWhiteSpace(result.Message) ? "Tweak states refreshed successfully." : result.Message,
+                InfoBarSeverity.Success);
         }
         catch (Exception ex)
         {
@@ -134,8 +128,6 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page, INotifyPropertyC
         ViewModel.IsBusy = busy;
         ViewModel.IsNotBusy = !busy;
         ViewModel.CanWrite = ViewModel.IsElevated && !busy;
-        OnPropertyChanged(nameof(IsNotBusy));
-        OnPropertyChanged(nameof(CanWrite));
         UpdateRowWriteState();
         RefreshComputedBindings();
     }
@@ -175,9 +167,11 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page, INotifyPropertyC
         ViewModel.IsElevated = result.IsElevated;
         ViewModel.ReadOnlyBarOpen = !result.IsElevated;
         ViewModel.CanWrite = result.IsElevated && !ViewModel.IsBusy;
-        OnPropertyChanged(nameof(CanWrite));
         UpdateRowWriteState();
-        ViewModel.ShowResult("Check complete", result.Message, InfoBarSeverity.Informational);
+        ViewModel.ShowResult(
+            "Check complete",
+            string.IsNullOrWhiteSpace(result.Message) ? "Tweak states refreshed successfully." : result.Message,
+            InfoBarSeverity.Success);
     });
 
     private async void VerifyButton_Click(object sender, RoutedEventArgs e) => await CheckAllButton_ClickAsync("Verification complete");
@@ -195,53 +189,18 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page, INotifyPropertyC
 
     private async void ApplyItemButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!CanWriteAction())
+        if (TryGetTweakId(sender, out string tweakId))
         {
-            return;
+            await ApplyItemAsync(tweakId);
         }
-
-        if (!TryGetTweakId(sender, out string tweakId) || !_rowsById.TryGetValue(tweakId, out NvidiaTweakRowViewModel? row))
-        {
-            return;
-        }
-
-        if (row.Risk is NvidiaTweakRiskLevel.Caution or NvidiaTweakRiskLevel.Advanced)
-        {
-            bool confirmed = await ConfirmAsync(
-                "Apply risky tweak?",
-                $"{row.Name}\n\n{row.Description}\n\nThis tweak is marked as {row.RiskText}. Continue?");
-            if (!confirmed)
-            {
-                return;
-            }
-        }
-
-        await RunAsync(async () =>
-        {
-            NvidiaActionResult result = await _service.ApplyItemAsync(null, tweakId);
-            await RefreshSingleAsync(tweakId);
-            ViewModel.ShowResult(result.Success ? "Applied" : "Apply failed", result.Message, result.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error);
-        });
     }
 
     private async void RevertItemButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!CanWriteAction())
+        if (TryGetTweakId(sender, out string tweakId))
         {
-            return;
+            await RevertItemAsync(tweakId);
         }
-
-        if (!TryGetTweakId(sender, out string tweakId))
-        {
-            return;
-        }
-
-        await RunAsync(async () =>
-        {
-            NvidiaActionResult result = await _service.RevertItemAsync(null, tweakId);
-            await RefreshSingleAsync(tweakId);
-            ViewModel.ShowResult(result.Success ? "Reverted" : "Revert failed", result.Message, result.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error);
-        });
     }
 
     private async void CheckItemButton_Click(object sender, RoutedEventArgs e)
@@ -260,50 +219,10 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page, INotifyPropertyC
 
     private async void CustomValueButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!CanWriteAction())
+        if (TryGetTweakId(sender, out string tweakId))
         {
-            return;
+            await ShowCustomValueDialogAsync(tweakId);
         }
-
-        if (!TryGetTweakId(sender, out string tweakId))
-        {
-            return;
-        }
-
-        ContentDialog dialog = new()
-        {
-            XamlRoot = XamlRoot,
-            Title = "Set custom DWORD value",
-            PrimaryButtonText = "Apply",
-            CloseButtonText = "Cancel",
-            DefaultButton = ContentDialogButton.Primary
-        };
-        TextBox box = new()
-        {
-            PlaceholderText = "0x00000000",
-            Text = "0x00000000"
-        };
-        dialog.Content = box;
-
-        ContentDialogResult response = await dialog.ShowAsync();
-        if (response != ContentDialogResult.Primary)
-        {
-            return;
-        }
-
-        string text = box.Text.Trim();
-        if (!TryParseHex(text, out uint value))
-        {
-            ViewModel.ShowResult("Invalid value", "Enter a valid hexadecimal DWORD value (for example 0x20).", InfoBarSeverity.Warning);
-            return;
-        }
-
-        await RunAsync(async () =>
-        {
-            NvidiaActionResult result = await _service.SetItemValueAsync(null, tweakId, $"0x{value:X8}");
-            await RefreshSingleAsync(tweakId);
-            ViewModel.ShowResult(result.Success ? "Custom value applied" : "Custom value failed", result.Message, result.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error);
-        });
     }
 
     private async void ApplyGroupButton_Click(object sender, RoutedEventArgs e)
@@ -395,65 +314,18 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page, INotifyPropertyC
 
     private async void OpenInRegeditButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!TryGetTweakId(sender, out string tweakId))
+        if (TryGetTweakId(sender, out string tweakId))
         {
-            return;
-        }
-
-        (bool success, string message, IReadOnlyList<NvidiaResolvedTarget> targets) = await _service.ResolveTargetsAsync(null, tweakId);
-        if (!success)
-        {
-            ViewModel.ShowResult("Unavailable", message, InfoBarSeverity.Warning);
-            return;
-        }
-        NvidiaResolvedTarget? target = targets.FirstOrDefault();
-        if (target is null)
-        {
-            ViewModel.ShowResult("Unavailable", "No registry target was resolved for this tweak.", InfoBarSeverity.Warning);
-            return;
-        }
-
-        string root = target.Hive == RegistryHive.LocalMachine ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER";
-        string keyPath = $"{root}\\{target.Path}";
-        try
-        {
-            using Microsoft.Win32.RegistryKey regedit = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(
-                @"Software\Microsoft\Windows\CurrentVersion\Applets\Regedit",
-                true)!;
-            regedit.SetValue("LastKey", keyPath, Microsoft.Win32.RegistryValueKind.String);
-            Process.Start(new ProcessStartInfo("regedit.exe") { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            ViewModel.ShowResult("Regedit launch failed", ex.Message, InfoBarSeverity.Error);
+            await OpenInRegeditAsync(tweakId);
         }
     }
 
     private async void CopyRegistryPathButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!TryGetTweakId(sender, out string tweakId))
+        if (TryGetTweakId(sender, out string tweakId))
         {
-            return;
+            await CopyRegistryPathAsync(tweakId);
         }
-
-        (bool success, string message, IReadOnlyList<NvidiaResolvedTarget> targets) = await _service.ResolveTargetsAsync(null, tweakId);
-        if (!success)
-        {
-            ViewModel.ShowResult("Unavailable", message, InfoBarSeverity.Warning);
-            return;
-        }
-        if (targets.Count == 0)
-        {
-            ViewModel.ShowResult("Unavailable", "No registry target was resolved for this tweak.", InfoBarSeverity.Warning);
-            return;
-        }
-
-        string text = string.Join(Environment.NewLine, targets.Select(t =>
-            $"{(t.Hive == RegistryHive.LocalMachine ? "HKLM" : "HKCU")}\\{t.Path}\\{t.ValueName}"));
-        DataPackage package = new();
-        package.SetText(text);
-        Clipboard.SetContent(package);
-        ViewModel.ShowResult("Copied", "Registry path copied to clipboard.", InfoBarSeverity.Success);
     }
 
     private async Task RunAsync(Func<Task> action)
@@ -483,6 +355,35 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page, INotifyPropertyC
 
         tweakId = tag;
         return true;
+    }
+
+    private async void TweakCard_ActionRequested(object sender, TweakCardActionEventArgs e)
+    {
+        switch (e.ActionType)
+        {
+            case TweakCardActionType.Apply:
+                await ApplyItemAsync(e.TweakId);
+                break;
+            case TweakCardActionType.Revert:
+                await RevertItemAsync(e.TweakId);
+                break;
+            case TweakCardActionType.Check:
+                await RunAsync(async () =>
+                {
+                    await RefreshSingleAsync(e.TweakId);
+                    ViewModel.ShowResult("Check complete", $"Verified {e.TweakId}.", InfoBarSeverity.Informational);
+                });
+                break;
+            case TweakCardActionType.CustomValue:
+                await ShowCustomValueDialogAsync(e.TweakId);
+                break;
+            case TweakCardActionType.CopyRegistryPath:
+                await CopyRegistryPathAsync(e.TweakId);
+                break;
+            case TweakCardActionType.OpenInRegedit:
+                await OpenInRegeditAsync(e.TweakId);
+                break;
+        }
     }
 
     private static bool TryParseHex(string text, out uint value)
@@ -533,6 +434,143 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page, INotifyPropertyC
         ViewModel.HasRestartPending = pending > 0;
     }
 
+    private async Task ApplyItemAsync(string tweakId)
+    {
+        if (!CanWriteAction() || !_rowsById.TryGetValue(tweakId, out NvidiaTweakRowViewModel? row))
+        {
+            return;
+        }
+
+        if (row.Risk is NvidiaTweakRiskLevel.Caution or NvidiaTweakRiskLevel.Advanced)
+        {
+            bool confirmed = await ConfirmAsync(
+                "Apply risky tweak?",
+                $"{row.Name}\n\n{row.Description}\n\nThis tweak is marked as {row.RiskText}. Continue?");
+            if (!confirmed)
+            {
+                return;
+            }
+        }
+
+        await RunAsync(async () =>
+        {
+            NvidiaActionResult result = await _service.ApplyItemAsync(null, tweakId);
+            await RefreshSingleAsync(tweakId);
+            ViewModel.ShowResult(result.Success ? "Applied" : "Apply failed", result.Message, result.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error);
+        });
+    }
+
+    private async Task RevertItemAsync(string tweakId)
+    {
+        if (!CanWriteAction())
+        {
+            return;
+        }
+
+        await RunAsync(async () =>
+        {
+            NvidiaActionResult result = await _service.RevertItemAsync(null, tweakId);
+            await RefreshSingleAsync(tweakId);
+            ViewModel.ShowResult(result.Success ? "Reverted" : "Revert failed", result.Message, result.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error);
+        });
+    }
+
+    private async Task ShowCustomValueDialogAsync(string tweakId)
+    {
+        if (!CanWriteAction())
+        {
+            return;
+        }
+
+        ContentDialog dialog = new()
+        {
+            XamlRoot = XamlRoot,
+            Title = "Set custom DWORD value",
+            PrimaryButtonText = "Apply",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary
+        };
+        TextBox box = new()
+        {
+            PlaceholderText = "0x00000000",
+            Text = "0x00000000"
+        };
+        dialog.Content = box;
+
+        ContentDialogResult response = await dialog.ShowAsync();
+        if (response != ContentDialogResult.Primary)
+        {
+            return;
+        }
+
+        string text = box.Text.Trim();
+        if (!TryParseHex(text, out uint value))
+        {
+            ViewModel.ShowResult("Invalid value", "Enter a valid hexadecimal DWORD value (for example 0x20).", InfoBarSeverity.Warning);
+            return;
+        }
+
+        await RunAsync(async () =>
+        {
+            NvidiaActionResult result = await _service.SetItemValueAsync(null, tweakId, $"0x{value:X8}");
+            await RefreshSingleAsync(tweakId);
+            ViewModel.ShowResult(result.Success ? "Custom value applied" : "Custom value failed", result.Message, result.Success ? InfoBarSeverity.Success : InfoBarSeverity.Error);
+        });
+    }
+
+    private async Task OpenInRegeditAsync(string tweakId)
+    {
+        (bool success, string message, IReadOnlyList<NvidiaResolvedTarget> targets) = await _service.ResolveTargetsAsync(null, tweakId);
+        if (!success)
+        {
+            ViewModel.ShowResult("Unavailable", message, InfoBarSeverity.Warning);
+            return;
+        }
+        NvidiaResolvedTarget? target = targets.FirstOrDefault();
+        if (target is null)
+        {
+            ViewModel.ShowResult("Unavailable", "No registry target was resolved for this tweak.", InfoBarSeverity.Warning);
+            return;
+        }
+
+        string root = target.Hive == RegistryHive.LocalMachine ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER";
+        string keyPath = $"{root}\\{target.Path}";
+        try
+        {
+            using Microsoft.Win32.RegistryKey regedit = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(
+                @"Software\Microsoft\Windows\CurrentVersion\Applets\Regedit",
+                true)!;
+            regedit.SetValue("LastKey", keyPath, Microsoft.Win32.RegistryValueKind.String);
+            Process.Start(new ProcessStartInfo("regedit.exe") { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            ViewModel.ShowResult("Regedit launch failed", ex.Message, InfoBarSeverity.Error);
+        }
+    }
+
+    private async Task CopyRegistryPathAsync(string tweakId)
+    {
+        (bool success, string message, IReadOnlyList<NvidiaResolvedTarget> targets) = await _service.ResolveTargetsAsync(null, tweakId);
+        if (!success)
+        {
+            ViewModel.ShowResult("Unavailable", message, InfoBarSeverity.Warning);
+            return;
+        }
+        if (targets.Count == 0)
+        {
+            ViewModel.ShowResult("Unavailable", "No registry target was resolved for this tweak.", InfoBarSeverity.Warning);
+            return;
+        }
+
+        string text = string.Join(Environment.NewLine, targets.Select(t =>
+            $"{(t.Hive == RegistryHive.LocalMachine ? "HKLM" : "HKCU")}\\{t.Path}\\{t.ValueName}"));
+        DataPackage package = new();
+        package.SetText(text);
+        Clipboard.SetContent(package);
+        ViewModel.ShowResult("Copied", "Registry path copied to clipboard.", InfoBarSeverity.Success);
+    }
+
     private bool CanWriteAction()
     {
         if (ViewModel.IsBusy)
@@ -552,8 +590,4 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page, INotifyPropertyC
         return false;
     }
 
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
 }

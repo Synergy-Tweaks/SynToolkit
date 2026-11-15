@@ -5,58 +5,61 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:appControls="using:SynToolkit.Controls"
     xmlns:local="using:SynToolkit.Views"
     xmlns:viewmodels="using:SynToolkit.ViewModels"
     NavigationCacheMode="Required">
 
     <Page.Resources>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <local:NvidiaStatusToBrushConverter x:Key="NvidiaStatusToBrushConverter" />
-        <local:NvidiaRiskToBrushConverter x:Key="NvidiaRiskToBrushConverter" />
+        <DataTemplate x:Key="NvidiaTweakCardTemplate" x:DataType="viewmodels:NvidiaTweakRowViewModel">
+            <appControls:TweakCard
+                ActionRequested="TweakCard_ActionRequested"
+                Item="{x:Bind}" />
+        </DataTemplate>
     </Page.Resources>
 
-    <ScrollViewer>
-        <StackPanel Margin="55,0,36,48">
-            <TextBlock
-                Margin="0,24,0,8"
-                Style="{StaticResource TitleTextBlockStyle}"
-                Text="NVIDIA Performance Tweaks" />
-            <TextBlock
-                Margin="0,0,0,18"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Read, verify, apply, and restore NVIDIA driver registry tweaks with per-value proof."
-                TextWrapping="Wrap" />
+    <Grid Margin="24,8,24,24" RowSpacing="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
             <InfoBar
+                Grid.Row="0"
                 IsOpen="{x:Bind ViewModel.ReadOnlyBarOpen, Mode=OneWay}"
                 IsClosable="False"
-                Margin="0,0,0,12"
                 Severity="Warning"
                 Title="Administrator access required"
                 Message="SynToolkit is not running as administrator. Checks and reads still work, but write actions are disabled." />
 
             <InfoBar
+                Grid.Row="0"
                 IsOpen="{x:Bind ViewModel.ResultBarOpen, Mode=TwoWay}"
                 IsClosable="True"
-                Margin="0,0,0,12"
+                Margin="0,42,0,0"
                 Severity="{x:Bind ViewModel.ResultSeverity, Mode=OneWay}"
                 Title="{x:Bind ViewModel.ResultTitle, Mode=OneWay}"
                 Message="{x:Bind ViewModel.ResultMessage, Mode=OneWay}" />
 
-            <controls:SettingsCard
-                Header="Detected target"
-                Description="SynToolkit updates this summary after each verification."
-                Style="{StaticResource ConfigurationSettingsCardTemplate}">
-                <controls:SettingsCard.HeaderIcon>
-                    <ImageIcon Source="ms-appx:///assets/Icons/Nvidia.png" />
-                </controls:SettingsCard.HeaderIcon>
+            <Border
+                Grid.Row="1"
+                Padding="12"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="3">
                         <TextBlock
+                            FontSize="14"
                             FontWeight="SemiBold"
                             Text="{x:Bind ViewModel.ActiveGpuName, Mode=OneWay}" />
                         <TextBlock
@@ -65,9 +68,7 @@
                             Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                             Text="{x:Bind ViewModel.DriverClassPath, Mode=OneWay}" />
                         <TextBlock
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="{x:Bind ViewModel.SummaryText, Mode=OneWay}" />
-                        <TextBlock
+                            FontSize="11"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Text="Driver key selected by INF match"
                             Visibility="{x:Bind ViewModel.DriverClassMatchedByInf, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
@@ -84,6 +85,21 @@
                     </StackPanel>
                     <StackPanel
                         Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            HorizontalAlignment="Center"
+                            Text="{x:Bind ViewModel.SummaryText, Mode=OneWay}" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center"
+                            Text="Applied" />
+                    </StackPanel>
+                    <StackPanel
+                        Grid.Column="2"
                         Orientation="Horizontal"
                         Spacing="8"
                         VerticalAlignment="Center">
@@ -106,21 +122,19 @@
                             Visibility="{x:Bind ViewModel.IsBusy, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                     </StackPanel>
                 </Grid>
-            </controls:SettingsCard>
+            </Border>
 
-            <Grid Margin="0,12,0,10" ColumnSpacing="8">
+            <Grid Grid.Row="2" Margin="0,2,0,2" ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="200" />
                 </Grid.ColumnDefinitions>
                 <TextBox
                     Grid.Column="0"
-                    Header="Search"
                     PlaceholderText="Search tweak, description, or registry target"
                     Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <ComboBox
                     Grid.Column="1"
-                    Header="Filter"
                     SelectedIndex="{x:Bind FilterIndex, Mode=TwoWay}">
                     <x:String>All</x:String>
                     <x:String>Applied</x:String>
@@ -129,132 +143,65 @@
                 </ComboBox>
             </Grid>
 
-            <StackPanel
-                Margin="0,10,0,0"
-                Visibility="{x:Bind ViewModel.HasNvidiaGpu, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                <ItemsControl ItemsSource="{x:Bind ViewModel.Groups, Mode=OneWay}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:NvidiaTweakGroupViewModel">
-                            <Expander Margin="0,0,0,10" IsExpanded="True">
+            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="10">
+                    <StackPanel Visibility="{x:Bind ViewModel.HasNvidiaGpu, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Groups, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="viewmodels:NvidiaTweakGroupViewModel">
+                                    <Expander Margin="0,0,0,10" IsExpanded="True">
                                 <Expander.Header>
                                     <Grid ColumnSpacing="10">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" FontWeight="SemiBold" Text="{x:Bind Header}" />
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            FontSize="20"
+                                            FontWeight="SemiBold"
+                                            Text="{x:Bind Header}" />
                                         <TextBlock
                                             Grid.Column="1"
+                                            VerticalAlignment="Center"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             Text="{x:Bind CountLabel}" />
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                                            <Button
+                                                Click="ApplyGroupButton_Click"
+                                                Content="Apply group"
+                                                Tag="{x:Bind Group}" />
+                                            <Button
+                                                Click="RevertGroupButton_Click"
+                                                Content="Revert group"
+                                                Tag="{x:Bind Group}" />
+                                        </StackPanel>
                                     </Grid>
                                 </Expander.Header>
-                                <StackPanel Margin="0,10,0,2" Spacing="8">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <Button
-                                            Click="ApplyGroupButton_Click"
-                                            Content="Apply group"
-                                            Tag="{x:Bind Group}" />
-                                        <Button
-                                            Click="RevertGroupButton_Click"
-                                            Content="Revert group"
-                                            Tag="{x:Bind Group}" />
-                                    </StackPanel>
+                                <ItemsRepeater Margin="0,10,0,2" ItemTemplate="{StaticResource NvidiaTweakCardTemplate}" ItemsSource="{x:Bind VisibleRows}">
+                                    <ItemsRepeater.Layout>
+                                        <UniformGridLayout
+                                            ItemsStretch="Fill"
+                                            MinColumnSpacing="12"
+                                            MinItemWidth="420"
+                                            MinRowSpacing="12" />
+                                    </ItemsRepeater.Layout>
+                                </ItemsRepeater>
+                                    </Expander>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
 
-                                    <ItemsControl ItemsSource="{x:Bind VisibleRows}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="viewmodels:NvidiaTweakRowViewModel">
-                                                <Border
-                                                    Padding="10"
-                                                    Margin="0,0,0,6"
-                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="8">
-                                                    <StackPanel Spacing="6">
-                                                        <Grid ColumnSpacing="10">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="Auto" />
-                                                                <ColumnDefinition Width="Auto" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <TextBlock
-                                                                Grid.Column="0"
-                                                                FontWeight="SemiBold"
-                                                                Text="{x:Bind Name}" />
-                                                            <Border
-                                                                Grid.Column="1"
-                                                                Padding="8,2"
-                                                                Background="{x:Bind Risk, Converter={StaticResource NvidiaRiskToBrushConverter}}"
-                                                                CornerRadius="10">
-                                                                <TextBlock FontSize="11" Text="{x:Bind RiskText}" />
-                                                            </Border>
-                                                            <Border
-                                                                Grid.Column="2"
-                                                                Padding="8,2"
-                                                                Background="{x:Bind StatusText, Converter={StaticResource NvidiaStatusToBrushConverter}}"
-                                                                CornerRadius="10">
-                                                                <TextBlock FontSize="11" Text="{x:Bind StatusText}" />
-                                                            </Border>
-                                                        </Grid>
-                                                        <TextBlock
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Text="{x:Bind Description}"
-                                                            TextWrapping="Wrap" />
-                                                        <TextBlock
-                                                            FontFamily="Consolas"
-                                                            FontSize="11"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Text="{x:Bind LocationText}"
-                                                            TextWrapping="WrapWholeWords" />
-                                                        <TextBlock
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Text="{x:Bind RecommendedDisplay}" />
-                                                        <TextBlock
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Text="{x:Bind CurrentDisplay}" />
-                                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                                            <Button
-                                                                Click="ApplyItemButton_Click"
-                                                                Content="Apply"
-                                                                IsEnabled="{x:Bind CanWrite}"
-                                                                Tag="{x:Bind Id}" />
-                                                            <Button
-                                                                Click="RevertItemButton_Click"
-                                                                Content="Revert"
-                                                                IsEnabled="{x:Bind CanWrite}"
-                                                                Tag="{x:Bind Id}" />
-                                                            <Button
-                                                                Click="CheckItemButton_Click"
-                                                                Content="Check"
-                                                                Tag="{x:Bind Id}" />
-                                                            <Button
-                                                                Click="CustomValueButton_Click"
-                                                                Content="Custom value…"
-                                                                IsEnabled="{x:Bind CanWrite}"
-                                                                Tag="{x:Bind Id}"
-                                                                Visibility="{x:Bind SupportsCustomValue, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                                            <Button
-                                                                Click="CopyRegistryPathButton_Click"
-                                                                Content="Copy registry path"
-                                                                Tag="{x:Bind Id}" />
-                                                            <Button
-                                                                Click="OpenInRegeditButton_Click"
-                                                                Content="Open in Regedit"
-                                                                Tag="{x:Bind Id}" />
-                                                        </StackPanel>
-                                                    </StackPanel>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </Expander>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
+                    <InfoBar
+                        IsOpen="{x:Bind ViewModel.ShowNoNvidiaMessage, Mode=OneWay}"
+                        IsClosable="False"
+                        Margin="0,8,0,0"
+                        Severity="Informational"
+                        Title="NVIDIA GPU not found"
+                        Message="{x:Bind ViewModel.NoNvidiaMessage, Mode=OneWay}" />
+                </StackPanel>
+            </ScrollViewer>
+    </Grid>
 </Page>

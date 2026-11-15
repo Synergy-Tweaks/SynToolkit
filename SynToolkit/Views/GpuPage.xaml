@@ -685,7 +685,7 @@
                             IsOpen="False"
                             Severity="Warning"
                             local:LocalizedText.TitleKey="TweaksWarningTitle"
-                            local:LocalizedText.MessageKey="TweaksWarningMessage" />
+                            Message="These NVIDIA driver tweaks are optional and may behave differently across systems. Create a System Restore point before changing settings so you can roll back if needed. Some changes require a restart." />
                         <Frame x:Name="NvidiaTweaksFrame" />
                     </StackPanel>
                 </StackPanel>
