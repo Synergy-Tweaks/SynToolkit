@@ -172,6 +172,11 @@ namespace SynToolkit.Views
 
         private void ApplyActivePlanState(Guid schemeId, string schemeName)
         {
+            ApplyActivePlanIdentity(schemeId, schemeName, CurrentPlanDescription.Text);
+        }
+
+        private void ApplyActivePlanIdentity(Guid schemeId, string schemeName, string schemeDescription)
+        {
             _snapshot = _snapshot is not null
                 ? _snapshot with
                 {
@@ -189,6 +194,14 @@ namespace SynToolkit.Views
 
             CurrentPlanName.Text = schemeName;
             CurrentPlanId.Text = schemeId.ToString("D");
+            bool hasDescription = !string.IsNullOrWhiteSpace(schemeDescription);
+            string description = hasDescription ? schemeDescription.Trim() : string.Empty;
+            CurrentPlanDescription.Text = description;
+            CurrentPlanDescription.Visibility = hasDescription ? Visibility.Visible : Visibility.Collapsed;
+            ToolTipService.SetToolTip(CurrentPlanName, schemeName);
+            ToolTipService.SetToolTip(
+                CurrentPlanDescription,
+                hasDescription ? description : null);
             ApplyBundledPlansFilter();
         }
 
@@ -232,6 +245,134 @@ namespace SynToolkit.Views
             if (_snapshot?.ActiveSchemeId is not Guid schemeId) return;
             await ShowPowerPlanEditorAsync(new InstalledPowerPlan(
                 schemeId, _snapshot.ActiveSchemeName), autoSave: false);
+        }
+
+        private async void RenameCurrentPlanButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isPageLoaded)
+            {
+                return;
+            }
+
+            if (!_powerPlanService.CanMutatePowerPlans)
+            {
+                ShowResult(
+                    "Administrator access required",
+                    "Restart SynToolkit as administrator to rename the active power plan.",
+                    InfoBarSeverity.Warning);
+                return;
+            }
+
+            try
+            {
+                CancellationToken token = _lifetimeCancellation.Token;
+                (Guid schemeId, string currentName, string currentDescription) =
+                    await _powerPlanService.GetActivePlanIdentityAsync(token);
+                if (!_isPageLoaded)
+                {
+                    return;
+                }
+
+                TextBox nameBox = new()
+                {
+                    Header = "Plan name",
+                    Text = currentName,
+                    MaxLength = PowerPlanService.MaximumPlanNameLength,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                };
+                TextBox descriptionBox = new()
+                {
+                    Header = "Description",
+                    Text = currentDescription,
+                    MaxLength = PowerPlanService.MaximumPlanDescriptionLength,
+                    AcceptsReturn = true,
+                    TextWrapping = TextWrapping.Wrap,
+                    // Fixed height so long text scrolls inside the box instead of growing the dialog.
+                    Height = 120,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                };
+                ScrollViewer.SetVerticalScrollBarVisibility(descriptionBox, ScrollBarVisibility.Auto);
+                StackPanel fields = new() { Spacing = 14, Width = 360 };
+                fields.Children.Add(nameBox);
+                fields.Children.Add(descriptionBox);
+
+                ContentDialog dialog = new()
+                {
+                    XamlRoot = XamlRoot,
+                    Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+                    Title = "Edit plan",
+                    Content = fields,
+                    PrimaryButtonText = "Save",
+                    CloseButtonText = "Cancel",
+                    DefaultButton = ContentDialogButton.Primary,
+                    IsPrimaryButtonEnabled = false
+                };
+
+                void RefreshSaveEnabled(object? _, TextChangedEventArgs __)
+                {
+                    string trimmedName = nameBox.Text.Trim();
+                    string trimmedDescription = descriptionBox.Text.Trim();
+                    bool nameOk = trimmedName.Length > 0;
+                    bool changed =
+                        !string.Equals(trimmedName, currentName, StringComparison.Ordinal) ||
+                        !string.Equals(trimmedDescription, currentDescription, StringComparison.Ordinal);
+                    dialog.IsPrimaryButtonEnabled = nameOk && changed;
+                }
+
+                nameBox.TextChanged += RefreshSaveEnabled;
+                descriptionBox.TextChanged += RefreshSaveEnabled;
+
+                if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+                {
+                    return;
+                }
+
+                string newName = nameBox.Text;
+                string newDescription = descriptionBox.Text;
+                int lifetimeVersion = _lifetimeVersion;
+                CancellationToken saveToken = _lifetimeCancellation.Token;
+                SetBusy(true);
+                try
+                {
+                    // GUID was captured when the dialog opened; rename that plan even if
+                    // the active scheme changed while the dialog was open.
+                    await _powerPlanService.RenameActivePlanAsync(
+                        schemeId, newName, newDescription, saveToken);
+                    if (!IsCurrentLifetime(lifetimeVersion, saveToken))
+                    {
+                        return;
+                    }
+
+                    if (!PowerPlanService.TryNormalizePlanIdentity(
+                            newName, newDescription, out string savedName, out string savedDescription))
+                    {
+                        savedName = newName.Trim();
+                        savedDescription = newDescription.Trim();
+                    }
+
+                    ApplyActivePlanIdentity(schemeId, savedName, savedDescription);
+                    ShowResult(
+                        "Plan updated",
+                        $"Saved as “{savedName}”.",
+                        InfoBarSeverity.Success);
+                }
+                finally
+                {
+                    if (IsCurrentLifetime(lifetimeVersion, saveToken))
+                    {
+                        SetBusy(false);
+                    }
+                }
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception exception)
+            {
+                App.logger.Error(exception, "Could not rename the active power plan.");
+                if (_isPageLoaded)
+                {
+                    ShowResult("Could not rename plan", exception.Message, InfoBarSeverity.Error);
+                }
+            }
         }
 
         private async void CreatePlanButton_Click(object sender, RoutedEventArgs e)
@@ -751,7 +892,27 @@ namespace SynToolkit.Views
                 }
 
                 _snapshot = snapshot;
-                ApplyActivePlanDisplayFromSnapshot();
+                string activeDescription = string.Empty;
+                if (snapshot.ActiveSchemeId is Guid activeSchemeId)
+                {
+                    try
+                    {
+                        (_, activeDescription) = await Task.Run(
+                            () => PowerSettingsHelper.ReadPlanIdentity(activeSchemeId),
+                            cancellationToken);
+                    }
+                    catch (Exception descriptionException)
+                    {
+                        App.logger.Debug(
+                            descriptionException,
+                            "Unable to read the active power-plan description.");
+                    }
+                }
+                if (!IsCurrentLifetime(lifetimeVersion, cancellationToken))
+                {
+                    return;
+                }
+                ApplyActivePlanDisplayFromSnapshot(activeDescription);
 
                 BuiltInPlanState.Text = _snapshot.HasSynToolkitSchemeConflict
                     ? "Reserved ID conflict — not managed"
@@ -777,6 +938,8 @@ namespace SynToolkit.Views
                 {
                     _snapshot = null;
                     CurrentPlanName.Text = "Power-plan status unavailable";
+                    CurrentPlanDescription.Text = string.Empty;
+                    CurrentPlanDescription.Visibility = Visibility.Collapsed;
                     CurrentPlanId.Text = string.Empty;
                     UpdateBuiltInPlanActiveBorder();
                     if (showErrors)
@@ -810,7 +973,7 @@ namespace SynToolkit.Views
             UpdateButtonStates();
         }
 
-        private void ApplyActivePlanDisplayFromSnapshot()
+        private void ApplyActivePlanDisplayFromSnapshot(string? schemeDescription = null)
         {
             if (_snapshot is null)
             {
@@ -819,6 +982,17 @@ namespace SynToolkit.Views
 
             CurrentPlanName.Text = _snapshot.ActiveSchemeName;
             CurrentPlanId.Text = _snapshot.ActiveSchemeId?.ToString("D") ?? "Active plan ID unavailable";
+            ToolTipService.SetToolTip(CurrentPlanName, _snapshot.ActiveSchemeName);
+            if (schemeDescription is not null)
+            {
+                bool hasDescription = !string.IsNullOrWhiteSpace(schemeDescription);
+                string description = hasDescription ? schemeDescription.Trim() : string.Empty;
+                CurrentPlanDescription.Text = description;
+                CurrentPlanDescription.Visibility = hasDescription ? Visibility.Visible : Visibility.Collapsed;
+                ToolTipService.SetToolTip(
+                    CurrentPlanDescription,
+                    hasDescription ? description : null);
+            }
         }
 
         private void UpdateBuiltInPlanActiveBorder()
@@ -847,6 +1021,7 @@ namespace SynToolkit.Views
                 !_isBundledPlanOperationInProgress &&
                 _snapshot?.ActiveSchemeId is not null;
             EditCurrentPlanButton.IsEnabled = canMutate && _snapshot?.ActiveSchemeId is not null;
+            RenameCurrentPlanButton.IsEnabled = canMutate && _snapshot?.ActiveSchemeId is not null;
             CreatePlanButton.IsEnabled = canMutate;
             ImportBuiltInButton.IsEnabled = canMutate && !hasConflict;
             ImportCustomButton.IsEnabled = canMutate;

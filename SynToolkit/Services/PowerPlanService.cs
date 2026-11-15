@@ -1,6 +1,7 @@
 #nullable enable
 
 using Microsoft.Win32;
+using SynToolkit.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -76,6 +77,166 @@ namespace SynToolkit.Services
         private readonly string _powerCfgPath = Path.Combine(Environment.SystemDirectory, "powercfg.exe");
 
         public bool CanMutatePowerPlans => IsCurrentProcessElevated();
+
+        public const int MaximumPlanNameLength = 100;
+        public const int MaximumPlanDescriptionLength = 500;
+
+        static PowerPlanService()
+        {
+            // Self-check: rename validation rejects empty names and accepts trimmed input.
+            System.Diagnostics.Debug.Assert(
+                !TryNormalizePlanIdentity("   ", "desc", out _, out _));
+            System.Diagnostics.Debug.Assert(
+                TryNormalizePlanIdentity("  Synergy  ", "  notes  ", out string n, out string d)
+                && n == "Synergy" && d == "notes");
+        }
+
+        /// <summary>
+        /// Reads the active Windows power plan's friendly name and description via PowrProf.
+        /// Localized resource-string names are resolved to display text.
+        /// </summary>
+        /// <returns>The active scheme's resolved name and description.</returns>
+        public Task<(string Name, string Description)> GetActivePlanInfoAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.Run(() =>
+            {
+                (_, string name, string description) = PowerSettingsHelper.GetActivePlanInfo();
+                return (name, description);
+            }, cancellationToken);
+
+        /// <summary>
+        /// Reads the active scheme GUID together with its resolved friendly name and description.
+        /// Capture the returned scheme ID when an edit dialog opens so a later rename targets
+        /// that plan even if the user switches schemes meanwhile.
+        /// </summary>
+        public Task<(Guid SchemeId, string Name, string Description)> GetActivePlanIdentityAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.Run(PowerSettingsHelper.GetActivePlanInfo, cancellationToken);
+
+        /// <summary>
+        /// Renames the power plan identified by <paramref name="schemeId"/> (the plan that was
+        /// active when the edit dialog opened) and writes its description via PowrProf, falling
+        /// back to <c>powercfg /changename</c> if the native write fails.
+        /// </summary>
+        /// <param name="schemeId">Scheme GUID captured when the dialog opened.</param>
+        /// <param name="newName">New friendly name (trimmed; 1–100 characters).</param>
+        /// <param name="newDescription">New description (trimmed; at most 500 characters).</param>
+        /// <returns><see langword="true"/> when Windows retained the new identity.</returns>
+        public async Task<bool> RenameActivePlanAsync(
+            Guid schemeId,
+            string newName,
+            string newDescription,
+            CancellationToken cancellationToken = default)
+        {
+            EnsureCanMutate("rename the power plan");
+            if (!TryNormalizePlanIdentity(newName, newDescription, out string name, out string description))
+            {
+                throw new ArgumentException(
+                    $"Enter a power-plan name between 1 and {MaximumPlanNameLength} characters.",
+                    nameof(newName));
+            }
+
+            await OperationLock.WaitAsync(cancellationToken);
+            try
+            {
+                bool wroteViaNative = false;
+                try
+                {
+                    await Task.Run(
+                        () => PowerSettingsHelper.WritePlanIdentity(schemeId, name, description),
+                        cancellationToken);
+                    wroteViaNative = true;
+                }
+                catch (Exception nativeException)
+                {
+                    App.logger.Warn(
+                        nativeException,
+                        "PowrProf could not rename power plan {SchemeId}; falling back to powercfg.",
+                        schemeId);
+                }
+
+                if (!wroteViaNative)
+                {
+                    // ArgumentList avoids shell injection from user-supplied name/description.
+                    await RunCheckedAsync(
+                        cancellationToken,
+                        "rename the power plan",
+                        "/changename",
+                        schemeId.ToString("D"),
+                        name,
+                        description);
+                }
+
+                (string actualName, string actualDescription) = await Task.Run(
+                    () => PowerSettingsHelper.ReadPlanIdentity(schemeId),
+                    cancellationToken);
+
+                if (!string.Equals(actualName, name, StringComparison.Ordinal) ||
+                    !string.Equals(actualDescription, description, StringComparison.Ordinal))
+                {
+                    if (wroteViaNative)
+                    {
+                        await RunCheckedAsync(
+                            cancellationToken,
+                            "rename the power plan",
+                            "/changename",
+                            schemeId.ToString("D"),
+                            name,
+                            description);
+                        (actualName, actualDescription) = await Task.Run(
+                            () => PowerSettingsHelper.ReadPlanIdentity(schemeId),
+                            cancellationToken);
+                    }
+
+                    if (!string.Equals(actualName, name, StringComparison.Ordinal) ||
+                        !string.Equals(actualDescription, description, StringComparison.Ordinal))
+                    {
+                        throw new InvalidOperationException(
+                            "Windows did not retain the new power-plan name or description.");
+                    }
+                }
+
+                return true;
+            }
+            finally
+            {
+                OperationLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Renames the currently active power plan. Prefer the overload that takes a captured
+        /// <see cref="Guid"/> when a dialog may outlive an active-scheme change.
+        /// </summary>
+        public async Task<bool> RenameActivePlanAsync(
+            string newName,
+            string newDescription,
+            CancellationToken cancellationToken = default)
+        {
+            Guid schemeId = await Task.Run(PowerSettingsHelper.GetActiveScheme, cancellationToken);
+            return await RenameActivePlanAsync(schemeId, newName, newDescription, cancellationToken);
+        }
+
+        internal static bool TryNormalizePlanIdentity(
+            string? name,
+            string? description,
+            out string normalizedName,
+            out string normalizedDescription)
+        {
+            normalizedName = (name ?? string.Empty).Trim();
+            normalizedDescription = (description ?? string.Empty).Trim();
+            if (normalizedName.Length is < 1 or > MaximumPlanNameLength ||
+                normalizedName.Any(char.IsControl) ||
+                normalizedDescription.Length > MaximumPlanDescriptionLength ||
+                normalizedDescription.Any(char.IsControl))
+            {
+                normalizedName = string.Empty;
+                normalizedDescription = string.Empty;
+                return false;
+            }
+
+            return true;
+        }
 
         public IReadOnlyList<BundledPowerPlan> GetBundledPlans()
         {

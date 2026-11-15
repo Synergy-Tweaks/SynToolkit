@@ -14,10 +14,18 @@
     </Window.SystemBackdrop>
 
     <Grid x:Name="RootGrid">
-        <ProgressRing IsActive="True" />
+        <ProgressRing
+            Width="48"
+            Height="48"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsActive="True" />
         <TextBlock
             x:Name="StartingServices"
-            Margin="0,175,0,0"
-            TextAlignment="Center" />
+            Margin="12,0,12,28"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
     </Grid>
 </Window>

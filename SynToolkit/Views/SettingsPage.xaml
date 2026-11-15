@@ -189,7 +189,7 @@
                     <!--  About Section  -->
                     <controls:SettingsExpander Header="SynToolkit" Style="{StaticResource ConfigurationSettingsExpanderTemplate}">
                         <controls:SettingsExpander.HeaderIcon>
-                            <BitmapIcon ShowAsMonochrome="False" UriSource="/assets/logo/SynToolkit.ico" />
+                            <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///assets/logo/SynToolkit-Icon-256.png" />
                         </controls:SettingsExpander.HeaderIcon>
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
