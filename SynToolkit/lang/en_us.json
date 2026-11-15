@@ -443,6 +443,7 @@
   "UninstallerPageEmptyHint": "No apps scanned yet. Press Scan to list everything installed on this PC.",
   "Adjustments": "Customizations",
   "Gpu": "GPU",
+  "NvidiaPerformanceTweaks": "NVIDIA Tweaks",
   "Display": "Display",
   "Startup": "Startup",
   "Startup_Subtitle": "See what starts with Windows and turn entries on or off.",
