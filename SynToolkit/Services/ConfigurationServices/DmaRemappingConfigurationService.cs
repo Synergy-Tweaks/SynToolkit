@@ -5,6 +5,7 @@ using SynToolkit.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace SynToolkit.Services.ConfigurationServices
@@ -33,6 +34,13 @@ namespace SynToolkit.Services.ConfigurationServices
         {
             // Never snapshot twice: a second Disable must not record our own 0s as originals.
             List<BackupEntry> backup = LoadBackup() ?? SnapshotCurrentValues();
+            if (backup.Count == 0)
+            {
+                // No driver exposes DmaRemappingCompatible, so there is nothing to change.
+                // Claiming "disabled" here would report a protection state that never changed.
+                throw new NotSupportedException(
+                    "No device on this computer exposes the DMA-remapping value, so this tweak has nothing to change.");
+            }
 
             foreach (BackupEntry entry in backup)
             {
