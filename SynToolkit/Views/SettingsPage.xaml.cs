@@ -72,9 +72,9 @@ namespace SynToolkit.Views
             DiscordRpcToggle.IsOn = DiscordRpc_State;
             DiscordRpcToggle.Toggled += DiscordRpc_Toggled;
 
-            // Initialize context menu toggle state
+            // Initialize context menu toggle state. RefreshContextMenuState attaches the
+            // Toggled handler itself, so it must not be attached again here.
             RefreshContextMenuState();
-            ContextMenuToggle.Toggled += ContextMenuToggle_Toggled;
 
             SynergyOsUpdateNotifyToggle.IsOn = SynergyOsUpdateChecker.Default.Settings.IsEnabled;
             SynergyOsUpdateNotifyToggle.Toggled += SynergyOsUpdateNotifyToggle_Toggled;
