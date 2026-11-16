@@ -118,9 +118,10 @@ namespace SynToolkit.Services
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
+                    string packageFileName = GetSafePackageFileName(packages[i]);
                     string path = IsDependency(packages[i].Name!)
-                        ? Path.Combine(tempFolder, "Dependencies", packages[i].Name + "." + packages[i].FileExtension)
-                        : Path.Combine(tempFolder, packages[i].Name + "." + packages[i].FileExtension);
+                        ? Path.Combine(tempFolder, "Dependencies", packageFileName)
+                        : Path.Combine(tempFolder, packageFileName);
                     await client.StartDownload(packages[i].ResourceUri!, path, cancellationToken: cancellationToken);
                     await ValidatePackageChecksumAsync(packages[i], path, cancellationToken);
                     finishedBytes += packages[i].Size.GetValueOrDefault();
@@ -183,6 +184,51 @@ namespace SynToolkit.Services
             }
         }
 
+        /// <summary>
+        /// The package name and extension come from a remote catalog, so they must never steer
+        /// the local path or the PowerShell/MSI command line: a "..\..\" name would write outside
+        /// the temp folder and a quote would break out of the quoted argument.
+        /// </summary>
+        private static string GetSafePackageFileName(StorePackageDto package)
+        {
+            string name = package.Name ?? string.Empty;
+            string extension = (package.FileExtension ?? string.Empty).TrimStart('.');
+            if (string.IsNullOrWhiteSpace(name) ||
+                name is "." or ".." ||
+                !string.Equals(Path.GetFileName(name), name, StringComparison.Ordinal) ||
+                name.IndexOf('\'') >= 0 ||
+                extension.Length == 0 ||
+                !extension.All(char.IsLetterOrDigit))
+            {
+                throw new InvalidDataException(
+                    $"The store returned an unsafe package name for {package.PackageId}: '{name}.{extension}'.");
+            }
+
+            return name + "." + extension;
+        }
+
+        static AppFetchService()
+        {
+            // Self-check: a normal store name passes, separators and quotes are refused.
+            System.Diagnostics.Debug.Assert(
+                GetSafePackageFileName(new StorePackageDto { Name = "Microsoft.Store", FileExtension = "msix" }) == "Microsoft.Store.msix");
+            System.Diagnostics.Debug.Assert(RejectsUnsafeName(@"..\System32\payload"));
+            System.Diagnostics.Debug.Assert(RejectsUnsafeName("a'b"));
+
+            static bool RejectsUnsafeName(string name)
+            {
+                try
+                {
+                    _ = GetSafePackageFileName(new StorePackageDto { Name = name, FileExtension = "exe" });
+                    return false;
+                }
+                catch (InvalidDataException)
+                {
+                    return true;
+                }
+            }
+        }
+
         private static async Task ValidatePackageChecksumAsync(
             StorePackageDto package,
             string filePath,
@@ -192,7 +238,9 @@ namespace SynToolkit.Services
                 package.Checksum.Length != 64 ||
                 !package.Checksum.All(Uri.IsHexDigit))
             {
-                return;
+                // Running an installer that no hash covers would defeat the point of the check.
+                throw new InvalidDataException(
+                    $"The store returned no usable SHA-256 checksum for {package.Name}; refusing to install an unverified file.");
             }
 
             await using FileStream stream = File.OpenRead(filePath);
@@ -208,9 +256,10 @@ namespace SynToolkit.Services
             string downloadFolder,
             CancellationToken cancellationToken)
         {
+            string packageFileName = GetSafePackageFileName(package);
             string file = IsDependency(package.Name!)
-                ? Path.Combine(downloadFolder, "Dependencies", package.Name + "." + package.FileExtension)
-                : Path.Combine(downloadFolder, package.Name + "." + package.FileExtension);
+                ? Path.Combine(downloadFolder, "Dependencies", packageFileName)
+                : Path.Combine(downloadFolder, packageFileName);
             ProcessStartInfo startInfo = new()
             {
                 FileName = IsUWP(package.PackageId!) ? "powershell.exe" : file.EndsWith(".msi") ? "msiexec.exe" : file,
