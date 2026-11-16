@@ -96,27 +96,38 @@ namespace SynToolkit.Services.ConfigurationServices
 
         private static void CollectValues(RegistryKey key, string relativePath, List<BackupEntry> backup)
         {
-            object? raw = key.GetValue(TARGET_VALUE);
-            if (raw is not null)
+            try
             {
-                try
+                object? raw = key.GetValue(TARGET_VALUE);
+                if (raw is not null)
                 {
-                    backup.Add(new BackupEntry(relativePath, System.Convert.ToInt32(raw)));
+                    try
+                    {
+                        backup.Add(new BackupEntry(relativePath, System.Convert.ToInt32(raw)));
+                    }
+                    catch (System.Exception exception)
+                    {
+                        // Non-numeric vendor value: leave it alone entirely.
+                        App.logger.Warn(exception, $"[DmaRemapping] Skipping non-numeric value at {relativePath}.");
+                    }
                 }
-                catch (System.Exception exception)
+
+                foreach (string subName in key.GetSubKeyNames())
                 {
-                    // Non-numeric vendor value: leave it alone entirely.
-                    App.logger.Warn(exception, $"[DmaRemapping] Skipping non-numeric value at {relativePath}.");
+                    using RegistryKey? sub = key.OpenSubKey(subName, writable: false);
+                    if (sub is not null)
+                    {
+                        CollectValues(sub, string.IsNullOrEmpty(relativePath) ? subName : relativePath + "\\" + subName, backup);
+                    }
                 }
             }
-
-            foreach (string subName in key.GetSubKeyNames())
+            catch (System.Exception exception) when (exception is System.Security.SecurityException
+                or UnauthorizedAccessException
+                or System.IO.IOException)
             {
-                using RegistryKey? sub = key.OpenSubKey(subName, writable: false);
-                if (sub is not null)
-                {
-                    CollectValues(sub, string.IsNullOrEmpty(relativePath) ? subName : relativePath + "\\" + subName, backup);
-                }
+                // A service key that even an elevated process cannot read must not abort the
+                // whole snapshot: skip that subtree and keep the values that are readable.
+                App.logger.Debug(exception, $"[DmaRemapping] Skipping unreadable key at {relativePath}.");
             }
         }
 
