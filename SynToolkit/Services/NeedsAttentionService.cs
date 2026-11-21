@@ -592,7 +592,9 @@ internal sealed class NeedsAttentionService
             using ManagementClass restore = new(@"root\default", "SystemRestore", null);
             using ManagementBaseObject input = restore.GetMethodParameters("CreateRestorePoint");
             input["Description"] = "SynToolkit restore point";
-            input["RestorePointType"] = 0;
+            // MODIFY_SETTINGS (12), matching RestorePointService: APPLICATION_INSTALL (0)
+            // checkpoints are hidden from the normal System Restore list.
+            input["RestorePointType"] = 12;
             input["EventType"] = 100;
             using ManagementBaseObject? result = restore.InvokeMethod("CreateRestorePoint", input, null);
             uint returnValue = result?["ReturnValue"] as uint? ?? 1;
