@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -28,6 +29,25 @@ namespace SynToolkit.Utils
         private const uint TOKEN_DUPLICATE = 0x0002;
         private const uint TOKEN_QUERY = 0x0008;
         private const uint LOGON_WITH_PROFILE = 0x00000001;
+
+        // cmd.exe reads a batch file in the console (OEM) code page. Writing ASCII turned any
+        // non-ASCII argument — a Thai install folder, for example — into "?" before winget saw it.
+        // shortcut: text outside the OEM code page still cannot be represented; switch to passing
+        // the argument list straight to CreateProcessWithTokenW when that matters.
+        private static readonly Encoding BatchEncoding = CreateBatchEncoding();
+
+        private static Encoding CreateBatchEncoding()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            try
+            {
+                return Encoding.GetEncoding(CultureInfo.CurrentCulture.TextInfo.OEMCodePage);
+            }
+            catch (Exception exception) when (exception is ArgumentException or NotSupportedException)
+            {
+                return new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+            }
+        }
 
         public static int RunAsInteractiveUser(string fileName, string arguments, int timeoutMilliseconds = 30_000)
         {
@@ -165,7 +185,7 @@ namespace SynToolkit.Utils
                         $"{executableCommand} 1>\"{outputPath}\" 2>&1",
                         "exit /b %errorlevel%"
                     ]);
-                File.WriteAllText(batchPath, batchContents, Encoding.ASCII);
+                File.WriteAllText(batchPath, batchContents, BatchEncoding);
 
                 int exitCode = RunAsInteractiveUser("cmd.exe", $"/d /s /c call \"{batchPath}\"", timeoutMilliseconds);
                 string output = File.Exists(outputPath)
