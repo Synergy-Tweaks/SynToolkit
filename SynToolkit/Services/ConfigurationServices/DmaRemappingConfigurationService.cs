@@ -5,6 +5,7 @@ using SynToolkit.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace SynToolkit.Services.ConfigurationServices
@@ -33,6 +34,13 @@ namespace SynToolkit.Services.ConfigurationServices
         {
             // Never snapshot twice: a second Disable must not record our own 0s as originals.
             List<BackupEntry> backup = LoadBackup() ?? SnapshotCurrentValues();
+            if (backup.Count == 0)
+            {
+                // No driver exposes DmaRemappingCompatible, so there is nothing to change.
+                // Claiming "disabled" here would report a protection state that never changed.
+                throw new NotSupportedException(
+                    "No device on this computer exposes the DMA-remapping value, so this tweak has nothing to change.");
+            }
 
             foreach (BackupEntry entry in backup)
             {
@@ -88,42 +96,65 @@ namespace SynToolkit.Services.ConfigurationServices
 
         private static void CollectValues(RegistryKey key, string relativePath, List<BackupEntry> backup)
         {
-            object? raw = key.GetValue(TARGET_VALUE);
-            if (raw is not null)
+            try
             {
-                try
+                object? raw = key.GetValue(TARGET_VALUE);
+                if (raw is not null)
                 {
-                    backup.Add(new BackupEntry(relativePath, System.Convert.ToInt32(raw)));
+                    try
+                    {
+                        backup.Add(new BackupEntry(relativePath, System.Convert.ToInt32(raw)));
+                    }
+                    catch (System.Exception exception)
+                    {
+                        // Non-numeric vendor value: leave it alone entirely.
+                        App.logger.Warn(exception, $"[DmaRemapping] Skipping non-numeric value at {relativePath}.");
+                    }
                 }
-                catch (System.Exception exception)
+
+                foreach (string subName in key.GetSubKeyNames())
                 {
-                    // Non-numeric vendor value: leave it alone entirely.
-                    App.logger.Warn(exception, $"[DmaRemapping] Skipping non-numeric value at {relativePath}.");
+                    using RegistryKey? sub = key.OpenSubKey(subName, writable: false);
+                    if (sub is not null)
+                    {
+                        CollectValues(sub, string.IsNullOrEmpty(relativePath) ? subName : relativePath + "\\" + subName, backup);
+                    }
                 }
             }
-
-            foreach (string subName in key.GetSubKeyNames())
+            catch (System.Exception exception) when (exception is System.Security.SecurityException
+                or UnauthorizedAccessException
+                or System.IO.IOException)
             {
-                using RegistryKey? sub = key.OpenSubKey(subName, writable: false);
-                if (sub is not null)
-                {
-                    CollectValues(sub, string.IsNullOrEmpty(relativePath) ? subName : relativePath + "\\" + subName, backup);
-                }
+                // A service key that even an elevated process cannot read must not abort the
+                // whole snapshot: skip that subtree and keep the values that are readable.
+                App.logger.Debug(exception, $"[DmaRemapping] Skipping unreadable key at {relativePath}.");
             }
         }
 
         private static RegistryKey? OpenServicesSubKey(string? relativePath, bool writable)
         {
-            using RegistryKey baseKey = RegistryKey.OpenBaseKey(
+            // Ownership transfers to the caller: never dispose here. Child keys
+            // hold independent handles and stay valid after the parent closes.
+            RegistryKey baseKey = RegistryKey.OpenBaseKey(
                 RegistryHive.LocalMachine,
                 System.Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
-            using RegistryKey? services = baseKey.OpenSubKey(SERVICES_ROOT, writable);
-            if (services is null || string.IsNullOrEmpty(relativePath))
+            try
             {
-                return services;
-            }
+                RegistryKey? services = baseKey.OpenSubKey(SERVICES_ROOT, writable);
+                if (services is null || string.IsNullOrEmpty(relativePath))
+                {
+                    return services;
+                }
 
-            return services.OpenSubKey(relativePath, writable);
+                using (services)
+                {
+                    return services.OpenSubKey(relativePath, writable);
+                }
+            }
+            finally
+            {
+                baseKey.Dispose();
+            }
         }
 
         private static List<BackupEntry>? LoadBackup()
