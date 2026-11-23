@@ -25,7 +25,6 @@ SynToolkit is a WinUI 3 (C#) toolkit built by [Kwanteks](https://github.com/kwan
 - Display layout editor for arranging monitors
 - Per-app audio mixer with device selection and a global hotkey
 - Needs Attention checks for drivers, disk space, restore points, clock sync, and updates
-- Startup scanner for launch-at-boot entries
 - Installer (App Fetch) catalog with WinGet installs and a queue
 - Uninstaller for installed desktop apps
 - Power plan import, activate, edit, and restore

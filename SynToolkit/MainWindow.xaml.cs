@@ -585,7 +585,6 @@ namespace SynToolkit
             AdjustmentsText.Text = App.GetValueFromItemList("Adjustments");
             Gpu.Content = App.GetValueFromItemList("Gpu");
             Display.Content = App.GetValueFromItemList("Display");
-            Startup.Content = App.GetValueFromItemList("Startup");
             Specs.Content = App.GetValueFromItemList("Specs");
             DiskCleanup.Content = App.GetValueFromItemList("Cleaner");
             TweaksText.Text = App.GetValueFromItemList("Tweaks");
@@ -829,7 +828,6 @@ namespace SynToolkit
                 "SynToolkit.Views.AdjustmentsPage" => typeof(AdjustmentsPage),
                 "SynToolkit.Views.GpuPage" => typeof(GpuPage),
                 "SynToolkit.Views.DisplayPage" => typeof(DisplayPage),
-                "SynToolkit.Views.StartupPage" => typeof(StartupPage),
                 "SynToolkit.Views.SpecsPage" => typeof(SpecsPage),
                 "SynToolkit.Views.CleanerPage" => typeof(CleanerPage),
                 "SynToolkit.Views.HomePage" => typeof(HomePage),
@@ -1009,7 +1007,6 @@ namespace SynToolkit
                 "SynToolkit.Views.AdjustmentsPage" => "Adjustments",
                 "SynToolkit.Views.GpuPage" => "GPU",
                 "SynToolkit.Views.DisplayPage" => "Display",
-                "SynToolkit.Views.StartupPage" => "Startup",
                 "SynToolkit.Views.SpecsPage" => "Specs",
                 "SynToolkit.Views.CleanerPage" => "Disk Cleanup",
                 "Tweaks" => "Tweaks",
