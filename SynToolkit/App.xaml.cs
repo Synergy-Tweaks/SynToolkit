@@ -682,6 +682,11 @@ namespace SynToolkit
         {
             try
             {
+                if (s_window is LoadingWindow splash)
+                {
+                    await splash.WaitUntilRenderedAsync();
+                }
+
                 logger.Info("Loading configuration services");
                 await Task.Run(() => _host.Services.GetRequiredService<ConfigPageViewModel>());
                 logger.Info("Configuration services loaded");

@@ -7,7 +7,7 @@
     xmlns:local="using:SynToolkit.Views"
     xmlns:vm="using:SynToolkit.ViewModels"
     Loaded="Page_Loaded"
-    NavigationCacheMode="Required">
+    NavigationCacheMode="Disabled">
 
     <Page.Resources>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />

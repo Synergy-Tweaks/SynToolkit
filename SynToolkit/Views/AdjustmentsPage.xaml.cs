@@ -41,7 +41,7 @@ namespace SynToolkit.Views
         public AdjustmentsPage()
         {
             InitializeComponent();
-            NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Required;
+            NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Disabled;
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)

@@ -11,7 +11,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewmodel="using:SynToolkit.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodel:HomePageViewModel}"
-    NavigationCacheMode="Required"
+    NavigationCacheMode="Disabled"
     mc:Ignorable="d">
     <Page.Resources>
         <local:FontIconConverter x:Key="FontIconConverter" />
