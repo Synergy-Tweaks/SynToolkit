@@ -1,0 +1,739 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>Roomy</value>
+  </data>
+  <data name="TitleMain" xml:space="preserve">
+    <value>Roomy</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Настройки Roomy</value>
+  </data>
+  <data name="BadgeAdmin" xml:space="preserve">
+    <value>АДМИН</value>
+  </data>
+  <data name="BadgeSafe" xml:space="preserve">
+    <value>БЕЗОПАСНО</value>
+  </data>
+  <data name="BadgeYourCall" xml:space="preserve">
+    <value>НА ВАШЕ УСМОТРЕНИЕ</value>
+  </data>
+  <data name="NeedsAdmin" xml:space="preserve">
+    <value>НУЖЕН АДМИН</value>
+  </data>
+  <data name="Nothing" xml:space="preserve">
+    <value>ничего</value>
+  </data>
+  <data name="NeedsAdminLower" xml:space="preserve">
+    <value>нужен админ</value>
+  </data>
+  <data name="UninstallInSteam" xml:space="preserve">
+    <value>Удалить через Steam</value>
+  </data>
+  <data name="ShowInExplorer" xml:space="preserve">
+    <value>Показать в Проводнике</value>
+  </data>
+  <data name="OpenInExplorer" xml:space="preserve">
+    <value>Открыть в Проводнике</value>
+  </data>
+  <data name="RestartAsAdmin" xml:space="preserve">
+    <value>Перезапустить от имени администратора</value>
+  </data>
+  <data name="RemoveWithWindows" xml:space="preserve">
+    <value>Удалить средствами Windows</value>
+  </data>
+  <data name="StoragePath" xml:space="preserve">
+    <value>Параметры → Система → Память → Временные файлы → Предыдущие установки Windows</value>
+  </data>
+  <data name="TooltipSettings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="TooltipUpFolder" xml:space="preserve">
+    <value>На уровень выше</value>
+  </data>
+  <data name="HeroTitle" xml:space="preserve">
+    <value>Освободим немного места.</value>
+  </data>
+  <data name="HeroSubtitle" xml:space="preserve">
+    <value>Roomy находит, что занимает место на ПК, и объясняет простыми словами, что можно удалить безопасно.</value>
+  </data>
+  <data name="ScanMyPc" xml:space="preserve">
+    <value>Сканировать ПК</value>
+  </data>
+  <data name="ScanHint" xml:space="preserve">
+    <value>Займёт несколько секунд. Ничего не удалится без вашего согласия.</value>
+  </data>
+  <data name="Scanning" xml:space="preserve">
+    <value>Осматриваем ПК…</value>
+  </data>
+  <data name="FoundPrefix" xml:space="preserve">
+    <value>Нашли </value>
+  </data>
+  <data name="FoundSuffix" xml:space="preserve">
+    <value> — столько можно безопасно очистить</value>
+  </data>
+  <data name="WeFound" xml:space="preserve">
+    <value>Нашли</value>
+  </data>
+  <data name="SafeToClean" xml:space="preserve">
+    <value>можно безопасно очистить</value>
+  </data>
+  <data name="TabCleanup" xml:space="preserve">
+    <value>Очистка</value>
+  </data>
+  <data name="TabSpaceMap" xml:space="preserve">
+    <value>Карта места</value>
+  </data>
+  <data name="AdminLockTitle" xml:space="preserve">
+    <value>Windows не даёт очистить самые крупные остатки.</value>
+  </data>
+  <data name="AdminLockHint" xml:space="preserve">
+    <value>Перезапустите Roomy от имени администратора, чтобы проверить и файлы Windows Update.</value>
+  </data>
+  <data name="CleanAlreadyTitle" xml:space="preserve">
+    <value>На ПК уже идеально чисто ✨</value>
+  </data>
+  <data name="CleanAlreadyHint" xml:space="preserve">
+    <value>Откройте «Карту места», чтобы увидеть, что занимает место на самом деле.</value>
+  </data>
+  <data name="SpaceMapTitle" xml:space="preserve">
+    <value>Посмотрите, что именно занимает место</value>
+  </data>
+  <data name="SpaceMapHint" xml:space="preserve">
+    <value>Выберите диск и нажмите «Скан». Большие диски могут занять минуту.</value>
+  </data>
+  <data name="MappingDrive" xml:space="preserve">
+    <value>Строим карту диска…</value>
+  </data>
+  <data name="BiggestFiles" xml:space="preserve">
+    <value>Самые большие файлы</value>
+  </data>
+  <data name="BiggestFilesHint" xml:space="preserve">
+    <value>Отдельные файлы, которые занимают больше всего места.</value>
+  </data>
+  <data name="SelectedToClean" xml:space="preserve">
+    <value>Выбрано для очистки</value>
+  </data>
+  <data name="ScanAgain" xml:space="preserve">
+    <value>Сканировать снова</value>
+  </data>
+  <data name="CleaningUp" xml:space="preserve">
+    <value>Очищаем…</value>
+  </data>
+  <data name="InUseSkipped" xml:space="preserve">
+    <value>Занятые файлы пропускаются и не удаляются принудительно.</value>
+  </data>
+  <data name="YouJustFreed" xml:space="preserve">
+    <value>Вы освободили</value>
+  </data>
+  <data name="Before" xml:space="preserve">
+    <value>Было</value>
+  </data>
+  <data name="After" xml:space="preserve">
+    <value>Стало</value>
+  </data>
+  <data name="ShareResult" xml:space="preserve">
+    <value>Поделиться результатом</value>
+  </data>
+  <data name="Done" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="SettingsSection" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="SettingsSectionHint" xml:space="preserve">
+    <value>Выберите, как Roomy очищает и когда проверяет ПК. Все данные остаются на этом компьютере.</value>
+  </data>
+  <data name="KeepInTray" xml:space="preserve">
+    <value>Оставлять Roomy в системном трее</value>
+  </data>
+  <data name="KeepInTrayHint" xml:space="preserve">
+    <value>При закрытии окна проверки продолжаются. Чтобы выйти, используйте «Выйти» в трее.</value>
+  </data>
+  <data name="StartWithWindows" xml:space="preserve">
+    <value>Запускать с Windows</value>
+  </data>
+  <data name="StartWithWindowsHint" xml:space="preserve">
+    <value>Тихо запускаться в трее при входе в систему.</value>
+  </data>
+  <data name="WindowsStartupSettings" xml:space="preserve">
+    <value>Настройки автозапуска Windows</value>
+  </data>
+  <data name="LowSpaceAlerts" xml:space="preserve">
+    <value>Сообщать, когда на системном диске мало места</value>
+  </data>
+  <data name="LowSpaceAlertsHint" xml:space="preserve">
+    <value>Быстрая проверка свободного места. Не больше одного напоминания в день.</value>
+  </data>
+  <data name="Below" xml:space="preserve">
+    <value>Меньше</value>
+  </data>
+  <data name="GbCheckEvery" xml:space="preserve">
+    <value>ГБ, проверять каждые</value>
+  </data>
+  <data name="Minutes30" xml:space="preserve">
+    <value>30 минут</value>
+  </data>
+  <data name="Minutes60" xml:space="preserve">
+    <value>60 минут</value>
+  </data>
+  <data name="WeeklyCacheCheck" xml:space="preserve">
+    <value>Проверять накопление кэша раз в неделю</value>
+  </data>
+  <data name="WeeklyCacheHint" xml:space="preserve">
+    <value>Проверяет временные файлы и кэши приложений, когда вы не работаете и ПК подключён к сети. Напомнит, если можно освободить хотя бы 1 ГБ. Решаете и удаляете вы.</value>
+  </data>
+  <data name="PauseForDay" xml:space="preserve">
+    <value>Пауза на день</value>
+  </data>
+  <data name="Resume" xml:space="preserve">
+    <value>Продолжить</value>
+  </data>
+  <data name="WindowsNotificationSettings" xml:space="preserve">
+    <value>Настройки уведомлений Windows</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="IJustFreed" xml:space="preserve">
+    <value>Я только что освободил(а)</value>
+  </data>
+  <data name="ShareTagline" xml:space="preserve">
+    <value>Бесплатно · Без рекламы · Без аккаунта</value>
+  </data>
+  <data name="CatRecycle" xml:space="preserve">
+    <value>Корзина</value>
+  </data>
+  <data name="CatRecycleDesc" xml:space="preserve">
+    <value>То, что вы уже удалили. Оно занимает место, пока корзина не очищена.</value>
+  </data>
+  <data name="CatTemp" xml:space="preserve">
+    <value>Временные файлы</value>
+  </data>
+  <data name="CatTempDesc" xml:space="preserve">
+    <value>Мусор, который приложения создают во время работы и забывают убрать. Только файлы старше суток.</value>
+  </data>
+  <data name="CatBrowser" xml:space="preserve">
+    <value>Кэш браузеров</value>
+  </data>
+  <data name="CatBrowserDesc" xml:space="preserve">
+    <value>Сохранённые копии сайтов. Вы остаётесь в аккаунтах. Сайты могут в первый раз загружаться чуть медленнее.</value>
+  </data>
+  <data name="CatApps" xml:space="preserve">
+    <value>Кэши приложений</value>
+  </data>
+  <data name="CatAppsDesc" xml:space="preserve">
+    <value>Кэш Discord, VS Code, Slack и других. Приложения сами восстановят его при необходимости.</value>
+  </data>
+  <data name="CatShaders" xml:space="preserve">
+    <value>Кэш графических шейдеров</value>
+  </data>
+  <data name="CatShadersDesc" xml:space="preserve">
+    <value>Графика игр, заранее собранная видеокартой. Очищать безопасно. Игры восстановят её, но первый запуск может подтормаживать.</value>
+  </data>
+  <data name="CatCrash" xml:space="preserve">
+    <value>Отчёты о сбоях</value>
+  </data>
+  <data name="CatCrashDesc" xml:space="preserve">
+    <value>Отчёты, которые Windows сохраняет при падении приложений. Нужны только разработчикам.</value>
+  </data>
+  <data name="CatWindows" xml:space="preserve">
+    <value>Остатки Windows Update</value>
+  </data>
+  <data name="CatWindowsDesc" xml:space="preserve">
+    <value>Файлы обновлений, которые Windows уже установила, но хранит на всякий случай, плюс собственные временные файлы Windows.</value>
+  </data>
+  <data name="CatInstallers" xml:space="preserve">
+    <value>Старые установщики</value>
+  </data>
+  <data name="CatInstallersDesc" xml:space="preserve">
+    <value>Установочные файлы в «Загрузках», которые вы, скорее всего, уже запустили. Только старше недели.</value>
+  </data>
+  <data name="CatDownloads" xml:space="preserve">
+    <value>Крупные старые загрузки</value>
+  </data>
+  <data name="CatDownloadsDesc" xml:space="preserve">
+    <value>Большие файлы в «Загрузках», которых вы не касались больше месяца: старые видео, ISO, архивы.</value>
+  </data>
+  <data name="CatGames" xml:space="preserve">
+    <value>Игры, в которые вы не играли</value>
+  </data>
+  <data name="CatGamesDesc" xml:space="preserve">
+    <value>Игры Steam, которые вы не открывали 2+ месяца. Удаление — через Steam. Установить можно снова.</value>
+  </data>
+  <data name="CatWinOld" xml:space="preserve">
+    <value>Предыдущая версия Windows</value>
+  </data>
+  <data name="CatWinOldDesc" xml:space="preserve">
+    <value>Резервная копия старой Windows после крупного обновления. Нужна, только если хотите откатиться.</value>
+  </data>
+  <data name="UnknownCategory" xml:space="preserve">
+    <value>Неизвестная категория</value>
+  </data>
+  <data name="ItemTempFolder" xml:space="preserve">
+    <value>Временная папка</value>
+  </data>
+  <data name="ItemFirefox" xml:space="preserve">
+    <value>Firefox</value>
+  </data>
+  <data name="ItemOpera" xml:space="preserve">
+    <value>Opera</value>
+  </data>
+  <data name="ItemDiscord" xml:space="preserve">
+    <value>Discord</value>
+  </data>
+  <data name="ItemSlack" xml:space="preserve">
+    <value>Slack</value>
+  </data>
+  <data name="ItemTeamsClassic" xml:space="preserve">
+    <value>Microsoft Teams (классический)</value>
+  </data>
+  <data name="ItemVsCode" xml:space="preserve">
+    <value>VS Code</value>
+  </data>
+  <data name="ItemSteamBrowser" xml:space="preserve">
+    <value>Браузер Steam</value>
+  </data>
+  <data name="ItemNpm" xml:space="preserve">
+    <value>Кэш npm</value>
+  </data>
+  <data name="ItemPip" xml:space="preserve">
+    <value>Кэш pip</value>
+  </data>
+  <data name="ItemYarn" xml:space="preserve">
+    <value>Кэш Yarn</value>
+  </data>
+  <data name="ItemNuget" xml:space="preserve">
+    <value>Веб-кэш NuGet</value>
+  </data>
+  <data name="ItemDirectX" xml:space="preserve">
+    <value>DirectX</value>
+  </data>
+  <data name="ItemNvidia" xml:space="preserve">
+    <value>NVIDIA</value>
+  </data>
+  <data name="ItemSteamGames" xml:space="preserve">
+    <value>Игры Steam</value>
+  </data>
+  <data name="ItemAppCrashDumps" xml:space="preserve">
+    <value>Дампы падений приложений</value>
+  </data>
+  <data name="ItemWindowsErrorReports" xml:space="preserve">
+    <value>Отчёты об ошибках Windows</value>
+  </data>
+  <data name="ItemDownloadedUpdates" xml:space="preserve">
+    <value>Скачанные обновления</value>
+  </data>
+  <data name="ItemDeliveryOptimization" xml:space="preserve">
+    <value>Оптимизация доставки</value>
+  </data>
+  <data name="ItemWindowsTemp" xml:space="preserve">
+    <value>Временная папка Windows</value>
+  </data>
+  <data name="ItemSystemCrashDumps" xml:space="preserve">
+    <value>Системные дампы падений</value>
+  </data>
+  <data name="WindowsLocksNote" xml:space="preserve">
+    <value>Windows блокирует эти файлы. Перезапустите Roomy от имени администратора, чтобы их проверить.</value>
+  </data>
+  <data name="RunningNote" xml:space="preserve">
+    <value>Сейчас запущено: {0}. Часть файлов заблокирована — закройте, чтобы очистить всё.</value>
+  </data>
+  <data name="CheckingStep" xml:space="preserve">
+    <value>Проверяем: {0}…</value>
+  </data>
+  <data name="ScanProblem" xml:space="preserve">
+    <value>При сканировании возникла проблема: </value>
+  </data>
+  <data name="PlusMore" xml:space="preserve">
+    <value>Плюс ещё {0} — стоит посмотреть. Это на ваше усмотрение.</value>
+  </data>
+  <data name="EverythingFound" xml:space="preserve">
+    <value>Это всё, что мы нашли.</value>
+  </data>
+  <data name="CleanUpAmount" xml:space="preserve">
+    <value>Очистить {0}</value>
+  </data>
+  <data name="PickSomething" xml:space="preserve">
+    <value>Выберите, что очистить</value>
+  </data>
+  <data name="DeleteTheseForGood" xml:space="preserve">
+    <value>Удалить это навсегда?</value>
+  </data>
+  <data name="PickedFiles" xml:space="preserve">
+    <value>Вы выбрали {0} {1}</value>
+  </data>
+  <data name="DeleteWarning" xml:space="preserve">
+    <value>Они будут удалены безвозвратно, минуя корзину — убедитесь, что они больше не нужны.</value>
+  </data>
+  <data name="DeletePermanently" xml:space="preserve">
+    <value>Удалить безвозвратно</value>
+  </data>
+  <data name="GettingStarted" xml:space="preserve">
+    <value>Начинаем…</value>
+  </data>
+  <data name="CleaningStopped" xml:space="preserve">
+    <value>Очистка остановлена: </value>
+  </data>
+  <data name="CleaningCategory" xml:space="preserve">
+    <value>Очищаем: {0}…</value>
+  </data>
+  <data name="AdminButtonHint" xml:space="preserve">
+    <value>Эта кнопка перезапускает Roomy с правами администратора.</value>
+  </data>
+  <data name="NoAdminWorries" xml:space="preserve">
+    <value>Не страшно — Roomy работает и без прав администратора.</value>
+  </data>
+  <data name="LocalDisk" xml:space="preserve">
+    <value>Локальный диск</value>
+  </data>
+  <data name="FreeOf" xml:space="preserve">
+    <value>свободно из {0}</value>
+  </data>
+  <data name="AlmostFull" xml:space="preserve">
+    <value>Почти заполнен</value>
+  </data>
+  <data name="GettingFull" xml:space="preserve">
+    <value>Заполняется</value>
+  </data>
+  <data name="LookingGood" xml:space="preserve">
+    <value>Всё хорошо</value>
+  </data>
+  <data name="Rescan" xml:space="preserve">
+    <value>Пересканировать</value>
+  </data>
+  <data name="Scan" xml:space="preserve">
+    <value>Скан</value>
+  </data>
+  <data name="Starting" xml:space="preserve">
+    <value>Запуск…</value>
+  </data>
+  <data name="CantMapDrive" xml:space="preserve">
+    <value>Не удалось построить карту диска: </value>
+  </data>
+  <data name="SystemFiles" xml:space="preserve">
+    <value>Системные файлы (файл подкачки, гибернация и др.)</value>
+  </data>
+  <data name="FilesInFolder" xml:space="preserve">
+    <value>Файлы в этой папке ({0})</value>
+  </data>
+  <data name="LockedSystemFiles" xml:space="preserve">
+    <value>Заблокированные системные файлы — Roomy не может заглянуть внутрь</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>сегодня</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>вчера</value>
+  </data>
+  <data name="YearAgo" xml:space="preserve">
+    <value>год назад</value>
+  </data>
+  <data name="DownloadedAgo" xml:space="preserve">
+    <value>Скачано {0}</value>
+  </data>
+  <data name="UntouchedFor" xml:space="preserve">
+    <value>Без изменений {0}</value>
+  </data>
+  <data name="LastPlayed" xml:space="preserve">
+    <value>Последний запуск: {0}</value>
+  </data>
+  <data name="NeverPlayed" xml:space="preserve">
+    <value>Никогда не запускалась</value>
+  </data>
+  <data name="ItemsCountOne" xml:space="preserve">
+    <value>элемент</value>
+  </data>
+  <data name="ItemsCountFew" xml:space="preserve">
+    <value>элемента</value>
+  </data>
+  <data name="ItemsCountMany" xml:space="preserve">
+    <value>элементов</value>
+  </data>
+  <data name="FilesCountOne" xml:space="preserve">
+    <value>файл</value>
+  </data>
+  <data name="FilesCountFew" xml:space="preserve">
+    <value>файла</value>
+  </data>
+  <data name="FilesCountMany" xml:space="preserve">
+    <value>файлов</value>
+  </data>
+  <data name="AllDone" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="CantReadSettings" xml:space="preserve">
+    <value>Не удалось прочитать сохранённые настройки. Фоновые проверки выключены, пока вы не сохраните настройки снова.</value>
+  </data>
+  <data name="CantReadStartup" xml:space="preserve">
+    <value>Не удалось прочитать настройку автозапуска: </value>
+  </data>
+  <data name="WindowsManagesStartup" xml:space="preserve">
+    <value>Автозапуском этого приложения управляет Windows. Сначала измените настройку в Windows.</value>
+  </data>
+  <data name="RemindersPausedUntil" xml:space="preserve">
+    <value>Напоминания приостановлены до {0}.</value>
+  </data>
+  <data name="RemindersFollowWindows" xml:space="preserve">
+    <value>Напоминания подчиняются настройкам уведомлений Windows.</value>
+  </data>
+  <data name="ThresholdRange" xml:space="preserve">
+    <value>Выберите порог свободного места от 1 до 500 ГБ.</value>
+  </data>
+  <data name="WindowsDeniedStartup" xml:space="preserve">
+    <value>Windows не разрешила изменить автозапуск.</value>
+  </data>
+  <data name="CantSaveSettings" xml:space="preserve">
+    <value>Не удалось сохранить настройки: </value>
+  </data>
+  <data name="NotificationsUnavailable" xml:space="preserve">
+    <value>Уведомления Windows недоступны: </value>
+  </data>
+  <data name="CantSendNotification" xml:space="preserve">
+    <value>Не удалось отправить уведомление Windows: </value>
+  </data>
+  <data name="NotificationReview" xml:space="preserve">
+    <value>Проверить</value>
+  </data>
+  <data name="NotificationTomorrow" xml:space="preserve">
+    <value>Завтра</value>
+  </data>
+  <data name="NotificationTurnOff" xml:space="preserve">
+    <value>Выключить</value>
+  </data>
+  <data name="WeeklyTitle" xml:space="preserve">
+    <value>Roomy нашёл {0} кандидатов на очистку</value>
+  </data>
+  <data name="WeeklyBody" xml:space="preserve">
+    <value>Накопились временные файлы и кэши приложений. Проверьте их, когда удобно.</value>
+  </data>
+  <data name="BackgroundCheckFailed" xml:space="preserve">
+    <value>Фоновая проверка Roomy: </value>
+  </data>
+  <data name="StartupDisabledByWindows" xml:space="preserve">
+    <value>Windows отключила автозапуск Roomy. Включить можно в «Автозагрузке» Windows.</value>
+  </data>
+  <data name="CantFindExecutable" xml:space="preserve">
+    <value>Не удалось найти исполняемый файл Roomy.</value>
+  </data>
+  <data name="RunExecutable" xml:space="preserve">
+    <value>Запустите файл Roomy, чтобы включить автозапуск.</value>
+  </data>
+  <data name="MoveToShorterPath" xml:space="preserve">
+    <value>Переместите Roomy в папку с более коротким путём, чтобы включить автозапуск.</value>
+  </data>
+  <data name="OrganizationControls" xml:space="preserve">
+    <value>Этой настройкой автозапуска управляет ваша организация.</value>
+  </data>
+  <data name="SnagTitle" xml:space="preserve">
+    <value>В Roomy что-то пошло не так</value>
+  </data>
+  <data name="AlreadyOpening" xml:space="preserve">
+    <value>Roomy уже открывается. Попробуйте через мгновение.</value>
+  </data>
+  <data name="OnMyPc" xml:space="preserve">
+    <value>на ПК</value>
+  </data>
+  <data name="OnMyDrive" xml:space="preserve">
+    <value>на диске {0}</value>
+  </data>
+  <data name="CantMakeImage" xml:space="preserve">
+    <value>Не удалось создать изображение: </value>
+  </data>
+  <data name="ScanReportTitle" xml:space="preserve">
+    <value>Отчёт сканирования Roomy</value>
+  </data>
+  <data name="AndWord" xml:space="preserve">
+    <value>и</value>
+  </data>
+  <data name="InUseSkippedMessage" xml:space="preserve">
+    <value>{0} было занято открытыми приложениями, поэтому мы его не трогали. Закройте их и запустите сканирование снова, чтобы освободить.</value>
+  </data>
+  <data name="FreeBytes" xml:space="preserve">
+    <value>{0} свободно</value>
+  </data>
+  <data name="UsedAmount" xml:space="preserve">
+    <value>{0} занято</value>
+  </data>
+  <data name="DriveNowFree" xml:space="preserve">
+    <value>На диске {0} теперь {1} свободно.</value>
+  </data>
+  <data name="MoreItems" xml:space="preserve">
+    <value>+ ещё {0} (войдут, если поставить галочку)</value>
+  </data>
+  <data name="AppVersion" xml:space="preserve">
+    <value>Roomy {0}</value>
+  </data>
+  <data name="StartupCheckHint" xml:space="preserve">
+    <value> Проверьте «Автозагрузку» Windows, чтобы увидеть текущую настройку.</value>
+  </data>
+  <data name="LowSpaceTitle" xml:space="preserve">
+    <value>Диск {0} заполняется</value>
+  </data>
+  <data name="LowSpaceBody" xml:space="preserve">
+    <value>Осталось {0}. Откройте Roomy, чтобы посмотреть, что можно очистить.</value>
+  </data>
+  <data name="CopiedToast" xml:space="preserve">
+    <value>Скопировано! Вставьте в любом месте. Также сохранено в «Изображения\Roomy».</value>
+  </data>
+  <data name="AgoDays" xml:space="preserve">
+    <value>{0} дней назад</value>
+  </data>
+  <data name="AgoWeeks" xml:space="preserve">
+    <value>{0} нед. назад</value>
+  </data>
+  <data name="AgoMonths" xml:space="preserve">
+    <value>{0} мес. назад</value>
+  </data>
+  <data name="AgoYears" xml:space="preserve">
+    <value>{0} лет назад</value>
+  </data>
+  <data name="DriveLabel" xml:space="preserve">
+    <value>диск {0}</value>
+  </data>
+  <data name="PercentFull" xml:space="preserve">
+    <value>заполнен на {0}%</value>
+  </data>
+  <data name="TrayOpen" xml:space="preserve">
+    <value>Открыть Roomy</value>
+  </data>
+  <data name="TrayScanNow" xml:space="preserve">
+    <value>Сканировать сейчас</value>
+  </data>
+  <data name="TrayPauseReminders" xml:space="preserve">
+    <value>Приостановить напоминания до завтра</value>
+  </data>
+  <data name="TrayResumeReminders" xml:space="preserve">
+    <value>Возобновить напоминания</value>
+  </data>
+  <data name="TraySettings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="TrayQuit" xml:space="preserve">
+    <value>Выйти</value>
+  </data>
+  <data name="DemoSettingsNote" xml:space="preserve">
+    <value>В демо-режиме настройки временные. Автозапуск и уведомления Windows отключены.</value>
+  </data>
+  <data name="OpenNormallyToChange" xml:space="preserve">
+    <value>Откройте Roomy в обычном режиме, чтобы изменить фоновые проверки и автозапуск.</value>
+  </data>
+  <data name="CantSaveReminders" xml:space="preserve">
+    <value>Не удалось сохранить настройки напоминаний: </value>
+  </data>
+  <data name="FinishBeforeClosing" xml:space="preserve">
+    <value>Дождитесь окончания очистки, прежде чем закрывать Roomy.</value>
+  </data>
+  <data name="FinishBeforeQuitting" xml:space="preserve">
+    <value>Дождитесь окончания очистки, прежде чем выходить из Roomy.</value>
+  </data>
+  <data name="StartupNeedsExe" xml:space="preserve">
+    <value>Запустите исполняемый файл Roomy, чтобы включить автозапуск.</value>
+  </data>
+  <data name="AgoYearsOne" xml:space="preserve">
+    <value>{0} год назад</value>
+  </data>
+  <data name="AgoYearsFew" xml:space="preserve">
+    <value>{0} года назад</value>
+  </data>
+  <data name="StepShaders" xml:space="preserve">
+    <value>Кэш шейдеров</value>
+  </data>
+  <data name="StepWindows" xml:space="preserve">
+    <value>Windows Update</value>
+  </data>
+  <data name="StepDownloads" xml:space="preserve">
+    <value>Крупные загрузки</value>
+  </data>
+  <data name="StepGames" xml:space="preserve">
+    <value>Неиспользуемые игры</value>
+  </data>
+  <data name="StepWinOld" xml:space="preserve">
+    <value>Старая Windows</value>
+  </data>
+  <data name="AgoDaysOne" xml:space="preserve">
+    <value>{0} день назад</value>
+  </data>
+  <data name="AgoDaysFew" xml:space="preserve">
+    <value>{0} дня назад</value>
+  </data>
+  <data name="RecycleDownloads" xml:space="preserve">
+    <value>Отправлять файлы из «Загрузок» в корзину</value>
+  </data>
+  <data name="RecycleDownloadsHint" xml:space="preserve">
+    <value>Старые установщики и крупные загрузки попадают в корзину, а не удаляются, так что их можно вернуть. Место освободится, когда вы очистите корзину. Кэш всегда удаляется — приложения сами его восстановят.</value>
+  </data>
+  <data name="PickedFromDownloads" xml:space="preserve">
+    <value>Вы выбрали в «Загрузках» {0} {1} ({2}). </value>
+  </data>
+  <data name="MoveToBinTitle" xml:space="preserve">
+    <value>Переместить это в корзину?</value>
+  </data>
+  <data name="MoveToBinWarning" xml:space="preserve">
+    <value>Если передумаете, их можно восстановить из корзины. Место освободится, когда вы её очистите.</value>
+  </data>
+  <data name="MoveToBin" xml:space="preserve">
+    <value>Переместить в корзину</value>
+  </data>
+  <data name="RecycledMessage" xml:space="preserve">
+    <value>{0} перемещено в корзину. Очистите её, когда будете уверены, чтобы освободить и это место.</value>
+  </data>
+  <data name="StepHibernation" xml:space="preserve">
+    <value>Файл гибернации</value>
+  </data>
+  <data name="CatHibernation" xml:space="preserve">
+    <value>Файл гибернации</value>
+  </data>
+  <data name="CatHibernationDesc" xml:space="preserve">
+    <value>Скрытый файл размером с оперативную память, который Windows хранит для гибернации и быстрого запуска. Если вы не пользуетесь гибернацией, её можно отключить и вернуть это место.</value>
+  </data>
+  <data name="TurnOffHibernation" xml:space="preserve">
+    <value>Отключить гибернацию</value>
+  </data>
+  <data name="HibernationHint" xml:space="preserve">
+    <value>Один раз запросит права администратора. Быстрый запуск тоже отключится. Включить обратно можно в настройках.</value>
+  </data>
+  <data name="HibernationConfirmTitle" xml:space="preserve">
+    <value>Отключить гибернацию?</value>
+  </data>
+  <data name="HibernationConfirmBody" xml:space="preserve">
+    <value>Windows удалит файл гибернации и освободит {0}. Гибернация и быстрый запуск будут недоступны, пока вы не включите их снова в настройках Roomy. Больше ничего не изменится.</value>
+  </data>
+  <data name="HibernationOff" xml:space="preserve">
+    <value>Гибернация отключена. Освобождено {0}. Включить снова можно в настройках.</value>
+  </data>
+  <data name="HibernationUnchanged" xml:space="preserve">
+    <value>Гибернация не изменена.</value>
+  </data>
+  <data name="SettingsHibernation" xml:space="preserve">
+    <value>Гибернация отключена</value>
+  </data>
+  <data name="HibernationIsOffHint" xml:space="preserve">
+    <value>Гибернация и быстрый запуск недоступны. Если включить гибернацию снова, файл займёт примерно столько же места, сколько оперативная память.</value>
+  </data>
+  <data name="TurnOnHibernation" xml:space="preserve">
+    <value>Включить гибернацию</value>
+  </data>
+  <data name="HibernationOnAgain" xml:space="preserve">
+    <value>Гибернация снова включена.</value>
+  </data>
+  <data name="StepLeftovers" xml:space="preserve">
+    <value>Остатки удалённых программ</value>
+  </data>
+  <data name="CatLeftovers" xml:space="preserve">
+    <value>Остатки удалённых программ</value>
+  </data>
+  <data name="CatLeftoversDesc" xml:space="preserve">
+    <value>Папки в AppData, которые не относятся ни к одной установленной программе и не менялись больше 3 месяцев. Проверьте каждую: некоторые программы намеренно оставляют сохранения или настройки.</value>
+  </data>
+  <data name="LeftoverDetail" xml:space="preserve">
+    <value>В {0} · не менялась {1}</value>
+  </data>
+</root>

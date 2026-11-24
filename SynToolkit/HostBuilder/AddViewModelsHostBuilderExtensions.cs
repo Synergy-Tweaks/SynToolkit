@@ -42,7 +42,8 @@ namespace SynToolkit.HostBuilder
                 services.AddTransient<GamesPageViewModel>();
                 services.AddTransient<AudioMixerPageViewModel>();
                 services.AddTransient<SpecsPageViewModel>();
-                services.AddTransient<CleanerPageViewModel>();
+                services.AddTransient<DrivesCleanerViewModel>();
+                services.AddSingleton<DrivesCleanerService>();
                 services.AddTransient<RestorationPanelViewModel>();
                 services.AddTransient<UninstallerPageViewModel>();
             });
@@ -153,7 +154,7 @@ namespace SynToolkit.HostBuilder
                 ["ResetFTH"] = new(buttonCommand = new ResetFTHCommand(), App.GetValueFromItemList("ResetFTH"), App.GetValueFromItemList("ResetFTH", true), ConfigurationType.MitigationsSubMenu, "ms-appx:///assets/Icons/Update.png"),
                 ["InstallOpenShell"] = new(buttonCommand = new InstallOpenShellCommand(), App.GetValueFromItemList("InstallOpenShell"), App.GetValueFromItemList("InstallOpenShell", true), ConfigurationType.StartMenuSubMenu, "ms-appx:///assets/Icons/Windows.png"),
 
-                ["DiskCleanup"] = new(buttonCommand = new DiskCleanupCommand(), App.GetValueFromItemList("DiskCleanup"), App.GetValueFromItemList("DiskCleanup", true), ConfigurationType.Troubleshooting, "ms-appx:///assets/Icons/DiskCleanup.png"),
+                ["DrivesCleaner"] = new(buttonCommand = new DrivesCleanerCommand(), App.GetValueFromItemList("DrivesCleaner"), App.GetValueFromItemList("DrivesCleaner", true), ConfigurationType.Troubleshooting, "ms-appx:///assets/Icons/DiskCleanup.png"),
                 ["RepairWindowsInstaller"] = new(buttonCommand = new RepairWindowsInstallerCommand(), App.GetValueFromItemList("FixErrors"), App.GetValueFromItemList("RepairWindowsInstaller"), ConfigurationType.Troubleshooting, "ms-appx:///assets/Icons/Update.png"),
                 ["RepairWinComponent"] = new(buttonCommand = new RepairWindowsComponentsCommand(), App.GetValueFromItemList("FixErrors"), App.GetValueFromItemList("RepairWinComponent"), ConfigurationType.Troubleshooting, "ms-appx:///assets/Icons/Update.png"),
                 ["TelemetryComponents"] = new(buttonCommand = new TelemetryComponentsCommand(), App.GetValueFromItemList("FixErrors"), App.GetValueFromItemList("TelemetryComponents"), ConfigurationType.Troubleshooting, "ms-appx:///assets/Icons/Update.png"),

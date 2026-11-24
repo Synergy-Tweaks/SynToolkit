@@ -19,7 +19,7 @@ namespace SynToolkit.Services;
 
 internal enum NeedsAttentionAction
 {
-    OpenDiskCleanup,
+    OpenDrivesCleaner,
     CreateRestorePoint,
     SyncWindowsClock,
     OpenInstaller,
@@ -322,8 +322,8 @@ internal sealed class NeedsAttentionService
                 items.Add(new NeedsAttentionItem(
                     FormatText("NeedsAttention_LowDiskTitle", drive.Name.TrimEnd('\\')),
                     FormatText("NeedsAttention_LowDiskDescription", FormatGiB(drive.AvailableFreeSpace), drive.Name),
-                    Text("NeedsAttention_OpenDiskCleanup"),
-                    NeedsAttentionAction.OpenDiskCleanup,
+                    Text("NeedsAttention_OpenDrivesCleaner"),
+                    NeedsAttentionAction.OpenDrivesCleaner,
                     CheckId: NeedsAttentionCheckIds.LowDisk));
             }
             catch (Exception exception)

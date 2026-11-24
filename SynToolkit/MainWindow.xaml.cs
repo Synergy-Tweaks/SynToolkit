@@ -586,7 +586,7 @@ namespace SynToolkit
             Gpu.Content = App.GetValueFromItemList("Gpu");
             Display.Content = App.GetValueFromItemList("Display");
             Specs.Content = App.GetValueFromItemList("Specs");
-            DiskCleanup.Content = App.GetValueFromItemList("Cleaner");
+            DrivesCleaner.Content = App.GetValueFromItemList("DrivesCleaner");
             TweaksText.Text = App.GetValueFromItemList("Tweaks");
             GeneralConfigText.Text = App.GetValueFromItemList("GeneralConfig");
             InterfaceText.Text = App.GetValueFromItemList("Interface");
@@ -829,7 +829,7 @@ namespace SynToolkit
                 "SynToolkit.Views.GpuPage" => typeof(GpuPage),
                 "SynToolkit.Views.DisplayPage" => typeof(DisplayPage),
                 "SynToolkit.Views.SpecsPage" => typeof(SpecsPage),
-                "SynToolkit.Views.CleanerPage" => typeof(CleanerPage),
+                "SynToolkit.Views.DrivesCleanerPage" => typeof(DrivesCleanerPage),
                 "SynToolkit.Views.HomePage" => typeof(HomePage),
                 _ => typeof(ConfigPage)
             };
@@ -1008,7 +1008,7 @@ namespace SynToolkit
                 "SynToolkit.Views.GpuPage" => "GPU",
                 "SynToolkit.Views.DisplayPage" => "Display",
                 "SynToolkit.Views.SpecsPage" => "Specs",
-                "SynToolkit.Views.CleanerPage" => "Disk Cleanup",
+                "SynToolkit.Views.DrivesCleanerPage" => "Drives Cleaner",
                 "Tweaks" => "Tweaks",
                 "General" => "General Configuration",
                 "Interface" => "Interface Tweaks",

@@ -31,7 +31,7 @@ SynToolkit is a WinUI 3 (C#) toolkit built by [Kwanteks](https://github.com/kwan
 - Games library for Steam, Epic, and GOG titles, plus manual adds
 - Adjustments for local account identity and wallpapers
 - GPU page for driver installs, NVIDIA profile apply, and AMD driver DWORD packs
-- Disk Cleanup for temp files, caches, and other junk
+- Drives Cleaner for temp files, caches, and other junk
 - Configuration sections for Tweaks, General, Interface, Windows, Advanced, Security, and Troubleshooting (performance, privacy, boot, Defender, mitigations, network fixes, System Restore, and more)
 
 ## Download and install
@@ -83,7 +83,7 @@ Code, UI patterns, and libraries this project builds on:
 - [Atlas Toolbox](https://github.com/Atlas-OS/atlas-toolbox) — early base structure
 - [Ameliorated Privacy+ Settings](https://github.com/Ameliorated-LLC/ame-settings-cli) — customization settings ideas
 - [Ameliorated App Fetch](https://github.com/Ameliorated-LLC/appfetch) — installer / App Fetch catalog approach
-- [AutoOS](https://github.com/tinodin/AutoOS) — disk cleanup approach
+- [Roomy](https://github.com/krezio/roomy) — Drives Cleaner engine and cleanup UX foundation (MIT)
 - [SteamTrayWebHelper](https://github.com/NobbyBollocks/SteamTrayWebHelper) — Steam WebHelper toggle (GPL-3.0)
 
 Portable tools shipped under `SynToolkit/Assets` (CrystalDiskMark, 7-Zip, and related licenses in those folders) keep their own copyright and license notices.

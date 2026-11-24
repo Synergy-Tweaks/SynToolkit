@@ -66,5 +66,9 @@
     <Compile Include="..\SynToolkit\Services\SynToolkitUpdate\SynToolkitInstalledVersion.cs" Link="Services\SynToolkitUpdate\SynToolkitInstalledVersion.cs" />
     <Compile Include="..\SynToolkit\Utils\SynToolkitUpdateHelper.cs" Link="Utils\SynToolkitUpdateHelper.cs" />
     <Compile Include="..\SynToolkit\Services\ContextMenuConstants.cs" Link="Services\ContextMenuConstants.cs" />
+    <Compile Include="..\SynToolkit\Drives\Core\CacheFinder.cs" Link="Drives\Core\CacheFinder.cs" />
+    <Compile Include="..\SynToolkit\Drives\Core\LeftoverFinder.cs" Link="Drives\Core\LeftoverFinder.cs" />
+    <Compile Include="..\SynToolkit\Drives\Core\Env.cs" Link="Drives\Core\Env.cs" />
+    <Compile Include="..\SynToolkit\Drives\Core\Native.cs" Link="Drives\Core\Native.cs" />
   </ItemGroup>
 </Project>

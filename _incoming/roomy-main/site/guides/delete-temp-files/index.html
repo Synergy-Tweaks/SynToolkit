@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to delete temporary files on Windows (and what's safe to remove)</title>
+  <meta name="description" content="Step-by-step: how to delete temporary files on Windows 11 and 10, where the Temp folders are, why some files won't delete, and what's safe to remove.">
+  <link rel="canonical" href="https://roomy.krezio.xyz/guides/delete-temp-files/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#111113">
+  <link rel="icon" href="../../favicon.ico" sizes="any">
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Roomy">
+  <meta property="og:title" content="How to delete temporary files on Windows (and what's safe to remove)">
+  <meta property="og:description" content="Step-by-step: how to delete temporary files on Windows 11 and 10, where the Temp folders are, why some files won't delete, and what's safe to remove.">
+  <meta property="og:url" content="https://roomy.krezio.xyz/guides/delete-temp-files/">
+  <meta property="og:image" content="https://roomy.krezio.xyz/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"How to delete temporary files on Windows (and what's safe to remove)","description":"Step-by-step: how to delete temporary files on Windows 11 and 10, where the Temp folders are, why some files won't delete, and what's safe to remove.","url":"https://roomy.krezio.xyz/guides/delete-temp-files/","mainEntityOfPage":"https://roomy.krezio.xyz/guides/delete-temp-files/","datePublished":"2026-11-12","dateModified":"2026-11-12","image":"https://roomy.krezio.xyz/assets/og.png","author":{"@type":"Organization","name":"krezio","url":"https://krezio.xyz"},"publisher":{"@type":"Organization","name":"krezio","logo":{"@type":"ImageObject","url":"https://roomy.krezio.xyz/assets/icon-512.png"}}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Roomy","item":"https://roomy.krezio.xyz/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://roomy.krezio.xyz/guides/"},{"@type":"ListItem","position":3,"name":"How to delete temporary files safely","item":"https://roomy.krezio.xyz/guides/delete-temp-files/"}]}]}</script>
+</head>
+<body>
+  <header class="nav-wrap">
+    <nav class="nav" aria-label="Main">
+      <a class="brand" href="../../"><img src="../../assets/logo.svg" alt="" width="24" height="24"><span>Roomy</span></a>
+      <div class="nav-links">
+        <a href="../../#try">Try it</a>
+        <a href="../../#finds">What it finds</a>
+        <a href="../../guides/">Guides</a>
+      </div>
+      <a class="btn btn-light btn-sm" href="../../#download">Download</a>
+    </nav>
+  </header>
+
+  <main class="doc">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../../">Roomy</a> › <a href="../">Guides</a></nav>
+    <article>
+      <h1>How to delete temporary files on Windows (and what's safe to remove)</h1>
+      <p class="meta">Updated November 2026 · 4 min read</p>
+      <div class="tldr"><span class="label">Short answer</span><p>Press <kbd>Win</kbd> + <kbd>R</kbd>, type <code>%temp%</code>, select everything and delete it. Skip anything that says it's in use. It's safe: apps recreate what they need.</p></div>
+
+<p>Apps create temporary files while they work: installers unpack into them, browsers stash downloads, and updaters leave copies behind. Most apps never clean up after themselves, so the Temp folder slowly grows to gigabytes.</p>
+
+<h2>Is it safe to delete temp files?</h2>
+<p>Yes. Temp files are, by definition, things apps don't need to keep. The only files you can't delete are ones currently in use, and Windows will simply refuse to delete those. Nothing breaks.</p>
+
+<h2>Method 1: the Temp folder (fastest)</h2>
+<ol>
+  <li>Press <kbd>Win</kbd> + <kbd>R</kbd>, type <code>%temp%</code> and press <kbd>Enter</kbd>.</li>
+  <li>Press <kbd>Ctrl</kbd> + <kbd>A</kbd> to select everything, then <kbd>Shift</kbd> + <kbd>Delete</kbd> to delete permanently.</li>
+  <li>When Windows says a file is in use, tick <b>Do this for all current items</b> and click <b>Skip</b>.</li>
+</ol>
+<p>Closing your other apps first lets you delete more.</p>
+
+<h2>Method 2: Windows' own cleanup</h2>
+<p>Open <b>Settings → System → Storage → Temporary files</b>, tick <b>Temporary files</b> and click <b>Remove files</b>. This also lets you clear other safe categories like Windows Update leftovers in the same pass.</p>
+
+<h2>Method 3: the system Temp folder</h2>
+<p>Windows has a second Temp folder for system processes at <code>C:\Windows\Temp</code>. You need admin rights to open it. It's safe to empty the same way, skipping files in use.</p>
+
+<h2>What not to confuse with temp files</h2>
+<ul>
+  <li><b>Prefetch</b> (<code>C:\Windows\Prefetch</code>): small, and Windows uses it to start apps faster. Leave it.</li>
+  <li><b>AppData folders in general</b>: only caches and Temp are safe; other folders hold your app settings.</li>
+</ul>
+<div class="callout"><p>Roomy only deletes temp files that are <b>older than a day</b>, so it never pulls the rug out from under an installer that's still running.</p></div>
+
+    </article>
+
+    <aside class="cta-box">
+      <img src="../../assets/logo.svg" alt="" width="52" height="52">
+      <div>
+        <h2>Or let Roomy do it in one click</h2>
+        <p>Roomy finds all of this for you, explains each item in plain English, and only cleans what's safe. Free for Windows 11 and 10, no ads, no account.</p>
+      </div>
+      <a class="btn btn-light" href="https://github.com/krezio/roomy/releases/latest/download/Roomy-Setup.exe">Download Roomy free</a>
+    </aside>
+    <h2>More guides</h2>
+    <ul class="related">
+      <li><a href="../c-drive-full/">C: drive full? 8 safe ways to free up space</a></li>
+      <li><a href="../clear-shader-cache/">How to clear the shader cache (NVIDIA, AMD, DirectX)</a></li>
+      <li><a href="../delete-windows-old/">Can I delete Windows.old?</a></li>
+      <li><a href="../windows-update-files/">Is it safe to delete Windows Update files?</a></li>
+    </ul>
+  </main>
+
+  <footer class="footer">
+    <span class="brand"><img src="../../assets/logo.svg" alt="" width="18" height="18"><span>Roomy</span></span>
+    <span>Made by <a href="https://krezio.xyz">krezio</a> · <a href="https://github.com/krezio/roomy" target="_blank" rel="noopener">GitHub</a> · <a href="https://framecalm.krezio.xyz">Framecalm</a> · <a href="../../guides/">Guides</a> · <a href="../../privacy.html">Privacy</a></span>
+  </footer>
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "595ddd43099c44e98b23cda95087c4b7"}'></script>
+</body>
+</html>

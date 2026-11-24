@@ -1,0 +1,739 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>Roomy</value>
+  </data>
+  <data name="TitleMain" xml:space="preserve">
+    <value>Roomy</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Roomy 设置</value>
+  </data>
+  <data name="BadgeAdmin" xml:space="preserve">
+    <value>管理员</value>
+  </data>
+  <data name="BadgeSafe" xml:space="preserve">
+    <value>安全</value>
+  </data>
+  <data name="BadgeYourCall" xml:space="preserve">
+    <value>自行决定</value>
+  </data>
+  <data name="NeedsAdmin" xml:space="preserve">
+    <value>需要管理员</value>
+  </data>
+  <data name="Nothing" xml:space="preserve">
+    <value>无</value>
+  </data>
+  <data name="NeedsAdminLower" xml:space="preserve">
+    <value>需要管理员</value>
+  </data>
+  <data name="UninstallInSteam" xml:space="preserve">
+    <value>在 Steam 中卸载</value>
+  </data>
+  <data name="ShowInExplorer" xml:space="preserve">
+    <value>在文件资源管理器中显示</value>
+  </data>
+  <data name="OpenInExplorer" xml:space="preserve">
+    <value>在文件资源管理器中打开</value>
+  </data>
+  <data name="RestartAsAdmin" xml:space="preserve">
+    <value>以管理员身份重启</value>
+  </data>
+  <data name="RemoveWithWindows" xml:space="preserve">
+    <value>用 Windows 自带功能删除</value>
+  </data>
+  <data name="StoragePath" xml:space="preserve">
+    <value>设置 → 系统 → 存储 → 临时文件 → 以前的 Windows 安装文件</value>
+  </data>
+  <data name="TooltipSettings" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="TooltipUpFolder" xml:space="preserve">
+    <value>上一级文件夹</value>
+  </data>
+  <data name="HeroTitle" xml:space="preserve">
+    <value>来给电脑腾点空间吧。</value>
+  </data>
+  <data name="HeroSubtitle" xml:space="preserve">
+    <value>Roomy 帮你找出占满电脑空间的内容，并用大白话告诉你哪些可以放心删除。</value>
+  </data>
+  <data name="ScanMyPc" xml:space="preserve">
+    <value>扫描我的电脑</value>
+  </data>
+  <data name="ScanHint" xml:space="preserve">
+    <value>只需几秒钟。未经你同意，不会删除任何内容。</value>
+  </data>
+  <data name="Scanning" xml:space="preserve">
+    <value>正在查看你的电脑…</value>
+  </data>
+  <data name="FoundPrefix" xml:space="preserve">
+    <value>已找到 </value>
+  </data>
+  <data name="FoundSuffix" xml:space="preserve">
+    <value> 可安全清理</value>
+  </data>
+  <data name="WeFound" xml:space="preserve">
+    <value>共发现</value>
+  </data>
+  <data name="SafeToClean" xml:space="preserve">
+    <value>可安全清理</value>
+  </data>
+  <data name="TabCleanup" xml:space="preserve">
+    <value>清理</value>
+  </data>
+  <data name="TabSpaceMap" xml:space="preserve">
+    <value>空间地图</value>
+  </data>
+  <data name="AdminLockTitle" xml:space="preserve">
+    <value>一些最大的残留文件被 Windows 锁定了。</value>
+  </data>
+  <data name="AdminLockHint" xml:space="preserve">
+    <value>以管理员身份重启 Roomy，即可一并检查 Windows 更新文件。</value>
+  </data>
+  <data name="CleanAlreadyTitle" xml:space="preserve">
+    <value>你的电脑已经干净得发亮 ✨</value>
+  </data>
+  <data name="CleanAlreadyHint" xml:space="preserve">
+    <value>切换到「空间地图」标签页，看看空间到底被什么占用了。</value>
+  </data>
+  <data name="SpaceMapTitle" xml:space="preserve">
+    <value>看清你的空间都被什么占用</value>
+  </data>
+  <data name="SpaceMapHint" xml:space="preserve">
+    <value>选择一个磁盘并点击「扫描」。大容量磁盘可能需要一点时间。</value>
+  </data>
+  <data name="MappingDrive" xml:space="preserve">
+    <value>正在绘制磁盘空间地图…</value>
+  </data>
+  <data name="BiggestFiles" xml:space="preserve">
+    <value>最大的文件</value>
+  </data>
+  <data name="BiggestFilesHint" xml:space="preserve">
+    <value>占用空间最多的单个文件。</value>
+  </data>
+  <data name="SelectedToClean" xml:space="preserve">
+    <value>已选择待清理</value>
+  </data>
+  <data name="ScanAgain" xml:space="preserve">
+    <value>重新扫描</value>
+  </data>
+  <data name="CleaningUp" xml:space="preserve">
+    <value>正在清理…</value>
+  </data>
+  <data name="InUseSkipped" xml:space="preserve">
+    <value>正在使用的文件会被跳过，绝不强行删除。</value>
+  </data>
+  <data name="YouJustFreed" xml:space="preserve">
+    <value>你刚刚释放了</value>
+  </data>
+  <data name="Before" xml:space="preserve">
+    <value>清理前</value>
+  </data>
+  <data name="After" xml:space="preserve">
+    <value>清理后</value>
+  </data>
+  <data name="ShareResult" xml:space="preserve">
+    <value>分享我的成果</value>
+  </data>
+  <data name="Done" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="SettingsSection" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="SettingsSectionHint" xml:space="preserve">
+    <value>设置 Roomy 的清理方式和后台检查频率。所有数据都只保存在这台电脑上。</value>
+  </data>
+  <data name="KeepInTray" xml:space="preserve">
+    <value>将 Roomy 保留在系统托盘</value>
+  </data>
+  <data name="KeepInTrayHint" xml:space="preserve">
+    <value>关闭窗口后，后台检查仍会继续运行。要彻底退出，请使用托盘中的「退出 Roomy」。</value>
+  </data>
+  <data name="StartWithWindows" xml:space="preserve">
+    <value>随 Windows 启动</value>
+  </data>
+  <data name="StartWithWindowsHint" xml:space="preserve">
+    <value>登录 Windows 时在托盘中静默启动。</value>
+  </data>
+  <data name="WindowsStartupSettings" xml:space="preserve">
+    <value>Windows 启动应用设置</value>
+  </data>
+  <data name="LowSpaceAlerts" xml:space="preserve">
+    <value>系统盘空间不足时提醒我</value>
+  </data>
+  <data name="LowSpaceAlertsHint" xml:space="preserve">
+    <value>快速检查可用空间，每天最多提醒一次。</value>
+  </data>
+  <data name="Below" xml:space="preserve">
+    <value>低于</value>
+  </data>
+  <data name="GbCheckEvery" xml:space="preserve">
+    <value>GB，检查间隔为</value>
+  </data>
+  <data name="Minutes30" xml:space="preserve">
+    <value>30 分钟</value>
+  </data>
+  <data name="Minutes60" xml:space="preserve">
+    <value>60 分钟</value>
+  </data>
+  <data name="WeeklyCacheCheck" xml:space="preserve">
+    <value>每周检查缓存堆积情况</value>
+  </data>
+  <data name="WeeklyCacheHint" xml:space="preserve">
+    <value>在你空闲且接通电源时检查临时文件和应用缓存，当可清理内容达到 1 GB 以上时提醒你。删不删、删什么，都由你来定。</value>
+  </data>
+  <data name="PauseForDay" xml:space="preserve">
+    <value>暂停一天</value>
+  </data>
+  <data name="Resume" xml:space="preserve">
+    <value>恢复</value>
+  </data>
+  <data name="WindowsNotificationSettings" xml:space="preserve">
+    <value>Windows 通知设置</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>保存设置</value>
+  </data>
+  <data name="IJustFreed" xml:space="preserve">
+    <value>我刚刚释放了</value>
+  </data>
+  <data name="ShareTagline" xml:space="preserve">
+    <value>免费 · 无广告 · 无需账号</value>
+  </data>
+  <data name="CatRecycle" xml:space="preserve">
+    <value>回收站</value>
+  </data>
+  <data name="CatRecycleDesc" xml:space="preserve">
+    <value>你已经删除的内容。清空回收站之前，它们仍占用着空间。</value>
+  </data>
+  <data name="CatTemp" xml:space="preserve">
+    <value>临时文件</value>
+  </data>
+  <data name="CatTempDesc" xml:space="preserve">
+    <value>应用工作时产生却忘记清理的残留。仅清理超过一天的文件。</value>
+  </data>
+  <data name="CatBrowser" xml:space="preserve">
+    <value>浏览器缓存</value>
+  </data>
+  <data name="CatBrowserDesc" xml:space="preserve">
+    <value>网站的本地副本。登录状态不受影响，只是部分网站首次打开可能略慢。</value>
+  </data>
+  <data name="CatApps" xml:space="preserve">
+    <value>应用缓存</value>
+  </data>
+  <data name="CatAppsDesc" xml:space="preserve">
+    <value>Discord、VS Code、Slack 等应用的缓存数据。需要时它们会自动重建。</value>
+  </data>
+  <data name="CatShaders" xml:space="preserve">
+    <value>图形着色器缓存</value>
+  </data>
+  <data name="CatShadersDesc" xml:space="preserve">
+    <value>显卡预先编译好的游戏画面数据，可以放心清理。游戏会自动重建，只是下次启动初期可能稍有卡顿。</value>
+  </data>
+  <data name="CatCrash" xml:space="preserve">
+    <value>崩溃报告</value>
+  </data>
+  <data name="CatCrashDesc" xml:space="preserve">
+    <value>应用崩溃时 Windows 保存的报告，只有开发者用得上。</value>
+  </data>
+  <data name="CatWindows" xml:space="preserve">
+    <value>Windows 更新残留</value>
+  </data>
+  <data name="CatWindowsDesc" xml:space="preserve">
+    <value>Windows 已安装却仍备用保留的更新文件，以及 Windows 自身的临时文件。</value>
+  </data>
+  <data name="CatInstallers" xml:space="preserve">
+    <value>旧安装包</value>
+  </data>
+  <data name="CatInstallersDesc" xml:space="preserve">
+    <value>「下载」文件夹里很可能早已运行过的安装程序。仅清理超过一周的文件。</value>
+  </data>
+  <data name="CatDownloads" xml:space="preserve">
+    <value>大体积旧下载</value>
+  </data>
+  <data name="CatDownloadsDesc" xml:space="preserve">
+    <value>「下载」文件夹里超过一个月未动过的大文件：旧视频、ISO 镜像、压缩包等。</value>
+  </data>
+  <data name="CatGames" xml:space="preserve">
+    <value>久未游玩的游戏</value>
+  </data>
+  <data name="CatGamesDesc" xml:space="preserve">
+    <value>超过两个月未启动的 Steam 游戏。请通过 Steam 卸载，随时可以重新安装。</value>
+  </data>
+  <data name="CatWinOld" xml:space="preserve">
+    <value>旧版 Windows</value>
+  </data>
+  <data name="CatWinOldDesc" xml:space="preserve">
+    <value>上次大版本更新留下的旧 Windows 备份。只有想回退系统时才需要它。</value>
+  </data>
+  <data name="UnknownCategory" xml:space="preserve">
+    <value>未知类别</value>
+  </data>
+  <data name="ItemTempFolder" xml:space="preserve">
+    <value>临时文件夹</value>
+  </data>
+  <data name="ItemFirefox" xml:space="preserve">
+    <value>Firefox</value>
+  </data>
+  <data name="ItemOpera" xml:space="preserve">
+    <value>Opera</value>
+  </data>
+  <data name="ItemDiscord" xml:space="preserve">
+    <value>Discord</value>
+  </data>
+  <data name="ItemSlack" xml:space="preserve">
+    <value>Slack</value>
+  </data>
+  <data name="ItemTeamsClassic" xml:space="preserve">
+    <value>Microsoft Teams（经典版）</value>
+  </data>
+  <data name="ItemVsCode" xml:space="preserve">
+    <value>VS Code</value>
+  </data>
+  <data name="ItemSteamBrowser" xml:space="preserve">
+    <value>Steam 内置浏览器</value>
+  </data>
+  <data name="ItemNpm" xml:space="preserve">
+    <value>npm 缓存</value>
+  </data>
+  <data name="ItemPip" xml:space="preserve">
+    <value>pip 缓存</value>
+  </data>
+  <data name="ItemYarn" xml:space="preserve">
+    <value>Yarn 缓存</value>
+  </data>
+  <data name="ItemNuget" xml:space="preserve">
+    <value>NuGet 网络缓存</value>
+  </data>
+  <data name="ItemDirectX" xml:space="preserve">
+    <value>DirectX</value>
+  </data>
+  <data name="ItemNvidia" xml:space="preserve">
+    <value>NVIDIA</value>
+  </data>
+  <data name="ItemSteamGames" xml:space="preserve">
+    <value>Steam 游戏</value>
+  </data>
+  <data name="ItemAppCrashDumps" xml:space="preserve">
+    <value>应用崩溃转储</value>
+  </data>
+  <data name="ItemWindowsErrorReports" xml:space="preserve">
+    <value>Windows 错误报告</value>
+  </data>
+  <data name="ItemDownloadedUpdates" xml:space="preserve">
+    <value>已下载的更新</value>
+  </data>
+  <data name="ItemDeliveryOptimization" xml:space="preserve">
+    <value>传递优化</value>
+  </data>
+  <data name="ItemWindowsTemp" xml:space="preserve">
+    <value>Windows 临时文件夹</value>
+  </data>
+  <data name="ItemSystemCrashDumps" xml:space="preserve">
+    <value>系统崩溃转储</value>
+  </data>
+  <data name="WindowsLocksNote" xml:space="preserve">
+    <value>这些文件被 Windows 锁定。以管理员身份重启 Roomy 即可检查。</value>
+  </data>
+  <data name="RunningNote" xml:space="preserve">
+    <value>{0} 正在运行，部分文件被锁定——关闭它才能清理干净。</value>
+  </data>
+  <data name="CheckingStep" xml:space="preserve">
+    <value>正在检查 {0}…</value>
+  </data>
+  <data name="ScanProblem" xml:space="preserve">
+    <value>扫描时出现问题：</value>
+  </data>
+  <data name="PlusMore" xml:space="preserve">
+    <value>另有 {0} 也值得关注，是否清理由你决定。</value>
+  </data>
+  <data name="EverythingFound" xml:space="preserve">
+    <value>能找到的都在这里了。</value>
+  </data>
+  <data name="CleanUpAmount" xml:space="preserve">
+    <value>清理 {0}</value>
+  </data>
+  <data name="PickSomething" xml:space="preserve">
+    <value>请选择要清理的内容</value>
+  </data>
+  <data name="DeleteTheseForGood" xml:space="preserve">
+    <value>确定要永久删除这些内容吗？</value>
+  </data>
+  <data name="PickedFiles" xml:space="preserve">
+    <value>你选择了 {0} {1}</value>
+  </data>
+  <data name="DeleteWarning" xml:space="preserve">
+    <value>这些内容将被永久删除，不会移入回收站——请确认你不再需要它们。</value>
+  </data>
+  <data name="DeletePermanently" xml:space="preserve">
+    <value>永久删除</value>
+  </data>
+  <data name="GettingStarted" xml:space="preserve">
+    <value>准备开始…</value>
+  </data>
+  <data name="CleaningStopped" xml:space="preserve">
+    <value>清理已停止：</value>
+  </data>
+  <data name="CleaningCategory" xml:space="preserve">
+    <value>正在清理 {0}…</value>
+  </data>
+  <data name="AdminButtonHint" xml:space="preserve">
+    <value>该按钮会以管理员权限重启 Roomy。</value>
+  </data>
+  <data name="NoAdminWorries" xml:space="preserve">
+    <value>别担心，没有管理员权限 Roomy 也能正常工作。</value>
+  </data>
+  <data name="LocalDisk" xml:space="preserve">
+    <value>本地磁盘</value>
+  </data>
+  <data name="FreeOf" xml:space="preserve">
+    <value>可用 / 共 {0}</value>
+  </data>
+  <data name="AlmostFull" xml:space="preserve">
+    <value>即将装满</value>
+  </data>
+  <data name="GettingFull" xml:space="preserve">
+    <value>空间渐满</value>
+  </data>
+  <data name="LookingGood" xml:space="preserve">
+    <value>状态良好</value>
+  </data>
+  <data name="Rescan" xml:space="preserve">
+    <value>重新扫描</value>
+  </data>
+  <data name="Scan" xml:space="preserve">
+    <value>扫描</value>
+  </data>
+  <data name="Starting" xml:space="preserve">
+    <value>正在启动…</value>
+  </data>
+  <data name="CantMapDrive" xml:space="preserve">
+    <value>无法绘制该磁盘的空间地图：</value>
+  </data>
+  <data name="SystemFiles" xml:space="preserve">
+    <value>系统文件（页面文件、休眠文件等）</value>
+  </data>
+  <data name="FilesInFolder" xml:space="preserve">
+    <value>此文件夹中的文件（{0}）</value>
+  </data>
+  <data name="LockedSystemFiles" xml:space="preserve">
+    <value>被锁定的系统文件，Roomy 无法查看其中的内容</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>今天</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>昨天</value>
+  </data>
+  <data name="YearAgo" xml:space="preserve">
+    <value>一年前</value>
+  </data>
+  <data name="DownloadedAgo" xml:space="preserve">
+    <value>下载于 {0}</value>
+  </data>
+  <data name="UntouchedFor" xml:space="preserve">
+    <value>自 {0} 起未变过</value>
+  </data>
+  <data name="LastPlayed" xml:space="preserve">
+    <value>上次游玩 {0}</value>
+  </data>
+  <data name="NeverPlayed" xml:space="preserve">
+    <value>从未游玩</value>
+  </data>
+  <data name="ItemsCountOne" xml:space="preserve">
+    <value>个</value>
+  </data>
+  <data name="ItemsCountFew" xml:space="preserve">
+    <value>个</value>
+  </data>
+  <data name="ItemsCountMany" xml:space="preserve">
+    <value>个</value>
+  </data>
+  <data name="FilesCountOne" xml:space="preserve">
+    <value>个文件</value>
+  </data>
+  <data name="FilesCountFew" xml:space="preserve">
+    <value>个文件</value>
+  </data>
+  <data name="FilesCountMany" xml:space="preserve">
+    <value>个文件</value>
+  </data>
+  <data name="AllDone" xml:space="preserve">
+    <value>全部完成</value>
+  </data>
+  <data name="CantReadSettings" xml:space="preserve">
+    <value>无法读取已保存的设置。在你重新保存设置之前，后台检查将保持关闭。</value>
+  </data>
+  <data name="CantReadStartup" xml:space="preserve">
+    <value>无法读取开机启动设置：</value>
+  </data>
+  <data name="WindowsManagesStartup" xml:space="preserve">
+    <value>此应用的开机启动由 Windows 管理。请先在 Windows 中修改该设置。</value>
+  </data>
+  <data name="RemindersPausedUntil" xml:space="preserve">
+    <value>提醒已暂停至 {0}。</value>
+  </data>
+  <data name="RemindersFollowWindows" xml:space="preserve">
+    <value>提醒遵循你的 Windows 通知设置。</value>
+  </data>
+  <data name="ThresholdRange" xml:space="preserve">
+    <value>请选择 1 到 500 GB 之间的可用空间阈值。</value>
+  </data>
+  <data name="WindowsDeniedStartup" xml:space="preserve">
+    <value>Windows 未允许更改开机启动设置。</value>
+  </data>
+  <data name="CantSaveSettings" xml:space="preserve">
+    <value>无法保存设置：</value>
+  </data>
+  <data name="NotificationsUnavailable" xml:space="preserve">
+    <value>Windows 通知不可用：</value>
+  </data>
+  <data name="CantSendNotification" xml:space="preserve">
+    <value>无法发送 Windows 通知：</value>
+  </data>
+  <data name="NotificationReview" xml:space="preserve">
+    <value>查看</value>
+  </data>
+  <data name="NotificationTomorrow" xml:space="preserve">
+    <value>明天再说</value>
+  </data>
+  <data name="NotificationTurnOff" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="WeeklyTitle" xml:space="preserve">
+    <value>Roomy 发现了 {0} 可清理内容</value>
+  </data>
+  <data name="WeeklyBody" xml:space="preserve">
+    <value>临时文件和应用缓存已有堆积。方便的时候来查看处理一下吧。</value>
+  </data>
+  <data name="BackgroundCheckFailed" xml:space="preserve">
+    <value>Roomy 后台检查：</value>
+  </data>
+  <data name="StartupDisabledByWindows" xml:space="preserve">
+    <value>Windows 已在启动项中禁用了 Roomy。你可以在 Windows 的「启动应用」中重新启用。</value>
+  </data>
+  <data name="CantFindExecutable" xml:space="preserve">
+    <value>找不到 Roomy 的可执行文件。</value>
+  </data>
+  <data name="RunExecutable" xml:space="preserve">
+    <value>请运行 Roomy 的可执行文件以启用开机启动。</value>
+  </data>
+  <data name="MoveToShorterPath" xml:space="preserve">
+    <value>请先将 Roomy 移动到路径更短的文件夹，再启用开机启动。</value>
+  </data>
+  <data name="OrganizationControls" xml:space="preserve">
+    <value>此启动设置由你所在的组织控制。</value>
+  </data>
+  <data name="SnagTitle" xml:space="preserve">
+    <value>Roomy 遇到了一点问题</value>
+  </data>
+  <data name="AlreadyOpening" xml:space="preserve">
+    <value>Roomy 正在打开，请稍候片刻再试。</value>
+  </data>
+  <data name="OnMyPc" xml:space="preserve">
+    <value>的电脑空间</value>
+  </data>
+  <data name="OnMyDrive" xml:space="preserve">
+    <value>的 {0}盘空间</value>
+  </data>
+  <data name="CantMakeImage" xml:space="preserve">
+    <value>无法生成图片：</value>
+  </data>
+  <data name="ScanReportTitle" xml:space="preserve">
+    <value>Roomy 扫描报告</value>
+  </data>
+  <data name="AndWord" xml:space="preserve">
+    <value>和</value>
+  </data>
+  <data name="InUseSkippedMessage" xml:space="preserve">
+    <value>{0} 正被打开的应用占用，因此未作处理。关闭相关应用后重新扫描，即可将其清理。</value>
+  </data>
+  <data name="FreeBytes" xml:space="preserve">
+    <value>可用 {0}</value>
+  </data>
+  <data name="UsedAmount" xml:space="preserve">
+    <value>已用 {0}</value>
+  </data>
+  <data name="DriveNowFree" xml:space="preserve">
+    <value>你的 {0} 盘现在有 {1} 可用空间。</value>
+  </data>
+  <data name="MoreItems" xml:space="preserve">
+    <value>+ 还有 {0}（勾选后一并计入）</value>
+  </data>
+  <data name="AppVersion" xml:space="preserve">
+    <value>Roomy {0}</value>
+  </data>
+  <data name="StartupCheckHint" xml:space="preserve">
+    <value> 请在 Windows 的「启动应用」中确认其当前状态。</value>
+  </data>
+  <data name="LowSpaceTitle" xml:space="preserve">
+    <value>你的 {0} 盘快满了</value>
+  </data>
+  <data name="LowSpaceBody" xml:space="preserve">
+    <value>仅剩 {0}。打开 Roomy 看看能清理掉什么。</value>
+  </data>
+  <data name="CopiedToast" xml:space="preserve">
+    <value>已复制！可粘贴到任何地方。图片同时已保存到「图片\Roomy」。</value>
+  </data>
+  <data name="AgoDays" xml:space="preserve">
+    <value>{0} 天前</value>
+  </data>
+  <data name="AgoWeeks" xml:space="preserve">
+    <value>{0} 周前</value>
+  </data>
+  <data name="AgoMonths" xml:space="preserve">
+    <value>{0} 个月前</value>
+  </data>
+  <data name="AgoYears" xml:space="preserve">
+    <value>{0} 年前</value>
+  </data>
+  <data name="DriveLabel" xml:space="preserve">
+    <value>容量 {0}</value>
+  </data>
+  <data name="PercentFull" xml:space="preserve">
+    <value>已用 {0}%</value>
+  </data>
+  <data name="TrayOpen" xml:space="preserve">
+    <value>打开 Roomy</value>
+  </data>
+  <data name="TrayScanNow" xml:space="preserve">
+    <value>立即扫描</value>
+  </data>
+  <data name="TrayPauseReminders" xml:space="preserve">
+    <value>暂停提醒至明天</value>
+  </data>
+  <data name="TrayResumeReminders" xml:space="preserve">
+    <value>恢复提醒</value>
+  </data>
+  <data name="TraySettings" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="TrayQuit" xml:space="preserve">
+    <value>退出 Roomy</value>
+  </data>
+  <data name="DemoSettingsNote" xml:space="preserve">
+    <value>演示模式下的设置仅为临时生效，开机启动和 Windows 通知已被禁用。</value>
+  </data>
+  <data name="OpenNormallyToChange" xml:space="preserve">
+    <value>如需修改后台检查和开机启动设置，请以正常模式打开 Roomy。</value>
+  </data>
+  <data name="CantSaveReminders" xml:space="preserve">
+    <value>无法保存提醒设置：</value>
+  </data>
+  <data name="FinishBeforeClosing" xml:space="preserve">
+    <value>关闭 Roomy 前，请先等待清理完成。</value>
+  </data>
+  <data name="FinishBeforeQuitting" xml:space="preserve">
+    <value>退出 Roomy 前，请先等待清理完成。</value>
+  </data>
+  <data name="StartupNeedsExe" xml:space="preserve">
+    <value>请运行 Roomy 的可执行文件以启用开机启动。</value>
+  </data>
+  <data name="AgoYearsOne" xml:space="preserve">
+    <value>{0} 年前</value>
+  </data>
+  <data name="AgoYearsFew" xml:space="preserve">
+    <value>{0} 年前</value>
+  </data>
+  <data name="StepShaders" xml:space="preserve">
+    <value>着色器缓存</value>
+  </data>
+  <data name="StepWindows" xml:space="preserve">
+    <value>Windows 更新</value>
+  </data>
+  <data name="StepDownloads" xml:space="preserve">
+    <value>大文件下载</value>
+  </data>
+  <data name="StepGames" xml:space="preserve">
+    <value>久未游玩的游戏</value>
+  </data>
+  <data name="StepWinOld" xml:space="preserve">
+    <value>旧版 Windows</value>
+  </data>
+  <data name="AgoDaysOne" xml:space="preserve">
+    <value>{0} 天前</value>
+  </data>
+  <data name="AgoDaysFew" xml:space="preserve">
+    <value>{0} 天前</value>
+  </data>
+  <data name="RecycleDownloads" xml:space="preserve">
+    <value>将「下载」中的文件移入回收站</value>
+  </data>
+  <data name="RecycleDownloadsHint" xml:space="preserve">
+    <value>旧安装包和大体积下载文件将移入回收站而非直接删除，方便你找回；清空回收站后才会真正释放空间。缓存则始终直接删除，因为应用会自动重建。</value>
+  </data>
+  <data name="PickedFromDownloads" xml:space="preserve">
+    <value>你从「下载」中选择了 {0} {1}（{2}）。 </value>
+  </data>
+  <data name="MoveToBinTitle" xml:space="preserve">
+    <value>将这些文件移入回收站？</value>
+  </data>
+  <data name="MoveToBinWarning" xml:space="preserve">
+    <value>如果改变主意，可以随时从回收站还原这些文件。清空回收站后，空间才会真正释放。</value>
+  </data>
+  <data name="MoveToBin" xml:space="preserve">
+    <value>移入回收站</value>
+  </data>
+  <data name="RecycledMessage" xml:space="preserve">
+    <value>{0} 已移入回收站。确定无需保留后请清空回收站，以释放这部分空间。</value>
+  </data>
+  <data name="StepHibernation" xml:space="preserve">
+    <value>休眠文件</value>
+  </data>
+  <data name="CatHibernation" xml:space="preserve">
+    <value>休眠文件</value>
+  </data>
+  <data name="CatHibernationDesc" xml:space="preserve">
+    <value>Windows 为休眠和快速启动保留的隐藏文件，大小与内存相当。如果你从不使用休眠，关闭它即可收回这部分空间。</value>
+  </data>
+  <data name="TurnOffHibernation" xml:space="preserve">
+    <value>关闭休眠</value>
+  </data>
+  <data name="HibernationHint" xml:space="preserve">
+    <value>需要一次管理员权限。快速启动也会随之关闭。可随时在设置中重新开启。</value>
+  </data>
+  <data name="HibernationConfirmTitle" xml:space="preserve">
+    <value>要关闭休眠吗？</value>
+  </data>
+  <data name="HibernationConfirmBody" xml:space="preserve">
+    <value>Windows 将删除休眠文件并释放 {0}。在 Roomy 设置中重新开启之前，休眠和快速启动将不可用。其他设置不受影响。</value>
+  </data>
+  <data name="HibernationOff" xml:space="preserve">
+    <value>已关闭休眠，释放了 {0}。可在设置中重新开启。</value>
+  </data>
+  <data name="HibernationUnchanged" xml:space="preserve">
+    <value>休眠设置未更改。</value>
+  </data>
+  <data name="SettingsHibernation" xml:space="preserve">
+    <value>休眠已关闭</value>
+  </data>
+  <data name="HibernationIsOffHint" xml:space="preserve">
+    <value>休眠和快速启动目前不可用。重新开启休眠后，将占用与内存大小相当的空间。</value>
+  </data>
+  <data name="TurnOnHibernation" xml:space="preserve">
+    <value>重新开启休眠</value>
+  </data>
+  <data name="HibernationOnAgain" xml:space="preserve">
+    <value>休眠已重新开启。</value>
+  </data>
+  <data name="StepLeftovers" xml:space="preserve">
+    <value>已卸载应用的残留</value>
+  </data>
+  <data name="CatLeftovers" xml:space="preserve">
+    <value>已卸载应用的残留文件夹</value>
+  </data>
+  <data name="CatLeftoversDesc" xml:space="preserve">
+    <value>AppData 中与任何已安装程序都不匹配、且 3 个月以上未变动的文件夹。请逐一确认：有些应用会特意留下存档或设置。</value>
+  </data>
+  <data name="LeftoverDetail" xml:space="preserve">
+    <value>位于 {0} · {1}未改动</value>
+  </data>
+</root>

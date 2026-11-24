@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roomy: Free Disk Cleanup to Free Up Space on Windows 11 &amp; 10</title>
+  <meta name="description" content="C: drive full? Roomy is a free, safe disk cleanup app for Windows 11 and 10. See what's taking up space in plain English and clear junk files in one click. No ads.">
+  <link rel="canonical" href="https://roomy.krezio.xyz/">
+  <meta name="google-site-verification" content="QyNxJV62C_jMAgeV5GqTAYddfvZVU5YcI4rFWdyoI1w">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#111113">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Roomy">
+  <meta property="og:title" content="Roomy: your C: drive is full. Let's fix that.">
+  <meta property="og:description" content="Free disk cleanup for Windows. See what's eating your space in plain English and clean the safe stuff in one click.">
+  <meta property="og:image" content="https://roomy.krezio.xyz/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Roomy: I just freed 26.2 GB on my C: drive">
+  <meta property="og:url" content="https://roomy.krezio.xyz/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Roomy: free disk cleanup for Windows">
+  <meta name="twitter:description" content="See what's eating your space in plain English and clean the safe stuff in one click.">
+  <meta name="twitter:image" content="https://roomy.krezio.xyz/assets/og.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://roomy.krezio.xyz/#app",
+        "name": "Roomy",
+        "alternateName": "Roomy – Free Up Space",
+        "description": "A free disk cleanup app for Windows that shows what's taking up space in plain English and safely clears junk files like Windows Update leftovers, temp files, and app, browser and GPU shader caches.",
+        "applicationCategory": "UtilitiesApplication",
+        "applicationSubCategory": "Disk cleanup",
+        "operatingSystem": "Windows 11, Windows 10",
+        "softwareVersion": "0.1.5",
+        "url": "https://roomy.krezio.xyz/",
+        "downloadUrl": "https://github.com/krezio/roomy/releases/latest/download/Roomy-Setup.exe",
+        "installUrl": "https://apps.microsoft.com/detail/9P983BK0XVMC",
+        "image": "https://roomy.krezio.xyz/assets/icon-512.png",
+        "screenshot": [
+          "https://roomy.krezio.xyz/assets/shots/03-results.webp",
+          "https://roomy.krezio.xyz/assets/shots/05-space-map.webp",
+          "https://roomy.krezio.xyz/assets/shots/07-done.webp"
+        ],
+        "isAccessibleForFree": true,
+        "license": "https://opensource.org/licenses/MIT",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "author": { "@id": "https://roomy.krezio.xyz/#krezio" },
+        "sameAs": ["https://github.com/krezio/roomy", "https://apps.microsoft.com/detail/9P983BK0XVMC"]
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://roomy.krezio.xyz/#krezio",
+        "name": "krezio",
+        "url": "https://krezio.xyz",
+        "logo": "https://roomy.krezio.xyz/assets/icon-512.png",
+        "sameAs": ["https://github.com/krezio"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://roomy.krezio.xyz/#site",
+        "url": "https://roomy.krezio.xyz/",
+        "name": "Roomy",
+        "publisher": { "@id": "https://roomy.krezio.xyz/#krezio" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "Is Roomy actually free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. No trial, no Pro version and no ads. Roomy is open source under the MIT license." } },
+          { "@type": "Question", "name": "Will Roomy delete my files?", "acceptedAnswer": { "@type": "Answer", "text": "No. Roomy only looks in known cache and temp locations, and your Documents, Desktop, Pictures, Videos and Music folders are blocked in the code. Downloads are only ever suggested, unticked, and you confirm before anything is removed." } },
+          { "@type": "Question", "name": "Why does Roomy ask to restart as admin?", "acceptedAnswer": { "@type": "Answer", "text": "Windows locks its own update leftovers. Roomy works without admin; it just can't clean those until you allow it." } },
+          { "@type": "Question", "name": "Does Roomy send any data?", "acceptedAnswer": { "@type": "Answer", "text": "No. Roomy works fully offline and has no accounts, analytics or telemetry." } }
+        ]
+      }
+    ]
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="nav-wrap">
+    <nav class="nav" aria-label="Main">
+      <a class="brand" href="#top"><img src="assets/logo.svg" alt="" width="24" height="24"><span>Roomy</span></a>
+      <div class="nav-links">
+        <a href="#try">Try it</a>
+        <a href="#finds">What it finds</a>
+        <a href="#safety">Safety</a>
+        <a href="#faq">FAQ</a>
+        <a href="guides/">Guides</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn btn-dark btn-sm star-btn" href="https://github.com/krezio/roomy" target="_blank" rel="noopener" aria-label="Star Roomy on GitHub"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg><span>Star</span><b class="star-count" hidden></b></a>
+        <a class="btn btn-light btn-sm" href="#download">Download</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <h1>Your C: drive is full.<br>Let's fix that.</h1>
+      <p class="lede">Roomy shows you what's eating your space, in plain English, and clears the safe stuff in one click. A free storage cleaner for Windows that doesn't try to sell you anything.</p>
+      <div class="ctas" id="download">
+        <a class="btn btn-light" href="https://github.com/krezio/roomy/releases/latest/download/Roomy-Setup.exe">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M3 5.5 10.5 4.4v7.1H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg>
+          Download for Windows
+        </a>
+        <a class="btn btn-dark star-btn" href="https://github.com/krezio/roomy" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg><span>Star on GitHub</span><b class="star-count" hidden></b></a>
+      </div>
+      <p class="dl-note">10,000+ downloads</p>
+      <a class="store-badge" href="https://apps.microsoft.com/detail/9P983BK0XVMC?mode=direct" target="_blank" rel="noopener"><img src="https://get.microsoft.com/images/en-us%20light.svg" alt="Get it from Microsoft" width="182" height="55"></a>
+      <p class="fine">Free for Windows 10 and 11 · English, Русский and 中文 · Works offline · Open source</p>
+
+      <figure class="video-frame">
+        <video id="demoVideo" src="assets/video/roomy-demo.mp4" poster="assets/video/poster.jpg"
+               autoplay muted loop playsinline preload="metadata" width="1860" height="1170"
+               aria-label="Roomy scanning a PC, showing the space map, and freeing 32.5 GB"></video>
+        <button class="video-toggle" id="videoToggle" aria-label="Pause video">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path class="i-pause" fill="currentColor" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/><path class="i-play" fill="currentColor" d="M8 5l11 7-11 7z"/></svg>
+        </button>
+      </figure>
+      <p class="caption">The real app, recorded with demo files. No edits.</p>
+    </section>
+
+    <!-- TRY IT -->
+    <section class="section" id="try">
+      <div class="head">
+        <h2>Try it here.</h2>
+        <p>Tick what you want gone and hit clean. Watch the bar.</p>
+      </div>
+
+      <div class="try">
+        <div class="try-drive">
+          <div class="row">
+            <span class="drive-name">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="3" y="8" width="18" height="8" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="12" r="1" fill="currentColor"/></svg>
+              Local Disk (C:)
+            </span>
+            <span class="status" id="tStatus">Almost full</span>
+          </div>
+          <div class="free"><b id="tFree">9.6 GB</b> free of 238 GB</div>
+          <div class="meter"><span id="tBar"></span></div>
+          <div class="row small"><span id="tUsed">228 GB used</span><span id="tPct">96% full</span></div>
+        </div>
+
+        <ul class="try-list" id="tList">
+          <li><label><input type="checkbox" data-gb="8.6" checked><i></i><span class="t">Windows Update leftovers<small>Update files Windows already installed</small></span><b>8.6 GB</b><em class="safe">Safe</em></label></li>
+          <li><label><input type="checkbox" data-gb="5.2" checked><i></i><span class="t">App caches<small>Discord, VS Code, Slack, npm…</small></span><b>5.2 GB</b><em class="safe">Safe</em></label></li>
+          <li><label><input type="checkbox" data-gb="4.6" checked><i></i><span class="t">Temporary files<small>Only files older than a day</small></span><b>4.6 GB</b><em class="safe">Safe</em></label></li>
+          <li><label><input type="checkbox" data-gb="3.2" checked><i></i><span class="t">Recycle Bin<small>Stuff you already deleted</small></span><b>3.2 GB</b><em class="safe">Safe</em></label></li>
+          <li><label><input type="checkbox" data-gb="3.2" checked><i></i><span class="t">Browser cache<small>You stay logged in</small></span><b>3.2 GB</b><em class="safe">Safe</em></label></li>
+          <li><label><input type="checkbox" data-gb="6.2"><i></i><span class="t">Graphics shader cache<small>Games rebuild it on next launch</small></span><b>6.2 GB</b><em class="safe">Safe</em></label></li>
+          <li><label><input type="checkbox" data-gb="19.6"><i></i><span class="t">Big old downloads<small>ISOs and videos untouched for months</small></span><b>19.6 GB</b><em class="call">Your call</em></label></li>
+        </ul>
+
+        <div class="try-foot">
+          <div><small>Selected</small><b id="tSel">24.8 GB</b></div>
+          <div class="try-actions">
+            <button class="link" id="tReset" hidden>Reset</button>
+            <button class="btn btn-light" id="tClean">Clean up 24.8 GB</button>
+          </div>
+        </div>
+        <p class="try-done" id="tDone" hidden>You just freed <b id="tFreed">0 GB</b>. That's the whole app: no account, no upsell.</p>
+      </div>
+    </section>
+
+    <!-- FINDS -->
+    <section class="section" id="finds">
+      <div class="head">
+        <h2>Knows where the junk hides.</h2>
+        <p>On a typical PC that's 10–40 GB you didn't know you could get back.</p>
+      </div>
+      <div class="grid">
+        <article class="card"><h3>Windows Update leftovers</h3><p>Installed updates Windows keeps "just in case". Often the biggest single win.</p></article>
+        <article class="card"><h3>App &amp; browser caches</h3><p>Chrome, Edge, Discord, Spotify, VS Code, Steam, Epic, Battle.net, EA and more. They rebuild what they need, and you stay logged in.</p></article>
+        <article class="card"><h3>Hibernation file</h3><p>A hidden file as big as your RAM, often 6–16 GB. Turn hibernation off in one click, and back on whenever you like.</p></article>
+        <article class="card"><h3>GPU shader cache</h3><p>NVIDIA, AMD, Intel and DirectX caches that quietly grow into gigabytes.</p></article>
+        <article class="card"><h3>Games you forgot about</h3><p>Reads your Steam library and finds the 70 GB game you last opened in March. Uninstalls through Steam.</p></article>
+        <article class="card"><h3>Old installers &amp; downloads</h3><p>That 300 MB setup.exe you ran once. Always unticked, always your call.</p></article>
+      </div>
+
+      <div class="split">
+        <div>
+          <h3 class="split-title">The space map</h3>
+          <p class="split-text">Not sure what "Other" is? Click down through any drive folder by folder, and see the single biggest files on your PC in one list.</p>
+        </div>
+        <img src="assets/shots/05-space-map.webp" alt="Roomy space map showing folders by size and the biggest files" width="1600" height="1032" loading="lazy" decoding="async">
+      </div>
+    </section>
+
+    <!-- SAFETY -->
+    <section class="section" id="safety">
+      <div class="head">
+        <h2>Boring on purpose.</h2>
+        <p>Most "PC cleaners" are scary for a reason. Roomy only looks in known junk folders, and explains everything before it touches anything.</p>
+      </div>
+      <ul class="checks">
+        <li><b>Your files are off-limits.</b> Documents, Desktop, Pictures, Videos and Music are hard-blocked in the code.</li>
+        <li><b>Nothing happens without a click.</b> Scanning only reads. "Your call" items start unticked and ask again. Want a safety net? Send them to the Recycle Bin instead.</li>
+        <li><b>In-use files get skipped.</b> If an app is using something, Roomy leaves it alone.</li>
+        <li><b>Uses Windows and Steam where it should.</b> Old Windows backups and games go through their own uninstallers.</li>
+        <li><b>Fully offline.</b> No uploads, no tracking, no account. Every line is on GitHub.</li>
+      </ul>
+    </section>
+
+    <!-- SHARE -->
+    <section class="section split share">
+      <div>
+        <h3 class="split-title">Brag a little.</h3>
+        <p class="split-text">When you're done, Roomy makes a before-and-after card you can paste straight into Discord or the group chat.</p>
+      </div>
+      <img src="assets/shots/08-share-card.webp" alt="Share card: I just freed 26.2 GB on my C: drive" width="1600" height="840" loading="lazy" decoding="async">
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <div class="head"><h2>Questions</h2></div>
+      <div class="faq">
+        <details><summary>Is it actually free?</summary><p>Yes. No trial, no "Pro", no ads. It's open source under the MIT license.</p></details>
+        <details><summary>Will it delete my files?</summary><p>No. Roomy only looks in known cache and temp locations, and your personal folders are blocked in the code. Downloads are only ever suggested, unticked, and you confirm before anything is removed.</p></details>
+        <details><summary>Why does it ask to restart as admin?</summary><p>Windows locks its own update leftovers. Roomy works fine without admin; it just can't clean those until you allow it.</p></details>
+        <details><summary>Does it send anything anywhere?</summary><p>No. Roomy doesn't connect to the internet.</p></details>
+        <details><summary>Mac or Linux?</summary><p>Not right now. Roomy is made for Windows 10 and 11.</p></details>
+      </div>
+    </section>
+
+    <section class="end">
+      <img src="assets/logo.svg" alt="" width="56" height="56">
+      <h2>Get your space back.</h2>
+      <div class="ctas">
+        <a class="btn btn-light" href="https://github.com/krezio/roomy/releases/latest/download/Roomy-Setup.exe">Download for Windows</a>
+        <a class="btn btn-dark star-btn" href="https://github.com/krezio/roomy" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg><span>Star on GitHub</span><b class="star-count" hidden></b></a>
+      </div>
+      <a class="store-badge" href="https://apps.microsoft.com/detail/9P983BK0XVMC?mode=direct" target="_blank" rel="noopener"><img src="https://get.microsoft.com/images/en-us%20light.svg" alt="Get it from Microsoft" width="182" height="55"></a>
+      <p class="fine">Open source. If Roomy helped you, a star helps other people find it.</p>
+      <p class="also">Also from krezio: <a href="https://framecalm.krezio.xyz">Framecalm</a>, a free Windows optimizer for games that shows exactly what it changes and can undo all of it.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span class="brand"><img src="assets/logo.svg" alt="" width="18" height="18"><span>Roomy</span></span>
+    <span>Made by <a href="https://krezio.xyz">krezio</a> · <a href="https://github.com/krezio/roomy" target="_blank" rel="noopener">GitHub</a> · <a href="https://framecalm.krezio.xyz">Framecalm</a> · <a href="guides/">Guides</a> · <a href="privacy.html">Privacy</a> · MIT</span>
+  </footer>
+
+  <script src="main.js" defer></script>
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "595ddd43099c44e98b23cda95087c4b7"}'></script>
+</body>
+</html>

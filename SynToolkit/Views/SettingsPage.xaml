@@ -224,6 +224,7 @@
                                 <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
                                     <HyperlinkButton Content="Windows UI Library" NavigateUri="https://learn.microsoft.com/en-us/windows/apps/winui/winui3/" />
                                     <HyperlinkButton Content="Windows Community Toolkit" NavigateUri="https://github.com/CommunityToolkit/WindowsCommunityToolkit" />
+                                    <HyperlinkButton Content="Roomy (Drives Cleaner base) by krezio" NavigateUri="https://github.com/krezio/roomy" />
                                 </StackPanel>
                             </controls:SettingsCard>
                             <controls:SettingsCard

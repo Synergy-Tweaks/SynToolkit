@@ -130,6 +130,8 @@ internal static class Program
         Run("Context menu service tests", ContextMenuServiceTests.RunAll);
         Run("Display rotation swaps only portrait modes", DisplayModeTests.RotationSwapsOnlyPortrait);
         Run("Display rotation flags match CCD values", DisplayModeTests.SwapsDimensionsMatchesCcdRotations);
+        Run("Drives cache finder detects Chromium layouts", DrivesCoreTests.CacheFinderDetectsChromiumLayout);
+        Run("Drives leftover finder excludes recent/small folders", DrivesCoreTests.LeftoverFinderSkipsRecentOrSmallFolders);
 
         Console.WriteLine(_failures == 0
             ? "All SynToolkit service tests passed."

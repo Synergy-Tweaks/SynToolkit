@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Is it safe to delete Windows Update files? (SoftwareDistribution explained)</title>
+  <meta name="description" content="Windows keeps old update files in SoftwareDistribution and the Delivery Optimization cache. Here's what's safe to delete, how to do it properly, and what to leave alone.">
+  <link rel="canonical" href="https://roomy.krezio.xyz/guides/windows-update-files/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#111113">
+  <link rel="icon" href="../../favicon.ico" sizes="any">
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Roomy">
+  <meta property="og:title" content="Is it safe to delete Windows Update files? (SoftwareDistribution explained)">
+  <meta property="og:description" content="Windows keeps old update files in SoftwareDistribution and the Delivery Optimization cache. Here's what's safe to delete, how to do it properly, and what to leave alone.">
+  <meta property="og:url" content="https://roomy.krezio.xyz/guides/windows-update-files/">
+  <meta property="og:image" content="https://roomy.krezio.xyz/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Is it safe to delete Windows Update files? (SoftwareDistribution explained)","description":"Windows keeps old update files in SoftwareDistribution and the Delivery Optimization cache. Here's what's safe to delete, how to do it properly, and what to leave alone.","url":"https://roomy.krezio.xyz/guides/windows-update-files/","mainEntityOfPage":"https://roomy.krezio.xyz/guides/windows-update-files/","datePublished":"2026-11-12","dateModified":"2026-11-12","image":"https://roomy.krezio.xyz/assets/og.png","author":{"@type":"Organization","name":"krezio","url":"https://krezio.xyz"},"publisher":{"@type":"Organization","name":"krezio","logo":{"@type":"ImageObject","url":"https://roomy.krezio.xyz/assets/icon-512.png"}}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Roomy","item":"https://roomy.krezio.xyz/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://roomy.krezio.xyz/guides/"},{"@type":"ListItem","position":3,"name":"Is it safe to delete Windows Update files?","item":"https://roomy.krezio.xyz/guides/windows-update-files/"}]}]}</script>
+</head>
+<body>
+  <header class="nav-wrap">
+    <nav class="nav" aria-label="Main">
+      <a class="brand" href="../../"><img src="../../assets/logo.svg" alt="" width="24" height="24"><span>Roomy</span></a>
+      <div class="nav-links">
+        <a href="../../#try">Try it</a>
+        <a href="../../#finds">What it finds</a>
+        <a href="../../guides/">Guides</a>
+      </div>
+      <a class="btn btn-light btn-sm" href="../../#download">Download</a>
+    </nav>
+  </header>
+
+  <main class="doc">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../../">Roomy</a> › <a href="../">Guides</a></nav>
+    <article>
+      <h1>Is it safe to delete Windows Update files? (SoftwareDistribution explained)</h1>
+      <p class="meta">Updated November 2026 · 4 min read</p>
+      <div class="tldr"><span class="label">Short answer</span><p>Yes. Use <b>Settings → System → Storage → Temporary files</b> and tick <b>Windows Update Cleanup</b> and <b>Delivery Optimization Files</b>. If you want to clear the download folder by hand, stop the Windows Update service first and only empty <code>SoftwareDistribution\Download</code>.</p></div>
+
+<p>Windows Update downloads every update to your PC before installing it, and keeps several kinds of leftovers afterwards. Together they can easily take 5–15 GB.</p>
+
+<h2>The three kinds of update leftovers</h2>
+<ul>
+  <li><b>Downloaded update files</b> in <code>C:\Windows\SoftwareDistribution\Download</code>. Once updates are installed, these are just copies.</li>
+  <li><b>Delivery Optimization files</b>: updates your PC keeps so it can share them with other PCs. Safe to delete.</li>
+  <li><b>Superseded components</b> in <code>C:\Windows\WinSxS</code>: older versions of system files replaced by updates. <b>Never delete these by hand</b>; use the tools below.</li>
+</ul>
+
+<h2>The easy, safe way</h2>
+<ol>
+  <li>Open <b>Settings → System → Storage → Temporary files</b>.</li>
+  <li>Tick <b>Windows Update Cleanup</b> and <b>Delivery Optimization Files</b>.</li>
+  <li>Click <b>Remove files</b>.</li>
+</ol>
+
+<h2>Clearing SoftwareDistribution\Download by hand</h2>
+<p>This is also the classic fix when Windows Update is stuck. Open <b>Terminal (Admin)</b> or Command Prompt as administrator and run:</p>
+<pre><code>net stop wuauserv
+net stop bits</code></pre>
+<p>Then delete everything inside <code>C:\Windows\SoftwareDistribution\Download</code> (not the folder itself), and start the services again:</p>
+<pre><code>net start wuauserv
+net start bits</code></pre>
+<div class="callout"><p>Don't delete the whole <code>SoftwareDistribution</code> folder unless you're troubleshooting. It also holds your update history, which gets reset.</p></div>
+
+<h2>Shrinking WinSxS properly</h2>
+<p>If <code>WinSxS</code> is huge, ask Windows to clean up superseded components itself:</p>
+<pre><code>DISM /Online /Cleanup-Image /StartComponentCleanup</code></pre>
+<p>It can take a while, and you won't be able to uninstall updates that were already installed.</p>
+
+    </article>
+
+    <aside class="cta-box">
+      <img src="../../assets/logo.svg" alt="" width="52" height="52">
+      <div>
+        <h2>Or let Roomy do it in one click</h2>
+        <p>Roomy finds all of this for you, explains each item in plain English, and only cleans what's safe. Free for Windows 11 and 10, no ads, no account.</p>
+      </div>
+      <a class="btn btn-light" href="https://github.com/krezio/roomy/releases/latest/download/Roomy-Setup.exe">Download Roomy free</a>
+    </aside>
+    <h2>More guides</h2>
+    <ul class="related">
+      <li><a href="../c-drive-full/">C: drive full? 8 safe ways to free up space</a></li>
+      <li><a href="../delete-temp-files/">How to delete temporary files safely</a></li>
+      <li><a href="../clear-shader-cache/">How to clear the shader cache (NVIDIA, AMD, DirectX)</a></li>
+      <li><a href="../delete-windows-old/">Can I delete Windows.old?</a></li>
+    </ul>
+  </main>
+
+  <footer class="footer">
+    <span class="brand"><img src="../../assets/logo.svg" alt="" width="18" height="18"><span>Roomy</span></span>
+    <span>Made by <a href="https://krezio.xyz">krezio</a> · <a href="https://github.com/krezio/roomy" target="_blank" rel="noopener">GitHub</a> · <a href="https://framecalm.krezio.xyz">Framecalm</a> · <a href="../../guides/">Guides</a> · <a href="../../privacy.html">Privacy</a></span>
+  </footer>
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "595ddd43099c44e98b23cda95087c4b7"}'></script>
+</body>
+</html>
