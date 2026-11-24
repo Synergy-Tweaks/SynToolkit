@@ -30,7 +30,7 @@ namespace SynToolkit.Views
         public CleanerPage()
         {
             InitializeComponent();
-            NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Required;
+            NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Disabled;
             _viewModel = App._host.Services.GetRequiredService<CleanerPageViewModel>();
             DataContext = _viewModel;
             DrivesRepeater.ItemsSource = _drives;

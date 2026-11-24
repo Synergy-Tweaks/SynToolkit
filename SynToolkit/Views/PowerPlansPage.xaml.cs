@@ -80,7 +80,7 @@ namespace SynToolkit.Views
         public PowerPlansPage()
         {
             InitializeComponent();
-            NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Required;
+            NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Disabled;
             LoadBundledPlans();
         }
 

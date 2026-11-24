@@ -31,7 +31,7 @@ namespace SynToolkit.Views
             _installerGridLayout = FeaturedInstallersRepeater.Layout as UniformGridLayout;
             _viewModel = App._host.Services.GetRequiredService<AppFetchPageViewModel>();
             DataContext = _viewModel;
-            NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Required;
+            NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Disabled;
             Unloaded += Page_Unloaded;
         }
 
