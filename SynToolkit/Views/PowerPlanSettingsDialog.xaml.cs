@@ -118,8 +118,16 @@ namespace SynToolkit.Views
             _isOpen = true;
             if (XamlRoot is not null)
             {
-                DialogContent.Width = Math.Min(900, Math.Max(320, XamlRoot.Size.Width - 56));
-                DialogContent.Height = Math.Min(640, Math.Max(340, XamlRoot.Size.Height - 120));
+                // Grow with the maximized window, keep the old size when windowed.
+                // The window runs 1250 DIP wide by default, so the size fallback also
+                // catches windows maximized before WinUI updated the presenter state.
+                bool maximized = (App.m_window?.AppWindow.Presenter as Microsoft.UI.Windowing.OverlappedPresenter)?.State
+                    == Microsoft.UI.Windowing.OverlappedPresenterState.Maximized
+                    || XamlRoot.Size.Width >= 1300;
+                double maxWidth = maximized ? 1360 : 900;
+                double maxHeight = maximized ? 900 : 640;
+                DialogContent.Width = Math.Min(maxWidth, Math.Max(320, XamlRoot.Size.Width - 56));
+                DialogContent.Height = Math.Min(maxHeight, Math.Max(340, XamlRoot.Size.Height - 120));
             }
             await LoadSelectionAsync();
             if (_isOpen)

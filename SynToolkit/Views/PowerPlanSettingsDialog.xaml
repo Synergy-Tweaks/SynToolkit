@@ -8,8 +8,8 @@
 
     <ContentDialog.Resources>
         <ResourceDictionary>
-            <x:Double x:Key="ContentDialogMaxWidth">1020</x:Double>
-            <x:Double x:Key="ContentDialogMaxHeight">860</x:Double>
+            <x:Double x:Key="ContentDialogMaxWidth">1400</x:Double>
+            <x:Double x:Key="ContentDialogMaxHeight">1000</x:Double>
         </ResourceDictionary>
     </ContentDialog.Resources>
 
