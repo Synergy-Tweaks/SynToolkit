@@ -1,15 +1,16 @@
 #nullable enable
 
-using System.Collections.Generic;
 using Microsoft.Win32;
 using SynToolkit.Models.GpuDrivers;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Security.Principal;
+using System.Text;
 
 namespace SynToolkit.Services.GpuDrivers;
 
-// Built and kept for a future advanced / power-user toggle.
-// Not currently exposed in the GPU page UI (Overview / Debloat / Removal only).
-internal enum NvidiaTweakGroup
+public enum NvidiaTweakGroup
 {
     NvidiaSettings,
     RmPowerFeature,
@@ -18,7 +19,14 @@ internal enum NvidiaTweakGroup
     Hdcp
 }
 
-internal enum NvidiaTweakValueState
+public enum NvidiaTweakRiskLevel
+{
+    Safe,
+    Caution,
+    Advanced
+}
+
+public enum NvidiaTweakValueState
 {
     NotSet,
     Different,
@@ -26,7 +34,12 @@ internal enum NvidiaTweakValueState
     Applied
 }
 
-internal sealed record NvidiaRegistryTarget(
+public sealed record NvidiaTweakMetadata(
+    string DisplayName,
+    string Description,
+    NvidiaTweakRiskLevel RiskLevel);
+
+public sealed record NvidiaRegistryTarget(
     RegistryHive Hive,
     string Path,
     string LocationLabel,
@@ -34,37 +47,22 @@ internal sealed record NvidiaRegistryTarget(
     RegistryValueKind Kind,
     object ExpectedValue);
 
-internal sealed record NvidiaTweakDefinition(
+public sealed record NvidiaTweakDefinition(
     string Id,
-    string Name,
     NvidiaTweakGroup Group,
     IReadOnlyList<NvidiaRegistryTarget> Targets)
 {
     public string LocationText =>
         string.Join(" + ", Targets.Select(static target => target.LocationLabel).Distinct(StringComparer.Ordinal));
 
-    public string ExpectedValueText
-    {
-        get
-        {
-            var target = Targets[0];
-            return target.Kind switch
-            {
-                RegistryValueKind.DWord => $"DWORD {Convert.ToUInt32(target.ExpectedValue):X}",
-                RegistryValueKind.Binary when target.ExpectedValue is byte[] bytes => $"BINARY · {bytes.Length} bytes",
-                _ => target.ExpectedValue.ToString() ?? string.Empty
-            };
-        }
-    }
-
     public string RecommendedValueText
     {
         get
         {
-            var target = Targets[0];
+            NvidiaRegistryTarget target = Targets[0];
             return target.Kind switch
             {
-                RegistryValueKind.DWord => $"{Convert.ToUInt32(target.ExpectedValue):X}",
+                RegistryValueKind.DWord => $"0x{ConvertRegistryDword(target.ExpectedValue):X8}",
                 RegistryValueKind.Binary when target.ExpectedValue is byte[] bytes => $"{bytes.Length} bytes",
                 _ => target.ExpectedValue.ToString() ?? string.Empty
             };
@@ -73,18 +71,72 @@ internal sealed record NvidiaTweakDefinition(
 
     public bool SupportsCustomValue =>
         Targets.All(static target => target.Kind == RegistryValueKind.DWord);
+
+    private static uint ConvertRegistryDword(object value) => value switch
+    {
+        int signed => unchecked((uint)signed),
+        uint unsigned => unsigned,
+        long signed => unchecked((uint)signed),
+        _ => Convert.ToUInt32(value, CultureInfo.InvariantCulture)
+    };
 }
 
-internal sealed record NvidiaTweakValueSnapshot(
-    NvidiaTweakValueState State,
-    string CurrentValueText);
+public sealed record NvidiaTweakCatalogItem(
+    NvidiaTweakDefinition Definition,
+    NvidiaTweakMetadata Metadata);
 
-internal sealed record NvidiaTweakCheckResult(
+public sealed record NvidiaTweakValueSnapshot(
+    NvidiaTweakValueState State,
+    string CurrentValueText,
+    bool RestartPending);
+
+public sealed record NvidiaTweakCheckResult(
     bool Success,
     string Message,
+    bool IsElevated,
+    bool HasNvidiaGpu,
+    string ActiveGpuName,
+    string DriverClassPath,
+    bool MatchedByInf,
     IReadOnlyDictionary<string, NvidiaTweakValueSnapshot> Values);
 
-internal static class NvidiaPerformanceTweaksService
+public sealed record NvidiaActionResult(
+    bool Success,
+    string Message);
+
+public sealed record NvidiaRegExportResult(
+    bool Success,
+    string Message,
+    string? FilePath);
+
+public sealed record NvidiaResolvedTarget(
+    RegistryHive Hive,
+    string HiveLabel,
+    string Path,
+    string ValueName,
+    RegistryValueKind Kind);
+
+public interface INvidiaPerformanceTweaksService
+{
+    IReadOnlyList<NvidiaTweakCatalogItem> Catalog { get; }
+    IReadOnlyList<NvidiaTweakDefinition> Definitions { get; }
+    IReadOnlyList<NvidiaTweakDefinition> GetDefinitions(NvidiaTweakGroup group);
+    Task<NvidiaTweakCheckResult> CheckAllAsync(GpuDeviceInfo? preferredGpu, CancellationToken cancellationToken = default);
+    Task<(bool Success, string Message, NvidiaTweakValueSnapshot? Value)> CheckItemAsync(
+        GpuDeviceInfo? preferredGpu, string id, CancellationToken cancellationToken = default);
+    Task<NvidiaActionResult> ApplyItemAsync(GpuDeviceInfo? preferredGpu, string id, CancellationToken cancellationToken = default);
+    Task<NvidiaActionResult> RevertItemAsync(GpuDeviceInfo? preferredGpu, string id, CancellationToken cancellationToken = default);
+    Task<NvidiaActionResult> SetItemValueAsync(
+        GpuDeviceInfo? preferredGpu, string id, string valueText, CancellationToken cancellationToken = default);
+    Task<NvidiaActionResult> ApplyGroupAsync(GpuDeviceInfo? preferredGpu, NvidiaTweakGroup group, CancellationToken cancellationToken = default);
+    Task<NvidiaActionResult> RevertGroupAsync(GpuDeviceInfo? preferredGpu, NvidiaTweakGroup group, CancellationToken cancellationToken = default);
+    Task<NvidiaActionResult> RestoreAllOriginalsAsync(GpuDeviceInfo? preferredGpu, CancellationToken cancellationToken = default);
+    Task<NvidiaRegExportResult> ExportAppliedTweaksAsRegAsync(GpuDeviceInfo? preferredGpu, CancellationToken cancellationToken = default);
+    Task<(bool Success, string Message, IReadOnlyList<NvidiaResolvedTarget> Targets)> ResolveTargetsAsync(
+        GpuDeviceInfo? preferredGpu, string id, CancellationToken cancellationToken = default);
+}
+
+public sealed class NvidiaPerformanceTweaksService : INvidiaPerformanceTweaksService
 {
     private const string DriverClassToken = "$NVIDIA_DRIVER_CLASS$";
     private const string DisplayClassRoot =
@@ -95,13 +147,16 @@ internal static class NvidiaPerformanceTweaksService
     private const string DriverParametersPath = @"SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters";
     private const string DriverStartupPath = @"SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\Startup";
 
+    private readonly IGpuDriverCatalogService _gpuDriverCatalogService;
+    private readonly NvidiaTweaksBackupStore _backupStore = new();
+
     private sealed class RegistryContext : IDisposable
     {
         private readonly Dictionary<RegistryHive, RegistryKey> _baseKeys = [];
 
         public RegistryKey GetBaseKey(RegistryHive hive)
         {
-            if (!_baseKeys.TryGetValue(hive, out var key))
+            if (!_baseKeys.TryGetValue(hive, out RegistryKey? key))
             {
                 key = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
                 _baseKeys.Add(hive, key);
@@ -112,302 +167,716 @@ internal static class NvidiaPerformanceTweaksService
 
         public void Dispose()
         {
-            foreach (var key in _baseKeys.Values)
+            foreach (RegistryKey key in _baseKeys.Values)
+            {
                 key.Dispose();
+            }
         }
     }
 
-    public static IReadOnlyList<NvidiaTweakDefinition> Definitions { get; } = CreateDefinitions();
+    private sealed record DriverClassEntry(string Path, string InfPath, string Description);
+    private sealed record ResolvedDriverContext(
+        bool Success,
+        string Message,
+        bool HasNvidiaGpu,
+        string ClassPath,
+        string GpuName,
+        bool MatchedByInf);
 
-    public static IReadOnlyList<NvidiaTweakDefinition> GetDefinitions(NvidiaTweakGroup group) =>
+    public NvidiaPerformanceTweaksService(IGpuDriverCatalogService gpuDriverCatalogService)
+    {
+        _gpuDriverCatalogService = gpuDriverCatalogService;
+        Definitions = CreateDefinitions();
+        Catalog = Definitions
+            .Select(definition => new NvidiaTweakCatalogItem(definition, BuildMetadata(definition)))
+            .ToList();
+    }
+
+    public IReadOnlyList<NvidiaTweakCatalogItem> Catalog { get; }
+    public IReadOnlyList<NvidiaTweakDefinition> Definitions { get; }
+
+    public IReadOnlyList<NvidiaTweakDefinition> GetDefinitions(NvidiaTweakGroup group) =>
         Definitions.Where(definition => definition.Group == group).ToList();
 
-    public static Task<NvidiaTweakCheckResult> CheckAsync(GpuDeviceInfo device) =>
-        Task.Run(() => Check(device));
-
-    public static Task<(bool Success, string Message, NvidiaTweakValueSnapshot? Value)> CheckItemAsync(
-        GpuDeviceInfo device,
-        string id) =>
-        Task.Run(() => CheckItem(device, id));
-
-    public static Task<(bool Success, string Message)> ApplyItemAsync(GpuDeviceInfo device, string id) =>
-        ApplyAsync(device, Definitions.Where(definition => definition.Id == id));
-
-    public static Task<(bool Success, string Message)> RemoveItemAsync(GpuDeviceInfo device, string id) =>
-        Task.Run(() => Remove(device, id));
-
-    public static Task<(bool Success, string Message)> SetItemValueAsync(
-        GpuDeviceInfo device,
-        string id,
-        string valueText) =>
-        Task.Run(() => SetItemValue(device, id, valueText));
-
-    public static Task<(bool Success, string Message)> ApplyGroupAsync(
-        GpuDeviceInfo device,
-        NvidiaTweakGroup group) =>
-        ApplyAsync(device, Definitions.Where(definition => definition.Group == group));
-
-    public static Task<(bool Success, string Message)> RemoveGroupAsync(
-        GpuDeviceInfo device,
-        NvidiaTweakGroup group) =>
-        Task.Run(() => RemoveGroup(device, group));
-
-    private static NvidiaTweakCheckResult Check(GpuDeviceInfo device)
+    public async Task<NvidiaTweakCheckResult> CheckAllAsync(
+        GpuDeviceInfo? preferredGpu,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            using var context = new RegistryContext();
-            var classPath = FindNvidiaDriverClassPath(context.GetBaseKey(RegistryHive.LocalMachine), device);
-            if (classPath is null)
+            ResolvedDriverContext context = await ResolveDriverContextAsync(preferredGpu, cancellationToken);
+            if (!context.Success)
             {
                 return new NvidiaTweakCheckResult(
                     false,
-                    "No installed NVIDIA display-driver registry key was found.",
+                    context.Message,
+                    IsCurrentProcessElevated(),
+                    context.HasNvidiaGpu,
+                    context.GpuName,
+                    context.ClassPath,
+                    context.MatchedByInf,
                     new Dictionary<string, NvidiaTweakValueSnapshot>());
             }
 
-            var values = Definitions.ToDictionary(
-                definition => definition.Id,
-                definition => ReadSnapshot(context, classPath, definition),
-                StringComparer.Ordinal);
-            return new NvidiaTweakCheckResult(true, string.Empty, values);
+            Dictionary<string, NvidiaTweakValueSnapshot> values = await Task.Run(() =>
+            {
+                using RegistryContext registryContext = new();
+                DateTimeOffset bootUtc = GetSystemBootUtc();
+                return Definitions.ToDictionary(
+                    definition => definition.Id,
+                    definition =>
+                    {
+                        NvidiaTweakValueSnapshot snapshot = ReadSnapshot(
+                            registryContext,
+                            context.ClassPath,
+                            definition,
+                            bootUtc);
+                        return snapshot;
+                    },
+                    StringComparer.Ordinal);
+            }, cancellationToken);
+
+            return new NvidiaTweakCheckResult(
+                true,
+                string.Empty,
+                IsCurrentProcessElevated(),
+                true,
+                context.GpuName,
+                context.ClassPath,
+                context.MatchedByInf,
+                values);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
+            App.logger.Error(exception, "[GPU] NVIDIA tweak verification failed.");
             return new NvidiaTweakCheckResult(
                 false,
-                ex.Message,
+                exception.Message,
+                IsCurrentProcessElevated(),
+                false,
+                string.Empty,
+                string.Empty,
+                false,
                 new Dictionary<string, NvidiaTweakValueSnapshot>());
         }
     }
 
-    private static (bool Success, string Message, NvidiaTweakValueSnapshot? Value) CheckItem(
-        GpuDeviceInfo device,
-        string id)
+    public async Task<(bool Success, string Message, NvidiaTweakValueSnapshot? Value)> CheckItemAsync(
+        GpuDeviceInfo? preferredGpu,
+        string id,
+        CancellationToken cancellationToken = default)
     {
+        NvidiaTweakDefinition? definition = Definitions.FirstOrDefault(item => item.Id == id);
+        if (definition is null)
+        {
+            return (false, "The selected NVIDIA tweak was not found.", null);
+        }
+
+        ResolvedDriverContext context = await ResolveDriverContextAsync(preferredGpu, cancellationToken);
+        if (!context.Success)
+        {
+            return (false, context.Message, null);
+        }
+
         try
         {
-            var definition = Definitions.FirstOrDefault(item => item.Id == id);
-            if (definition is null)
-                return (false, "The selected NVIDIA registry value was not found.", null);
-
-            using var context = new RegistryContext();
-            var classPath = FindNvidiaDriverClassPath(context.GetBaseKey(RegistryHive.LocalMachine), device);
-            if (classPath is null)
-                return (false, "No installed NVIDIA display-driver registry key was found.", null);
-
-            return (true, string.Empty, ReadSnapshot(context, classPath, definition));
+            NvidiaTweakValueSnapshot snapshot = await Task.Run(() =>
+            {
+                using RegistryContext registryContext = new();
+                return ReadSnapshot(registryContext, context.ClassPath, definition, GetSystemBootUtc());
+            }, cancellationToken);
+            return (true, string.Empty, snapshot);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            return (false, ex.Message, null);
+            return (false, exception.Message, null);
         }
     }
 
-    private static Task<(bool Success, string Message)> ApplyAsync(
-        GpuDeviceInfo device,
-        IEnumerable<NvidiaTweakDefinition> selectedDefinitions) =>
-        Task.Run(() =>
+    public Task<NvidiaActionResult> ApplyItemAsync(
+        GpuDeviceInfo? preferredGpu,
+        string id,
+        CancellationToken cancellationToken = default)
+        => ApplyAsync(preferredGpu, Definitions.Where(definition => definition.Id == id), cancellationToken);
+
+    public Task<NvidiaActionResult> ApplyGroupAsync(
+        GpuDeviceInfo? preferredGpu,
+        NvidiaTweakGroup group,
+        CancellationToken cancellationToken = default)
+        => ApplyAsync(preferredGpu, Definitions.Where(definition => definition.Group == group), cancellationToken);
+
+    public async Task<NvidiaActionResult> RevertItemAsync(
+        GpuDeviceInfo? preferredGpu,
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        NvidiaTweakDefinition? definition = Definitions.FirstOrDefault(item => item.Id == id);
+        if (definition is null)
         {
-            try
+            return new NvidiaActionResult(false, "The selected NVIDIA tweak was not found.");
+        }
+
+        return await RevertAsync(preferredGpu, [definition], cancellationToken);
+    }
+
+    public Task<NvidiaActionResult> RevertGroupAsync(
+        GpuDeviceInfo? preferredGpu,
+        NvidiaTweakGroup group,
+        CancellationToken cancellationToken = default)
+        => RevertAsync(preferredGpu, Definitions.Where(definition => definition.Group == group), cancellationToken);
+
+    public async Task<NvidiaActionResult> SetItemValueAsync(
+        GpuDeviceInfo? preferredGpu,
+        string id,
+        string valueText,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsCurrentProcessElevated())
+        {
+            return new NvidiaActionResult(
+                false,
+                "Administrator access is required to change NVIDIA registry values.");
+        }
+
+        NvidiaTweakDefinition? definition = Definitions.FirstOrDefault(item => item.Id == id);
+        if (definition is null)
+        {
+            return new NvidiaActionResult(false, "The selected NVIDIA tweak was not found.");
+        }
+
+        if (!definition.SupportsCustomValue)
+        {
+            return new NvidiaActionResult(false, $"{definition.Id} does not support a custom value.");
+        }
+
+        string normalized = valueText.Trim();
+        if (normalized.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = normalized[2..];
+        }
+
+        if (!uint.TryParse(
+                normalized,
+                NumberStyles.AllowHexSpecifier,
+                CultureInfo.InvariantCulture,
+                out uint customValue))
+        {
+            return new NvidiaActionResult(false, "Enter a hexadecimal DWORD value, for example 0x2A.");
+        }
+
+        ResolvedDriverContext context = await ResolveDriverContextAsync(preferredGpu, cancellationToken);
+        if (!context.Success)
+        {
+            return new NvidiaActionResult(false, context.Message);
+        }
+
+        try
+        {
+            return await Task.Run(() =>
             {
-                var definitions = selectedDefinitions.ToList();
-                if (definitions.Count == 0)
-                    return (false, "No NVIDIA registry values were selected.");
-
-                using var context = new RegistryContext();
-                var classPath = FindNvidiaDriverClassPath(context.GetBaseKey(RegistryHive.LocalMachine), device);
-                if (classPath is null)
-                    return (false, "No installed NVIDIA display-driver registry key was found.");
-
-                var changed = 0;
-                var skipped = 0;
-                foreach (var definition in definitions)
+                using RegistryContext registryContext = new();
+                foreach (NvidiaRegistryTarget target in definition.Targets)
                 {
-                    if (ReadSnapshot(context, classPath, definition).State == NvidiaTweakValueState.Applied)
+                    string resolvedPath = ResolvePath(target.Path, context.ClassPath);
+                    string targetKey = CreateTargetKey(target.Hive, resolvedPath, target.ValueName);
+                    CaptureOriginalValueIfNeeded(registryContext, target, resolvedPath, targetKey);
+                    using RegistryKey key = registryContext.GetBaseKey(target.Hive).CreateSubKey(resolvedPath, writable: true)
+                        ?? throw new InvalidOperationException($"Windows could not open {GetHiveLabel(target.Hive)}\\{resolvedPath}.");
+                    key.SetValue(target.ValueName, unchecked((int)customValue), RegistryValueKind.DWord);
+                }
+
+                foreach (NvidiaRegistryTarget target in definition.Targets)
+                {
+                    string resolvedPath = ResolvePath(target.Path, context.ClassPath);
+                    using RegistryKey? key = registryContext.GetBaseKey(target.Hive).OpenSubKey(resolvedPath, writable: false);
+                    object? actual = key?.GetValue(target.ValueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+                    if (actual is null || ConvertRegistryDword(actual) != customValue)
+                    {
+                        throw new InvalidOperationException($"{definition.Id} could not be verified after writing.");
+                    }
+                }
+
+                _backupStore.SetLastAppliedUtc(definition.Id, DateTimeOffset.UtcNow);
+                return new NvidiaActionResult(true, $"Set {definition.Id} to 0x{customValue:X8}. Restart Windows to make it active.");
+            }, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            return new NvidiaActionResult(false, exception.Message);
+        }
+    }
+
+    public async Task<NvidiaActionResult> RestoreAllOriginalsAsync(
+        GpuDeviceInfo? preferredGpu,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsCurrentProcessElevated())
+        {
+            return new NvidiaActionResult(
+                false,
+                "Administrator access is required to restore NVIDIA registry values.");
+        }
+
+        ResolvedDriverContext context = await ResolveDriverContextAsync(preferredGpu, cancellationToken);
+        if (!context.Success)
+        {
+            return new NvidiaActionResult(false, context.Message);
+        }
+
+        try
+        {
+            return await Task.Run(() =>
+            {
+                using RegistryContext registryContext = new();
+                int restored = 0;
+                foreach (NvidiaTweakDefinition definition in Definitions)
+                {
+                    foreach (NvidiaRegistryTarget target in definition.Targets)
+                    {
+                        string resolvedPath = ResolvePath(target.Path, context.ClassPath);
+                        string targetKey = CreateTargetKey(target.Hive, resolvedPath, target.ValueName);
+                        if (!_backupStore.TryGetOriginal(targetKey, out NvidiaTweaksBackupStore.BackupRegistryValue backup))
+                        {
+                            continue;
+                        }
+
+                        RestoreValueFromBackup(registryContext, target, resolvedPath, backup);
+                        restored++;
+                    }
+
+                    _backupStore.ClearLastAppliedUtc(definition.Id);
+                }
+
+                return restored == 0
+                    ? new NvidiaActionResult(true, "No original NVIDIA tweak values were recorded yet.")
+                    : new NvidiaActionResult(true, $"Restored {restored} original NVIDIA registry value(s).");
+            }, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            return new NvidiaActionResult(false, exception.Message);
+        }
+    }
+
+    public async Task<NvidiaRegExportResult> ExportAppliedTweaksAsRegAsync(
+        GpuDeviceInfo? preferredGpu,
+        CancellationToken cancellationToken = default)
+    {
+        ResolvedDriverContext context = await ResolveDriverContextAsync(preferredGpu, cancellationToken);
+        if (!context.Success)
+        {
+            return new NvidiaRegExportResult(false, context.Message, null);
+        }
+
+        try
+        {
+            return await Task.Run(() =>
+            {
+                using RegistryContext registryContext = new();
+                StringBuilder builder = new();
+                builder.AppendLine("Windows Registry Editor Version 5.00");
+                builder.AppendLine();
+
+                int exportedTweaks = 0;
+                foreach (NvidiaTweakDefinition definition in Definitions)
+                {
+                    NvidiaTweakValueSnapshot snapshot = ReadSnapshot(
+                        registryContext,
+                        context.ClassPath,
+                        definition,
+                        GetSystemBootUtc());
+                    if (snapshot.State != NvidiaTweakValueState.Applied)
+                    {
+                        continue;
+                    }
+
+                    exportedTweaks++;
+                    foreach (NvidiaRegistryTarget target in definition.Targets)
+                    {
+                        string resolvedPath = ResolvePath(target.Path, context.ClassPath);
+                        using RegistryKey? key = registryContext.GetBaseKey(target.Hive).OpenSubKey(resolvedPath, writable: false);
+                        object? value = key?.GetValue(target.ValueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+                        if (value is null)
+                        {
+                            continue;
+                        }
+
+                        builder.AppendLine($"[{ToRegPath(target.Hive, resolvedPath)}]");
+                        string valueName = string.IsNullOrEmpty(target.ValueName)
+                            ? "@"
+                            : $"\"{EscapeRegString(target.ValueName)}\"";
+                        builder.AppendLine($"{valueName}={FormatRegValue(value, target.Kind)}");
+                        builder.AppendLine();
+                    }
+                }
+
+                if (exportedTweaks == 0)
+                {
+                    return new NvidiaRegExportResult(false, "No fully applied tweaks were available to export.", null);
+                }
+
+                string directory = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "SynToolkit");
+                Directory.CreateDirectory(directory);
+                string filePath = Path.Combine(directory, $"nvidia-applied-tweaks-{DateTime.Now:yyyyMMdd-HHmmss}.reg");
+                File.WriteAllText(filePath, builder.ToString(), Encoding.Unicode);
+                return new NvidiaRegExportResult(true, $"Exported applied tweaks to {filePath}", filePath);
+            }, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            return new NvidiaRegExportResult(false, exception.Message, null);
+        }
+    }
+
+    public async Task<(bool Success, string Message, IReadOnlyList<NvidiaResolvedTarget> Targets)> ResolveTargetsAsync(
+        GpuDeviceInfo? preferredGpu,
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        NvidiaTweakDefinition? definition = Definitions.FirstOrDefault(item => item.Id == id);
+        if (definition is null)
+        {
+            return (false, "The selected NVIDIA tweak was not found.", []);
+        }
+
+        ResolvedDriverContext context = await ResolveDriverContextAsync(preferredGpu, cancellationToken);
+        if (!context.Success)
+        {
+            return (false, context.Message, []);
+        }
+
+        IReadOnlyList<NvidiaResolvedTarget> targets = definition.Targets
+            .Select(target =>
+            {
+                string path = ResolvePath(target.Path, context.ClassPath);
+                return new NvidiaResolvedTarget(
+                    target.Hive,
+                    GetHiveLabel(target.Hive),
+                    path,
+                    target.ValueName,
+                    target.Kind);
+            })
+            .ToList();
+        return (true, string.Empty, targets);
+    }
+
+    private async Task<NvidiaActionResult> ApplyAsync(
+        GpuDeviceInfo? preferredGpu,
+        IEnumerable<NvidiaTweakDefinition> selectedDefinitions,
+        CancellationToken cancellationToken)
+    {
+        if (!IsCurrentProcessElevated())
+        {
+            return new NvidiaActionResult(
+                false,
+                "Administrator access is required to change NVIDIA registry values.");
+        }
+
+        List<NvidiaTweakDefinition> definitions = selectedDefinitions.ToList();
+        if (definitions.Count == 0)
+        {
+            return new NvidiaActionResult(false, "No NVIDIA tweaks were selected.");
+        }
+
+        ResolvedDriverContext context = await ResolveDriverContextAsync(preferredGpu, cancellationToken);
+        if (!context.Success)
+        {
+            return new NvidiaActionResult(false, context.Message);
+        }
+
+        try
+        {
+            return await Task.Run(() =>
+            {
+                using RegistryContext registryContext = new();
+                int changed = 0;
+                int skipped = 0;
+                DateTimeOffset now = DateTimeOffset.UtcNow;
+                foreach (NvidiaTweakDefinition definition in definitions)
+                {
+                    if (ReadSnapshot(registryContext, context.ClassPath, definition, GetSystemBootUtc()).State ==
+                        NvidiaTweakValueState.Applied)
                     {
                         skipped++;
                         continue;
                     }
 
-                    foreach (var target in definition.Targets)
+                    foreach (NvidiaRegistryTarget target in definition.Targets)
                     {
-                        var path = ResolvePath(target.Path, classPath);
-                        using var key = context.GetBaseKey(target.Hive).CreateSubKey(path, writable: true)
-                            ?? throw new InvalidOperationException(
-                                $"Windows could not open {GetHiveLabel(target.Hive)}\\{path}.");
+                        string resolvedPath = ResolvePath(target.Path, context.ClassPath);
+                        string targetKey = CreateTargetKey(target.Hive, resolvedPath, target.ValueName);
+                        CaptureOriginalValueIfNeeded(registryContext, target, resolvedPath, targetKey);
+                        using RegistryKey key = registryContext.GetBaseKey(target.Hive).CreateSubKey(resolvedPath, writable: true)
+                            ?? throw new InvalidOperationException($"Windows could not open {GetHiveLabel(target.Hive)}\\{resolvedPath}.");
                         key.SetValue(target.ValueName, target.ExpectedValue, target.Kind);
                     }
 
-                    if (ReadSnapshot(context, classPath, definition).State != NvidiaTweakValueState.Applied)
-                        throw new InvalidOperationException($"{definition.Name} could not be verified after writing.");
+                    if (ReadSnapshot(registryContext, context.ClassPath, definition, GetSystemBootUtc()).State !=
+                        NvidiaTweakValueState.Applied)
+                    {
+                        throw new InvalidOperationException($"{definition.Id} could not be verified after writing.");
+                    }
 
+                    _backupStore.SetLastAppliedUtc(definition.Id, now);
                     changed++;
                 }
 
                 if (changed == 0)
-                    return (true, "The selected NVIDIA registry values are already applied.");
-
-                var skippedText = skipped > 0 ? $" {skipped} already-correct value(s) were skipped." : string.Empty;
-                return (true, $"Applied {changed} NVIDIA registry value(s).{skippedText} Restart Windows to load them.");
-            }
-            catch (Exception ex)
-            {
-                return (false, ex.Message);
-            }
-        });
-
-    private static (bool Success, string Message) Remove(GpuDeviceInfo device, string id)
-    {
-        try
-        {
-            var definition = Definitions.FirstOrDefault(item => item.Id == id);
-            if (definition is null)
-                return (false, "The selected NVIDIA registry value was not found.");
-
-            using var context = new RegistryContext();
-            var classPath = FindNvidiaDriverClassPath(context.GetBaseKey(RegistryHive.LocalMachine), device);
-            if (classPath is null)
-                return (false, "No installed NVIDIA display-driver registry key was found.");
-
-            var current = ReadSnapshot(context, classPath, definition);
-            if (current.State == NvidiaTweakValueState.NotSet)
-                return (true, $"{definition.Name} is already reverted.");
-            foreach (var target in definition.Targets)
-            {
-                var path = ResolvePath(target.Path, classPath);
-                using var key = context.GetBaseKey(target.Hive).OpenSubKey(path, writable: true);
-                key?.DeleteValue(target.ValueName, throwOnMissingValue: false);
-            }
-
-            if (ReadSnapshot(context, classPath, definition).State != NvidiaTweakValueState.NotSet)
-                return (false, $"{definition.Name} could not be verified after removal.");
-
-            return (true, $"Reverted {definition.Name}. Restart Windows to load the change.");
-        }
-        catch (Exception ex)
-        {
-            return (false, ex.Message);
-        }
-    }
-
-    private static (bool Success, string Message) RemoveGroup(
-        GpuDeviceInfo device,
-        NvidiaTweakGroup group)
-    {
-        try
-        {
-            var definitions = GetDefinitions(group);
-            if (definitions.Count == 0)
-                return (false, "No NVIDIA registry values were found in this group.");
-
-            using var context = new RegistryContext();
-            var classPath = FindNvidiaDriverClassPath(context.GetBaseKey(RegistryHive.LocalMachine), device);
-            if (classPath is null)
-                return (false, "No installed NVIDIA display-driver registry key was found.");
-
-            var removed = 0;
-            foreach (var definition in definitions)
-            {
-                if (ReadSnapshot(context, classPath, definition).State == NvidiaTweakValueState.NotSet)
-                    continue;
-
-                foreach (var target in definition.Targets)
                 {
-                    var path = ResolvePath(target.Path, classPath);
-                    using var key = context.GetBaseKey(target.Hive).OpenSubKey(path, writable: true);
-                    key?.DeleteValue(target.ValueName, throwOnMissingValue: false);
+                    return new NvidiaActionResult(true, "The selected NVIDIA tweaks are already applied.");
                 }
 
-                if (ReadSnapshot(context, classPath, definition).State != NvidiaTweakValueState.NotSet)
-                    return (false, $"{definition.Name} could not be verified after removal.");
-
-                removed++;
-            }
-
-            return removed == 0
-                ? (true, "This NVIDIA registry group is already reverted.")
-                : (true, $"Reverted {removed} NVIDIA registry setting(s). Restart Windows to load them.");
+                string skippedText = skipped > 0 ? $" {skipped} already-correct tweak(s) were skipped." : string.Empty;
+                return new NvidiaActionResult(
+                    true,
+                    $"Applied {changed} NVIDIA tweak(s).{skippedText} Restart Windows to make them active.");
+            }, cancellationToken);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            return (false, ex.Message);
+            return new NvidiaActionResult(false, exception.Message);
         }
     }
 
-    private static (bool Success, string Message) SetItemValue(
-        GpuDeviceInfo device,
-        string id,
-        string valueText)
+    private async Task<NvidiaActionResult> RevertAsync(
+        GpuDeviceInfo? preferredGpu,
+        IEnumerable<NvidiaTweakDefinition> selectedDefinitions,
+        CancellationToken cancellationToken)
+    {
+        if (!IsCurrentProcessElevated())
+        {
+            return new NvidiaActionResult(
+                false,
+                "Administrator access is required to change NVIDIA registry values.");
+        }
+
+        List<NvidiaTweakDefinition> definitions = selectedDefinitions.ToList();
+        if (definitions.Count == 0)
+        {
+            return new NvidiaActionResult(false, "No NVIDIA tweaks were selected.");
+        }
+
+        ResolvedDriverContext context = await ResolveDriverContextAsync(preferredGpu, cancellationToken);
+        if (!context.Success)
+        {
+            return new NvidiaActionResult(false, context.Message);
+        }
+
+        try
+        {
+            return await Task.Run(() =>
+            {
+                using RegistryContext registryContext = new();
+                int reverted = 0;
+                int fallbackDeletes = 0;
+                foreach (NvidiaTweakDefinition definition in definitions)
+                {
+                    foreach (NvidiaRegistryTarget target in definition.Targets)
+                    {
+                        string resolvedPath = ResolvePath(target.Path, context.ClassPath);
+                        string targetKey = CreateTargetKey(target.Hive, resolvedPath, target.ValueName);
+                        if (_backupStore.TryGetOriginal(targetKey, out NvidiaTweaksBackupStore.BackupRegistryValue backup))
+                        {
+                            RestoreValueFromBackup(registryContext, target, resolvedPath, backup);
+                        }
+                        else
+                        {
+                            using RegistryKey? key = registryContext.GetBaseKey(target.Hive).OpenSubKey(resolvedPath, writable: true);
+                            key?.DeleteValue(target.ValueName, throwOnMissingValue: false);
+                            fallbackDeletes++;
+                        }
+                    }
+
+                    _backupStore.ClearLastAppliedUtc(definition.Id);
+                    reverted++;
+                }
+
+                string fallbackText = fallbackDeletes > 0
+                    ? $" {fallbackDeletes} value(s) had no original backup and were deleted as fallback."
+                    : string.Empty;
+                return reverted == 0
+                    ? new NvidiaActionResult(true, "The selected NVIDIA tweaks are already reverted.")
+                    : new NvidiaActionResult(true, $"Reverted {reverted} NVIDIA tweak(s).{fallbackText}");
+            }, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            return new NvidiaActionResult(false, exception.Message);
+        }
+    }
+
+    private static void RestoreValueFromBackup(
+        RegistryContext context,
+        NvidiaRegistryTarget target,
+        string resolvedPath,
+        NvidiaTweaksBackupStore.BackupRegistryValue backup)
+    {
+        if (!backup.Existed || backup.Kind is null)
+        {
+            using RegistryKey? key = context.GetBaseKey(target.Hive).OpenSubKey(resolvedPath, writable: true);
+            key?.DeleteValue(target.ValueName, throwOnMissingValue: false);
+            return;
+        }
+
+        object? restoredValue = NvidiaTweaksBackupStore.DeserializeRegistryValue(backup);
+        object safeValue = restoredValue ?? string.Empty;
+        using RegistryKey writableKey = context.GetBaseKey(target.Hive).CreateSubKey(resolvedPath, writable: true)
+            ?? throw new InvalidOperationException($"Windows could not open {GetHiveLabel(target.Hive)}\\{resolvedPath}.");
+        writableKey.SetValue(target.ValueName, safeValue, backup.Kind.Value);
+    }
+
+    private void CaptureOriginalValueIfNeeded(
+        RegistryContext context,
+        NvidiaRegistryTarget target,
+        string resolvedPath,
+        string targetKey)
+    {
+        if (_backupStore.TryGetOriginal(targetKey, out _))
+        {
+            return;
+        }
+
+        using RegistryKey? key = context.GetBaseKey(target.Hive).OpenSubKey(resolvedPath, writable: false);
+        object? value = key?.GetValue(target.ValueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+        RegistryValueKind? kind = value is null ? null : key?.GetValueKind(target.ValueName);
+        _backupStore.RememberOriginalIfMissing(
+            targetKey,
+            value is not null,
+            kind,
+            value);
+    }
+
+    private static string CreateTargetKey(RegistryHive hive, string path, string valueName) =>
+        $"{GetHiveLabel(hive)}\\{path}\\{valueName}";
+
+    private static DateTimeOffset GetSystemBootUtc()
+    {
+        long uptimeMs = Math.Max(0, Environment.TickCount64);
+        return DateTimeOffset.UtcNow - TimeSpan.FromMilliseconds(uptimeMs);
+    }
+
+    private static bool IsCurrentProcessElevated()
     {
         try
         {
-            var definition = Definitions.FirstOrDefault(item => item.Id == id);
-            if (definition is null)
-                return (false, "The selected NVIDIA registry value was not found.");
-            if (!definition.SupportsCustomValue)
-                return (false, $"{definition.Name} does not support a custom text value.");
-
-            var normalizedValue = valueText.Trim();
-            if (normalizedValue.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-                normalizedValue = normalizedValue[2..];
-            if (!uint.TryParse(
-                    normalizedValue,
-                    NumberStyles.AllowHexSpecifier,
-                    CultureInfo.InvariantCulture,
-                    out var value))
-            {
-                return (false, "Enter a hexadecimal DWORD value, for example 2A.");
-            }
-
-            using var context = new RegistryContext();
-            var classPath = FindNvidiaDriverClassPath(context.GetBaseKey(RegistryHive.LocalMachine), device);
-            if (classPath is null)
-                return (false, "No installed NVIDIA display-driver registry key was found.");
-
-            foreach (var target in definition.Targets)
-            {
-                var path = ResolvePath(target.Path, classPath);
-                using var key = context.GetBaseKey(target.Hive).CreateSubKey(path, writable: true)
-                    ?? throw new InvalidOperationException(
-                        $"Windows could not open {GetHiveLabel(target.Hive)}\\{path}.");
-                key.SetValue(target.ValueName, unchecked((int)value), RegistryValueKind.DWord);
-            }
-
-            foreach (var target in definition.Targets)
-            {
-                var path = ResolvePath(target.Path, classPath);
-                using var key = context.GetBaseKey(target.Hive).OpenSubKey(path, writable: false);
-                var actual = key?.GetValue(
-                    target.ValueName,
-                    null,
-                    RegistryValueOptions.DoNotExpandEnvironmentNames);
-                if (actual is null || ConvertRegistryDword(actual) != value)
-                    return (false, $"{definition.Name} could not be verified after writing.");
-            }
-
-            return (true, $"Set {definition.Name} to {value:X}. Restart Windows to load the change.");
+            using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
         }
-        catch (Exception ex)
+        catch
         {
-            return (false, ex.Message);
+            return false;
         }
     }
 
-    private static NvidiaTweakValueSnapshot ReadSnapshot(
+    private async Task<ResolvedDriverContext> ResolveDriverContextAsync(
+        GpuDeviceInfo? preferredGpu,
+        CancellationToken cancellationToken)
+    {
+        IReadOnlyList<GpuDeviceInfo> devices = await _gpuDriverCatalogService.GetGpuDevicesAsync();
+        List<GpuDeviceInfo> nvidiaDevices = devices
+            .Where(device => device.IsNvidia)
+            .ToList();
+        if (nvidiaDevices.Count == 0)
+        {
+            return new ResolvedDriverContext(
+                false,
+                "No NVIDIA GPU was detected on this machine.",
+                false,
+                string.Empty,
+                string.Empty,
+                false);
+        }
+
+        return await Task.Run(() =>
+        {
+            using RegistryContext registryContext = new();
+            using RegistryKey? root = registryContext
+                .GetBaseKey(RegistryHive.LocalMachine)
+                .OpenSubKey(DisplayClassRoot, writable: false);
+            if (root is null)
+            {
+                return new ResolvedDriverContext(
+                    false,
+                    "Windows does not expose the NVIDIA display-driver class registry key.",
+                    true,
+                    string.Empty,
+                    nvidiaDevices[0].DisplayName,
+                    false);
+            }
+
+            List<DriverClassEntry> classEntries = [];
+            foreach (string subKeyName in root.GetSubKeyNames()
+                         .Where(static name => name.Length == 4 && name.All(char.IsDigit))
+                         .OrderBy(static name => name, StringComparer.Ordinal))
+            {
+                using RegistryKey? key = root.OpenSubKey(subKeyName, writable: false);
+                string provider = key?.GetValue("ProviderName")?.ToString() ?? string.Empty;
+                string description = key?.GetValue("DriverDesc")?.ToString() ?? string.Empty;
+                if (!provider.StartsWith("NVIDIA", StringComparison.OrdinalIgnoreCase) &&
+                    !description.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase) &&
+                    !description.Contains("GeForce", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                classEntries.Add(new DriverClassEntry(
+                    $@"{DisplayClassRoot}\{subKeyName}",
+                    key?.GetValue("InfPath")?.ToString() ?? string.Empty,
+                    description));
+            }
+
+            if (classEntries.Count == 0)
+            {
+                return new ResolvedDriverContext(
+                    false,
+                    "An NVIDIA GPU was detected, but no NVIDIA display-driver class registry key was found.",
+                    true,
+                    string.Empty,
+                    nvidiaDevices[0].DisplayName,
+                    false);
+            }
+
+            GpuDeviceInfo? requested = preferredGpu?.IsNvidia == true
+                ? preferredGpu
+                : nvidiaDevices.FirstOrDefault();
+            DriverClassEntry? matched = null;
+            bool matchedByInf = false;
+            if (requested is not null && !string.IsNullOrWhiteSpace(requested.DriverInfName))
+            {
+                matched = classEntries.FirstOrDefault(entry =>
+                    entry.InfPath.Equals(requested.DriverInfName, StringComparison.OrdinalIgnoreCase));
+                matchedByInf = matched is not null;
+            }
+
+            matched ??= classEntries[0];
+            GpuDeviceInfo chosenDevice = requested ?? nvidiaDevices[0];
+            return new ResolvedDriverContext(
+                true,
+                string.Empty,
+                true,
+                matched.Path,
+                chosenDevice.DisplayName,
+                matchedByInf);
+        }, cancellationToken);
+    }
+
+    private NvidiaTweakValueSnapshot ReadSnapshot(
         RegistryContext context,
         string classPath,
-        NvidiaTweakDefinition definition)
+        NvidiaTweakDefinition definition,
+        DateTimeOffset bootUtc)
     {
-        var existingCount = 0;
-        var matchingCount = 0;
-        var currentValues = new List<string>();
+        int existingCount = 0;
+        int matchingCount = 0;
+        List<string> currentValues = [];
 
-        foreach (var target in definition.Targets)
+        foreach (NvidiaRegistryTarget target in definition.Targets)
         {
-            var path = ResolvePath(target.Path, classPath);
-            using var key = context.GetBaseKey(target.Hive).OpenSubKey(path, writable: false);
-            var actual = key?.GetValue(target.ValueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+            string path = ResolvePath(target.Path, classPath);
+            using RegistryKey? key = context.GetBaseKey(target.Hive).OpenSubKey(path, writable: false);
+            object? actual = key?.GetValue(target.ValueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
             if (actual is null)
             {
                 currentValues.Add("Not set");
@@ -417,27 +886,40 @@ internal static class NvidiaPerformanceTweaksService
             existingCount++;
             currentValues.Add(FormatRegistryValue(actual, target.Kind));
             if (ValuesMatch(actual, target.ExpectedValue, target.Kind))
+            {
                 matchingCount++;
+            }
         }
 
-        var state = NvidiaTweakValueState.Different;
+        NvidiaTweakValueState state = NvidiaTweakValueState.Different;
         if (matchingCount == definition.Targets.Count)
+        {
             state = NvidiaTweakValueState.Applied;
+        }
         else if (existingCount == 0)
+        {
             state = NvidiaTweakValueState.NotSet;
+        }
         else if (existingCount < definition.Targets.Count || matchingCount > 0)
+        {
             state = NvidiaTweakValueState.Partial;
+        }
 
-        var distinctValues = currentValues.Distinct(StringComparer.Ordinal).ToList();
-        var currentText = distinctValues.Count == 1
+        List<string> distinctValues = currentValues.Distinct(StringComparer.Ordinal).ToList();
+        string currentText = distinctValues.Count == 1
             ? distinctValues[0]
             : string.Join(" / ", distinctValues);
-        return new NvidiaTweakValueSnapshot(state, currentText);
+
+        DateTimeOffset? appliedUtc = _backupStore.GetLastAppliedUtc(definition.Id);
+        bool pendingRestart = state == NvidiaTweakValueState.Applied &&
+            appliedUtc.HasValue &&
+            appliedUtc.Value > bootUtc;
+        return new NvidiaTweakValueSnapshot(state, currentText, pendingRestart);
     }
 
     private static string FormatRegistryValue(object value, RegistryValueKind kind) => kind switch
     {
-        RegistryValueKind.DWord => $"{ConvertRegistryDword(value):X}",
+        RegistryValueKind.DWord => $"0x{ConvertRegistryDword(value):X8}",
         RegistryValueKind.Binary when value is byte[] bytes => $"{bytes.Length} bytes",
         _ => value.ToString() ?? string.Empty
     };
@@ -452,7 +934,9 @@ internal static class NvidiaPerformanceTweaksService
         }
 
         if (kind == RegistryValueKind.DWord)
+        {
             return ConvertRegistryDword(actual) == ConvertRegistryDword(expected);
+        }
 
         return Equals(actual, expected);
     }
@@ -465,41 +949,6 @@ internal static class NvidiaPerformanceTweaksService
         _ => Convert.ToUInt32(value, CultureInfo.InvariantCulture)
     };
 
-    private static string? FindNvidiaDriverClassPath(RegistryKey baseKey, GpuDeviceInfo device)
-    {
-        using var root = baseKey.OpenSubKey(DisplayClassRoot, writable: false);
-        if (root is null)
-            return null;
-
-        string? firstNvidiaPath = null;
-        foreach (var subKeyName in root.GetSubKeyNames()
-                     .Where(static name => name.Length == 4 && name.All(char.IsDigit))
-                     .OrderBy(static name => name, StringComparer.Ordinal))
-        {
-            using var key = root.OpenSubKey(subKeyName, writable: false);
-            var provider = key?.GetValue("ProviderName")?.ToString() ?? string.Empty;
-            var description = key?.GetValue("DriverDesc")?.ToString() ?? string.Empty;
-            if (!provider.StartsWith("NVIDIA", StringComparison.OrdinalIgnoreCase) &&
-                !description.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase) &&
-                !description.Contains("GeForce", StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            var path = $@"{DisplayClassRoot}\{subKeyName}";
-            firstNvidiaPath ??= path;
-
-            var infPath = key?.GetValue("InfPath")?.ToString() ?? string.Empty;
-            if (!string.IsNullOrWhiteSpace(device.DriverInfName) &&
-                infPath.Equals(device.DriverInfName, StringComparison.OrdinalIgnoreCase))
-            {
-                return path;
-            }
-        }
-
-        return firstNvidiaPath;
-    }
-
     private static string ResolvePath(string path, string classPath) =>
         path == DriverClassToken ? classPath : path;
 
@@ -510,6 +959,29 @@ internal static class NvidiaPerformanceTweaksService
         RegistryHive.LocalMachine => "HKLM",
         _ => hive.ToString()
     };
+
+    private static string ToRegPath(RegistryHive hive, string path) => hive switch
+    {
+        RegistryHive.LocalMachine => $"HKEY_LOCAL_MACHINE\\{path}",
+        RegistryHive.CurrentUser => $"HKEY_CURRENT_USER\\{path}",
+        RegistryHive.ClassesRoot => $"HKEY_CLASSES_ROOT\\{path}",
+        _ => $"{hive}\\{path}"
+    };
+
+    private static string EscapeRegString(string text) =>
+        text.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("\"", "\\\"", StringComparison.Ordinal);
+
+    private static string FormatRegValue(object value, RegistryValueKind kind)
+    {
+        return kind switch
+        {
+            RegistryValueKind.DWord => $"dword:{ConvertRegistryDword(value):x8}",
+            RegistryValueKind.Binary when value is byte[] bytes
+                => "hex:" + string.Join(",", bytes.Select(static b => b.ToString("x2", CultureInfo.InvariantCulture))),
+            _ => $"\"{EscapeRegString(value.ToString() ?? string.Empty)}\""
+        };
+    }
 
     private static NvidiaRegistryTarget ClassTarget(string name, int value) =>
         new(
@@ -531,14 +1003,6 @@ internal static class NvidiaPerformanceTweaksService
         int value) =>
         new(hive, path, location, name, RegistryValueKind.DWord, value);
 
-    private static NvidiaRegistryTarget StringTarget(
-        RegistryHive hive,
-        string path,
-        string location,
-        string name,
-        string value) =>
-        new(hive, path, location, name, RegistryValueKind.String, value);
-
     private static NvidiaRegistryTarget BinaryTarget(
         string path,
         string location,
@@ -554,145 +1018,72 @@ internal static class NvidiaPerformanceTweaksService
 
     private static NvidiaTweakDefinition ClassDword(
         NvidiaTweakGroup group,
-        string name,
+        string id,
         int value) =>
-        new(name, name, group, [ClassTarget(name, value)]);
+        new(id, group, [ClassTarget(id, value)]);
+
+    private static NvidiaTweakMetadata BuildMetadata(NvidiaTweakDefinition definition)
+    {
+        return definition.Id switch
+        {
+            "RMHotPlugSupportDisable" or "RmDisableHdcp22" or "RMHdcpKeyglobZero" =>
+                new(definition.Id, "Can affect HDMI/DP hot-plug or protected content playback.", NvidiaTweakRiskLevel.Caution),
+            "RMEnableL1ECC" or "RMEnableSMECC" or "RMEnableSHMECC" or "RMAssertOnEccErrors" or "RM1441072" =>
+                new(definition.Id, "ECC control on consumer GPUs can reduce performance or trigger driver issues.", NvidiaTweakRiskLevel.Advanced),
+            "RMElcg" or "RMBlcg" or "RMElpg" or "RMSlcg" or "RMFspg" or "RMGC6Feature" or "RMDidleFeatureGC5" =>
+                new(definition.Id, "Power-gating masks may increase idle power or impact stability on some drivers.", NvidiaTweakRiskLevel.Advanced),
+            "RmDisableRegistryCaching" or "LogDisableMasks" =>
+                new(definition.Id, "Driver diagnostics and caching behavior tweak; use only when troubleshooting.", NvidiaTweakRiskLevel.Caution),
+            _ => new(definition.Id, "NVIDIA registry performance tweak.", NvidiaTweakRiskLevel.Safe)
+        };
+    }
 
     private static IReadOnlyList<NvidiaTweakDefinition> CreateDefinitions()
     {
-        var definitions = new List<NvidiaTweakDefinition>
-        {
-            new(
-                "ShowDlssIndicator",
-                "ShowDlssIndicator",
-                NvidiaTweakGroup.NvidiaSettings,
-                [
-                    DwordTarget(
-                        @"SOFTWARE\NVIDIA Corporation\Global\NGXCore",
-                        "NGXCore",
-                        "ShowDlssIndicator",
-                        0)
-                ]),
-            new(
-                "NvidiaContainerContextMenu",
-                "NVIDIA Container context menu",
-                NvidiaTweakGroup.NvidiaSettings,
-                [
-                    StringTarget(
-                        RegistryHive.ClassesRoot,
-                        @"DesktopBackground\Shell\NvidiaContainer",
-                        "Desktop context menu",
-                        "Icon",
-                        "nvcpl.dll"),
-                    StringTarget(
-                        RegistryHive.ClassesRoot,
-                        @"DesktopBackground\Shell\NvidiaContainer",
-                        "Desktop context menu",
-                        "MUIVerb",
-                        "Nvidia Container"),
-                    StringTarget(
-                        RegistryHive.ClassesRoot,
-                        @"DesktopBackground\Shell\NvidiaContainer",
-                        "Desktop context menu",
-                        "Position",
-                        "Bottom"),
-                    StringTarget(
-                        RegistryHive.ClassesRoot,
-                        @"DesktopBackground\Shell\NvidiaContainer",
-                        "Desktop context menu",
-                        "SubCommands",
-                        string.Empty),
-                    StringTarget(
-                        RegistryHive.ClassesRoot,
-                        @"DesktopBackground\Shell\NvidiaContainer\Shell\EnableNvContainer",
-                        "Desktop context menu",
-                        "MUIVerb",
-                        "Enable Container"),
-                    StringTarget(
-                        RegistryHive.ClassesRoot,
-                        @"DesktopBackground\Shell\NvidiaContainer\Shell\EnableNvContainer\command",
-                        "Desktop context menu",
-                        string.Empty,
-                        @"cmd.exe /c C:\Windows\Misc\NvContainerON.bat"),
-                    StringTarget(
-                        RegistryHive.ClassesRoot,
-                        @"DesktopBackground\Shell\NvidiaContainer\Shell\DisableNvContainer",
-                        "Desktop context menu",
-                        "MUIVerb",
-                        "Disable Container"),
-                    StringTarget(
-                        RegistryHive.ClassesRoot,
-                        @"DesktopBackground\Shell\NvidiaContainer\Shell\DisableNvContainer\command",
-                        "Desktop context menu",
-                        string.Empty,
-                        @"cmd.exe /c C:\Windows\Misc\NvContainerOFF.bat")
-                ]),
-            new(
-                "NotifyNewDisplayUpdates",
-                "NotifyNewDisplayUpdates",
-                NvidiaTweakGroup.NvidiaSettings,
-                [
-                    DwordTarget(
-                        RegistryHive.CurrentUser,
-                        @"SOFTWARE\NVIDIA Corporation\Global\GFExperience",
-                        "GFExperience",
-                        "NotifyNewDisplayUpdates",
-                        0)
-                ]),
-            new(
-                "NvDevToolsVisible",
-                "NvDevToolsVisible",
-                NvidiaTweakGroup.NvidiaSettings,
-                [DwordTarget(ServiceTweakPath, "Service NVTweak", "NvDevToolsVisible", 1)]),
-            new(
-                "StartOnLogin",
-                "StartOnLogin",
-                NvidiaTweakGroup.NvidiaSettings,
-                [
-                    DwordTarget(
-                        @"SOFTWARE\NVIDIA Corporation\NvTray",
-                        "NVIDIA NvTray",
-                        "StartOnLogin",
-                        0)
-                ]),
-            new(
-                "HideXGpuTrayIcon",
-                "HideXGpuTrayIcon",
-                NvidiaTweakGroup.NvidiaSettings,
-                [DwordTarget(ServiceTweakPath, "Service NVTweak", "HideXGpuTrayIcon", 1)]),
-            new(
-                "ShowTrayIcon",
-                "ShowTrayIcon",
-                NvidiaTweakGroup.NvidiaSettings,
-                [
-                    DwordTarget(
-                        @"SOFTWARE\NVIDIA Corporation\Global\CoProcManager",
-                        "CoProcManager",
-                        "ShowTrayIcon",
-                        0)
-                ]),
-            new(
-                "DisplayPowerSaving",
-                "DisplayPowerSaving",
-                NvidiaTweakGroup.NvidiaSettings,
-                [
-                    DwordTarget(ServiceTweakPath, "Service NVTweak", "DisplayPowerSaving", 0),
-                    DwordTarget(GlobalTweakPath, "Global NVTweak", "DisplayPowerSaving", 0)
-                ]),
+        // Intentionally left out:
+        // - NvidiaContainerContextMenu: depended on C:\Windows\Misc\NvContainerON/OFF.bat.
+        //   Keeping this UI focused on verifiable registry tweaks only.
+        return
+        [
+            new("ShowDlssIndicator", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(@"SOFTWARE\NVIDIA Corporation\Global\NGXCore", "NGXCore", "ShowDlssIndicator", 0)
+            ]),
+            new("NotifyNewDisplayUpdates", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(RegistryHive.CurrentUser, @"SOFTWARE\NVIDIA Corporation\Global\GFExperience", "GFExperience", "NotifyNewDisplayUpdates", 0)
+            ]),
+            new("NvDevToolsVisible", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(ServiceTweakPath, "Service NVTweak", "NvDevToolsVisible", 1)
+            ]),
+            new("StartOnLogin", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(@"SOFTWARE\NVIDIA Corporation\NvTray", "NVIDIA NvTray", "StartOnLogin", 0)
+            ]),
+            new("HideXGpuTrayIcon", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(ServiceTweakPath, "Service NVTweak", "HideXGpuTrayIcon", 1)
+            ]),
+            new("ShowTrayIcon", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(@"SOFTWARE\NVIDIA Corporation\Global\CoProcManager", "CoProcManager", "ShowTrayIcon", 0)
+            ]),
+            new("DisplayPowerSaving", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(ServiceTweakPath, "Service NVTweak", "DisplayPowerSaving", 0),
+                DwordTarget(GlobalTweakPath, "Global NVTweak", "DisplayPowerSaving", 0)
+            ]),
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "EnableRuntimePowerManagement", 0x00000000),
-            new(
-                "RmProfilingAdminOnly",
-                "RmProfilingAdminOnly",
-                NvidiaTweakGroup.NvidiaSettings,
-                [
-                    ClassTarget("RmProfilingAdminOnly", 0),
-                    DwordTarget(ServiceTweakPath, "Service NVTweak", "RmProfilingAdminOnly", 0)
-                ]),
-            new(
-                "EnableHDAudioD3Cold",
-                "EnableHDAudioD3Cold",
-                NvidiaTweakGroup.NvidiaSettings,
-                [DwordTarget(DriverServicePath, "nvlddmkm", "EnableHDAudioD3Cold", 0)]),
+            new("RmProfilingAdminOnly", NvidiaTweakGroup.NvidiaSettings,
+            [
+                ClassTarget("RmProfilingAdminOnly", 0),
+                DwordTarget(ServiceTweakPath, "Service NVTweak", "RmProfilingAdminOnly", 0)
+            ]),
+            new("EnableHDAudioD3Cold", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(DriverServicePath, "nvlddmkm", "EnableHDAudioD3Cold", 0)
+            ]),
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "RmDisableHwFaultBuffer", 0x00000001),
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "RMDisablePerIntrDPCQueueing", 0x00000001),
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "RMElcg", 0x55555555),
@@ -712,37 +1103,30 @@ internal static class NvidiaPerformanceTweaksService
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "RMCtxswLog", 0x00000000),
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "RMNvLog", 0x00000000),
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "RMSuppressGPIOIntrErrLog", 0x00000000),
-            new(
-                "LogDisableMasks",
-                "LogDisableMasks",
-                NvidiaTweakGroup.NvidiaSettings,
-                [
-                    BinaryTarget(
-                        DriverParametersPath,
-                        "nvlddmkm Parameters",
-                        "LogDisableMasks",
-                        "00ffff0f01ffff0f02ffff0f03ffff0f04ffff0f05ffff0f06ffff0f07ffff0f08ffff0f09ffff0f0affff0f0bffff0f0cffff0f0dffff0f0effff0f0fffff0f10ffff0f11ffff0f12ffff0f13ffff0f14ffff0f15ffff0f16ffff0f00ffff1f01ffff1f02ffff1f03ffff1f04ffff1f05ffff1f06ffff1f07ffff1f08ffff1f09ffff1f0affff1f0bffff1f0cffff1f0dffff1f0effff1f0fffff1f00ffff2f01ffff2f02ffff2f03ffff2f04ffff2f05ffff2f06ffff2f07ffff2f08ffff2f09ffff2f0affff2f0bffff2f0cffff2f0dffff2f0effff2f0fffff2f00ffff3f01ffff3f02ffff3f03ffff3f04ffff3f05ffff3f06ffff3f07ffff3f")
-                ]),
-            new(
-                "LogWarningEntries",
-                "LogWarningEntries",
-                NvidiaTweakGroup.NvidiaSettings,
-                [DwordTarget(DriverParametersPath, "nvlddmkm Parameters", "LogWarningEntries", 0)]),
-            new(
-                "LogPagingEntries",
-                "LogPagingEntries",
-                NvidiaTweakGroup.NvidiaSettings,
-                [DwordTarget(DriverParametersPath, "nvlddmkm Parameters", "LogPagingEntries", 0)]),
-            new(
-                "LogEventEntries",
-                "LogEventEntries",
-                NvidiaTweakGroup.NvidiaSettings,
-                [DwordTarget(DriverParametersPath, "nvlddmkm Parameters", "LogEventEntries", 0)]),
-            new(
-                "LogErrorEntries",
-                "LogErrorEntries",
-                NvidiaTweakGroup.NvidiaSettings,
-                [DwordTarget(DriverParametersPath, "nvlddmkm Parameters", "LogErrorEntries", 0)]),
+            new("LogDisableMasks", NvidiaTweakGroup.NvidiaSettings,
+            [
+                BinaryTarget(
+                    DriverParametersPath,
+                    "nvlddmkm Parameters",
+                    "LogDisableMasks",
+                    "00ffff0f01ffff0f02ffff0f03ffff0f04ffff0f05ffff0f06ffff0f07ffff0f08ffff0f09ffff0f0affff0f0bffff0f0cffff0f0dffff0f0effff0f0fffff0f10ffff0f11ffff0f12ffff0f13ffff0f14ffff0f15ffff0f16ffff0f00ffff1f01ffff1f02ffff1f03ffff1f04ffff1f05ffff1f06ffff1f07ffff1f08ffff1f09ffff1f0affff1f0bffff1f0cffff1f0dffff1f0effff1f0fffff1f00ffff2f01ffff2f02ffff2f03ffff2f04ffff2f05ffff2f06ffff2f07ffff2f08ffff2f09ffff2f0affff2f0bffff2f0cffff2f0dffff2f0effff2f0fffff2f00ffff3f01ffff3f02ffff3f03ffff3f04ffff3f05ffff3f06ffff3f07ffff3f")
+            ]),
+            new("LogWarningEntries", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(DriverParametersPath, "nvlddmkm Parameters", "LogWarningEntries", 0)
+            ]),
+            new("LogPagingEntries", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(DriverParametersPath, "nvlddmkm Parameters", "LogPagingEntries", 0)
+            ]),
+            new("LogEventEntries", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(DriverParametersPath, "nvlddmkm Parameters", "LogEventEntries", 0)
+            ]),
+            new("LogErrorEntries", NvidiaTweakGroup.NvidiaSettings,
+            [
+                DwordTarget(DriverParametersPath, "nvlddmkm Parameters", "LogErrorEntries", 0)
+            ]),
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "RMUsbcDebugMode", 0x00000000),
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "RMDisableFeatureDisablement", 0x00000000),
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "RmBreakonRC", 0x00000000),
@@ -754,70 +1138,35 @@ internal static class NvidiaPerformanceTweaksService
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "RMDisableIntrIllegalCompstatAccess", 0x00000001),
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "SetPanelRefreshRate", 0x00000000),
             ClassDword(NvidiaTweakGroup.NvidiaSettings, "RMDisableNoncontigAlloc", 0x00000001),
-
             ClassDword(NvidiaTweakGroup.RmPowerFeature, "RmPowerFeature", 0x55455555),
             ClassDword(NvidiaTweakGroup.RmPowerFeature, "RmPowerFeature2", 0x05555555),
-
-            new(
-                "SendTelemetryData",
-                "SendTelemetryData",
-                NvidiaTweakGroup.Telemetry,
-                [DwordTarget(DriverStartupPath, "nvlddmkm Startup", "SendTelemetryData", 0)]),
-            new(
-                "EnableRID44231",
-                "EnableRID44231",
-                NvidiaTweakGroup.Telemetry,
-                [
-                    DwordTarget(
-                        @"SOFTWARE\NVIDIA Corporation\Global\FTS",
-                        "NVIDIA FTS",
-                        "EnableRID44231",
-                        0)
-                ]),
-            new(
-                "EnableRID64640",
-                "EnableRID64640",
-                NvidiaTweakGroup.Telemetry,
-                [
-                    DwordTarget(
-                        @"SOFTWARE\NVIDIA Corporation\Global\FTS",
-                        "NVIDIA FTS",
-                        "EnableRID64640",
-                        0)
-                ]),
-            new(
-                "EnableRID66610",
-                "EnableRID66610",
-                NvidiaTweakGroup.Telemetry,
-                [
-                    DwordTarget(
-                        @"SOFTWARE\NVIDIA Corporation\Global\FTS",
-                        "NVIDIA FTS",
-                        "EnableRID66610",
-                        0)
-                ]),
-            new(
-                "OptInOrOutPreference",
-                "OptInOrOutPreference",
-                NvidiaTweakGroup.Telemetry,
-                [
-                    DwordTarget(
-                        @"SOFTWARE\NVIDIA Corporation\NvControlPanel2\Client",
-                        "NVIDIA Control Panel",
-                        "OptInOrOutPreference",
-                        0)
-                ]),
-
+            new("SendTelemetryData", NvidiaTweakGroup.Telemetry,
+            [
+                DwordTarget(DriverStartupPath, "nvlddmkm Startup", "SendTelemetryData", 0)
+            ]),
+            new("EnableRID44231", NvidiaTweakGroup.Telemetry,
+            [
+                DwordTarget(@"SOFTWARE\NVIDIA Corporation\Global\FTS", "NVIDIA FTS", "EnableRID44231", 0)
+            ]),
+            new("EnableRID64640", NvidiaTweakGroup.Telemetry,
+            [
+                DwordTarget(@"SOFTWARE\NVIDIA Corporation\Global\FTS", "NVIDIA FTS", "EnableRID64640", 0)
+            ]),
+            new("EnableRID66610", NvidiaTweakGroup.Telemetry,
+            [
+                DwordTarget(@"SOFTWARE\NVIDIA Corporation\Global\FTS", "NVIDIA FTS", "EnableRID66610", 0)
+            ]),
+            new("OptInOrOutPreference", NvidiaTweakGroup.Telemetry,
+            [
+                DwordTarget(@"SOFTWARE\NVIDIA Corporation\NvControlPanel2\Client", "NVIDIA Control Panel", "OptInOrOutPreference", 0)
+            ]),
             ClassDword(NvidiaTweakGroup.Ecc, "RMEnableL1ECC", 0x00000000),
             ClassDword(NvidiaTweakGroup.Ecc, "RMEnableSMECC", 0x00000000),
             ClassDword(NvidiaTweakGroup.Ecc, "RMEnableSHMECC", 0x00000000),
             ClassDword(NvidiaTweakGroup.Ecc, "RMAssertOnEccErrors", 0x00000000),
             ClassDword(NvidiaTweakGroup.Ecc, "RM1441072", 0x00000000),
-
             ClassDword(NvidiaTweakGroup.Hdcp, "RMHdcpKeyglobZero", 0x00000001),
             ClassDword(NvidiaTweakGroup.Hdcp, "RmDisableHdcp22", 0x00000001)
-        };
-
-        return definitions;
+        ];
     }
 }

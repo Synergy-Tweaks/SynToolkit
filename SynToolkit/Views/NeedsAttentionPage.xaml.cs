@@ -209,8 +209,8 @@ public sealed partial class NeedsAttentionPage : Page
         {
             switch (item.Action)
             {
-                case NeedsAttentionAction.OpenDiskCleanup:
-                    (App.m_window as MainWindow)?.NavigateToPage(typeof(CleanerPage), "SynToolkit.Views.CleanerPage");
+                case NeedsAttentionAction.OpenDrivesCleaner:
+                    (App.m_window as MainWindow)?.NavigateToPage(typeof(DrivesCleanerPage), "SynToolkit.Views.DrivesCleanerPage");
                     break;
                 case NeedsAttentionAction.CreateRestorePoint:
                     (App.m_window as MainWindow)?.NavigateToPage(typeof(ConfigPage), "Troubleshooting");

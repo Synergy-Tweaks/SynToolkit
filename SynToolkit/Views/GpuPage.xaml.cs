@@ -107,7 +107,11 @@ namespace SynToolkit.Views
             AmdTweaksOverviewCard.Visibility = _viewModel.IsAmdVendorSelected ? Visibility.Visible : Visibility.Collapsed;
             AmdTweaksTabChevron.Visibility = _viewModel.IsAmdVendorSelected ? Visibility.Visible : Visibility.Collapsed;
             AmdTweaksTabButton.Visibility = _viewModel.IsAmdVendorSelected ? Visibility.Visible : Visibility.Collapsed;
-            if (!_viewModel.IsAmdVendorSelected && _currentTabIndex == 3)
+            NvidiaTweaksOverviewCard.Visibility = _viewModel.IsNvidiaVendorSelected ? Visibility.Visible : Visibility.Collapsed;
+            NvidiaTweaksTabChevron.Visibility = _viewModel.IsNvidiaVendorSelected ? Visibility.Visible : Visibility.Collapsed;
+            NvidiaTweaksTabButton.Visibility = _viewModel.IsNvidiaVendorSelected ? Visibility.Visible : Visibility.Collapsed;
+            if ((!_viewModel.IsAmdVendorSelected && _currentTabIndex == 3) ||
+                (!_viewModel.IsNvidiaVendorSelected && _currentTabIndex == 4))
             {
                 SwitchVendorTab(0);
             }
@@ -115,8 +119,12 @@ namespace SynToolkit.Views
 
         private void SwitchVendorTab(int tabIndex)
         {
-            // Shared indices: Overview=0, Debloat=1, Removal=2, AMD Tweaks=3
+            // Shared indices: Overview=0, Debloat=1, Removal=2, AMD Tweaks=3, NVIDIA Tweaks=4
             if (tabIndex == 3 && !_viewModel.IsAmdVendorSelected)
+            {
+                tabIndex = 0;
+            }
+            else if (tabIndex == 4 && !_viewModel.IsNvidiaVendorSelected)
             {
                 tabIndex = 0;
             }
@@ -126,8 +134,10 @@ namespace SynToolkit.Views
             DebloatPanel.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
             RemovalPanel.Visibility = tabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
             AmdTweaksPanel.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
+            NvidiaTweaksPanel.Visibility = tabIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
             AmdTweaksWarningBanner.IsOpen = tabIndex == 3;
             AmdTweaksUnavailableBanner.IsOpen = tabIndex == 3 && _viewModel.NoAmdGpuDetected;
+            NvidiaTweaksWarningBanner.IsOpen = tabIndex == 4;
 
             Style activeStyle = (Style)Resources["BreadcrumbTabActive"];
             Style inactiveStyle = (Style)Resources["BreadcrumbTabInactive"];
@@ -135,10 +145,23 @@ namespace SynToolkit.Views
             DebloatTabButton.Style = tabIndex == 1 ? activeStyle : inactiveStyle;
             RemovalTabButton.Style = tabIndex == 2 ? activeStyle : inactiveStyle;
             AmdTweaksTabButton.Style = tabIndex == 3 ? activeStyle : inactiveStyle;
+            NvidiaTweaksTabButton.Style = tabIndex == 4 ? activeStyle : inactiveStyle;
 
             if (tabIndex == 3)
             {
                 RefreshAmdTweakStates();
+            }
+            else if (tabIndex == 4)
+            {
+                EnsureNvidiaTweaksPageHosted();
+            }
+        }
+
+        private void EnsureNvidiaTweaksPageHosted()
+        {
+            if (NvidiaTweaksFrame.Content is null)
+            {
+                NvidiaTweaksFrame.Navigate(typeof(NvidiaPerformanceTweaksPage));
             }
         }
 
@@ -180,8 +203,10 @@ namespace SynToolkit.Views
         private void DebloatTab_Click(object sender, RoutedEventArgs e) => SwitchVendorTab(1);
         private void RemovalTab_Click(object sender, RoutedEventArgs e) => SwitchVendorTab(2);
         private void AmdTweaksTab_Click(object sender, RoutedEventArgs e) => SwitchVendorTab(3);
+        private void NvidiaTweaksTab_Click(object sender, RoutedEventArgs e) => SwitchVendorTab(4);
 
         private void AmdTweaksOverviewCard_Click(object sender, RoutedEventArgs e) => SwitchVendorTab(3);
+        private void NvidiaTweaksOverviewCard_Click(object sender, RoutedEventArgs e) => SwitchVendorTab(4);
 
         private void AmdTweakToggle_Loaded(object sender, RoutedEventArgs e)
         {

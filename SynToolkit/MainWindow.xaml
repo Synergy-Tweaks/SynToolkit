@@ -237,11 +237,6 @@
                         </Border>
                     </StackPanel>
                 </NavigationViewItem>
-                <NavigationViewItem x:Name="Startup" Tag="SynToolkit.Views.StartupPage">
-                    <NavigationViewItem.Icon>
-                        <ImageIcon Source="ms-appx:///assets/Icons/Startup.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
                 <NavigationViewItem x:Name="Installer" Tag="SynToolkit.Views.AppFetchPage">
                     <NavigationViewItem.Icon>
                         <ImageIcon Source="ms-appx:///assets/Icons/Installer.png" />
@@ -364,7 +359,7 @@
                         <ImageIcon Source="ms-appx:///assets/Icons/Cpu.png" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Name="DiskCleanup" Tag="SynToolkit.Views.CleanerPage">
+                <NavigationViewItem x:Name="DrivesCleaner" Tag="SynToolkit.Views.DrivesCleanerPage">
                     <NavigationViewItem.Icon>
                         <ImageIcon Source="ms-appx:///assets/Icons/DiskCleanup.png" />
                     </NavigationViewItem.Icon>

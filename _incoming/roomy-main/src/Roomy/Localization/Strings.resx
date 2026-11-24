@@ -1,0 +1,739 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>Roomy</value>
+  </data>
+  <data name="TitleMain" xml:space="preserve">
+    <value>Roomy</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Roomy settings</value>
+  </data>
+  <data name="BadgeAdmin" xml:space="preserve">
+    <value>ADMIN</value>
+  </data>
+  <data name="BadgeSafe" xml:space="preserve">
+    <value>SAFE</value>
+  </data>
+  <data name="BadgeYourCall" xml:space="preserve">
+    <value>YOUR CALL</value>
+  </data>
+  <data name="NeedsAdmin" xml:space="preserve">
+    <value>NEEDS ADMIN</value>
+  </data>
+  <data name="Nothing" xml:space="preserve">
+    <value>nothing</value>
+  </data>
+  <data name="NeedsAdminLower" xml:space="preserve">
+    <value>needs admin</value>
+  </data>
+  <data name="UninstallInSteam" xml:space="preserve">
+    <value>Uninstall in Steam</value>
+  </data>
+  <data name="ShowInExplorer" xml:space="preserve">
+    <value>Show in File Explorer</value>
+  </data>
+  <data name="OpenInExplorer" xml:space="preserve">
+    <value>Open in File Explorer</value>
+  </data>
+  <data name="RestartAsAdmin" xml:space="preserve">
+    <value>Restart as admin</value>
+  </data>
+  <data name="RemoveWithWindows" xml:space="preserve">
+    <value>Remove it with Windows</value>
+  </data>
+  <data name="StoragePath" xml:space="preserve">
+    <value>Settings → Storage → Temporary files → Previous Windows installation(s)</value>
+  </data>
+  <data name="TooltipSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TooltipUpFolder" xml:space="preserve">
+    <value>Up one folder</value>
+  </data>
+  <data name="HeroTitle" xml:space="preserve">
+    <value>Let's make some room.</value>
+  </data>
+  <data name="HeroSubtitle" xml:space="preserve">
+    <value>Roomy finds what's filling up your PC and tells you, in plain English, what's safe to delete.</value>
+  </data>
+  <data name="ScanMyPc" xml:space="preserve">
+    <value>Scan my PC</value>
+  </data>
+  <data name="ScanHint" xml:space="preserve">
+    <value>Takes a few seconds. Nothing gets deleted until you say so.</value>
+  </data>
+  <data name="Scanning" xml:space="preserve">
+    <value>Looking around your PC…</value>
+  </data>
+  <data name="FoundPrefix" xml:space="preserve">
+    <value>Found </value>
+  </data>
+  <data name="FoundSuffix" xml:space="preserve">
+    <value> you can safely clean so far</value>
+  </data>
+  <data name="WeFound" xml:space="preserve">
+    <value>We found</value>
+  </data>
+  <data name="SafeToClean" xml:space="preserve">
+    <value>safe to clean</value>
+  </data>
+  <data name="TabCleanup" xml:space="preserve">
+    <value>Cleanup</value>
+  </data>
+  <data name="TabSpaceMap" xml:space="preserve">
+    <value>Space map</value>
+  </data>
+  <data name="AdminLockTitle" xml:space="preserve">
+    <value>Windows keeps some of the biggest leftovers locked.</value>
+  </data>
+  <data name="AdminLockHint" xml:space="preserve">
+    <value>Restart Roomy as admin to check Windows Update files too.</value>
+  </data>
+  <data name="CleanAlreadyTitle" xml:space="preserve">
+    <value>Your PC is already squeaky clean ✨</value>
+  </data>
+  <data name="CleanAlreadyHint" xml:space="preserve">
+    <value>Check the Space map tab to see what's actually using your space.</value>
+  </data>
+  <data name="SpaceMapTitle" xml:space="preserve">
+    <value>See exactly what's using your space</value>
+  </data>
+  <data name="SpaceMapHint" xml:space="preserve">
+    <value>Pick a drive and hit Scan. Big drives can take a minute.</value>
+  </data>
+  <data name="MappingDrive" xml:space="preserve">
+    <value>Mapping your drive…</value>
+  </data>
+  <data name="BiggestFiles" xml:space="preserve">
+    <value>Biggest files</value>
+  </data>
+  <data name="BiggestFilesHint" xml:space="preserve">
+    <value>The single files taking up the most room.</value>
+  </data>
+  <data name="SelectedToClean" xml:space="preserve">
+    <value>Selected to clean</value>
+  </data>
+  <data name="ScanAgain" xml:space="preserve">
+    <value>Scan again</value>
+  </data>
+  <data name="CleaningUp" xml:space="preserve">
+    <value>Cleaning up…</value>
+  </data>
+  <data name="InUseSkipped" xml:space="preserve">
+    <value>Files that are in use get skipped, never forced.</value>
+  </data>
+  <data name="YouJustFreed" xml:space="preserve">
+    <value>You just freed</value>
+  </data>
+  <data name="Before" xml:space="preserve">
+    <value>Before</value>
+  </data>
+  <data name="After" xml:space="preserve">
+    <value>After</value>
+  </data>
+  <data name="ShareResult" xml:space="preserve">
+    <value>Share my result</value>
+  </data>
+  <data name="Done" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="SettingsSection" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsSectionHint" xml:space="preserve">
+    <value>Choose how Roomy cleans and when it checks in. Everything stays on this PC.</value>
+  </data>
+  <data name="KeepInTray" xml:space="preserve">
+    <value>Keep Roomy in the system tray</value>
+  </data>
+  <data name="KeepInTrayHint" xml:space="preserve">
+    <value>Closing the window keeps checks running. Use Quit Roomy in the tray to exit.</value>
+  </data>
+  <data name="StartWithWindows" xml:space="preserve">
+    <value>Start with Windows</value>
+  </data>
+  <data name="StartWithWindowsHint" xml:space="preserve">
+    <value>Start quietly in the tray when you sign in.</value>
+  </data>
+  <data name="WindowsStartupSettings" xml:space="preserve">
+    <value>Windows startup settings</value>
+  </data>
+  <data name="LowSpaceAlerts" xml:space="preserve">
+    <value>Tell me when my system drive is low</value>
+  </data>
+  <data name="LowSpaceAlertsHint" xml:space="preserve">
+    <value>A quick free-space check. At most one reminder per day.</value>
+  </data>
+  <data name="Below" xml:space="preserve">
+    <value>Below</value>
+  </data>
+  <data name="GbCheckEvery" xml:space="preserve">
+    <value>GB, check every</value>
+  </data>
+  <data name="Minutes30" xml:space="preserve">
+    <value>30 minutes</value>
+  </data>
+  <data name="Minutes60" xml:space="preserve">
+    <value>60 minutes</value>
+  </data>
+  <data name="WeeklyCacheCheck" xml:space="preserve">
+    <value>Check for cache buildup weekly</value>
+  </data>
+  <data name="WeeklyCacheHint" xml:space="preserve">
+    <value>Checks temp files and app caches while you're idle and plugged in. Reminds you when at least 1 GB could be cleared. You review and choose what to delete.</value>
+  </data>
+  <data name="PauseForDay" xml:space="preserve">
+    <value>Pause for a day</value>
+  </data>
+  <data name="Resume" xml:space="preserve">
+    <value>Resume</value>
+  </data>
+  <data name="WindowsNotificationSettings" xml:space="preserve">
+    <value>Windows notification settings</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>Save settings</value>
+  </data>
+  <data name="IJustFreed" xml:space="preserve">
+    <value>I just freed</value>
+  </data>
+  <data name="ShareTagline" xml:space="preserve">
+    <value>Free · No ads · No account</value>
+  </data>
+  <data name="CatRecycle" xml:space="preserve">
+    <value>Recycle Bin</value>
+  </data>
+  <data name="CatRecycleDesc" xml:space="preserve">
+    <value>Stuff you already deleted. It still takes up space until the bin is emptied.</value>
+  </data>
+  <data name="CatTemp" xml:space="preserve">
+    <value>Temporary files</value>
+  </data>
+  <data name="CatTempDesc" xml:space="preserve">
+    <value>Leftovers apps create while they work and forget to clean up. Only files older than a day.</value>
+  </data>
+  <data name="CatBrowser" xml:space="preserve">
+    <value>Browser cache</value>
+  </data>
+  <data name="CatBrowserDesc" xml:space="preserve">
+    <value>Saved copies of websites. You stay logged in. Sites may just load a little slower the first time.</value>
+  </data>
+  <data name="CatApps" xml:space="preserve">
+    <value>App caches</value>
+  </data>
+  <data name="CatAppsDesc" xml:space="preserve">
+    <value>Cached data from Discord, VS Code, Slack and friends. They rebuild it on their own when needed.</value>
+  </data>
+  <data name="CatShaders" xml:space="preserve">
+    <value>Graphics shader cache</value>
+  </data>
+  <data name="CatShadersDesc" xml:space="preserve">
+    <value>Game graphics your GPU pre-built. Safe to clear. Games rebuild it, but the next launch may stutter a bit.</value>
+  </data>
+  <data name="CatCrash" xml:space="preserve">
+    <value>Crash reports</value>
+  </data>
+  <data name="CatCrashDesc" xml:space="preserve">
+    <value>Reports Windows saves whenever an app crashes. Only useful to developers.</value>
+  </data>
+  <data name="CatWindows" xml:space="preserve">
+    <value>Windows Update leftovers</value>
+  </data>
+  <data name="CatWindowsDesc" xml:space="preserve">
+    <value>Update files Windows already installed but keeps around just in case, plus Windows' own temp files.</value>
+  </data>
+  <data name="CatInstallers" xml:space="preserve">
+    <value>Old installers</value>
+  </data>
+  <data name="CatInstallersDesc" xml:space="preserve">
+    <value>Setup files in your Downloads you've most likely already run. Only ones older than a week.</value>
+  </data>
+  <data name="CatDownloads" xml:space="preserve">
+    <value>Big old downloads</value>
+  </data>
+  <data name="CatDownloadsDesc" xml:space="preserve">
+    <value>Large files in your Downloads you haven't touched in over a month: old videos, ISOs, zips.</value>
+  </data>
+  <data name="CatGames" xml:space="preserve">
+    <value>Games you haven't played</value>
+  </data>
+  <data name="CatGamesDesc" xml:space="preserve">
+    <value>Steam games you haven't opened in 2+ months. Uninstall through Steam. You can always reinstall.</value>
+  </data>
+  <data name="CatWinOld" xml:space="preserve">
+    <value>Previous Windows version</value>
+  </data>
+  <data name="CatWinOldDesc" xml:space="preserve">
+    <value>A backup of your old Windows from the last big update. You only need it if you want to roll back.</value>
+  </data>
+  <data name="UnknownCategory" xml:space="preserve">
+    <value>Unknown category</value>
+  </data>
+  <data name="ItemTempFolder" xml:space="preserve">
+    <value>Your temp folder</value>
+  </data>
+  <data name="ItemFirefox" xml:space="preserve">
+    <value>Firefox</value>
+  </data>
+  <data name="ItemOpera" xml:space="preserve">
+    <value>Opera</value>
+  </data>
+  <data name="ItemDiscord" xml:space="preserve">
+    <value>Discord</value>
+  </data>
+  <data name="ItemSlack" xml:space="preserve">
+    <value>Slack</value>
+  </data>
+  <data name="ItemTeamsClassic" xml:space="preserve">
+    <value>Microsoft Teams (classic)</value>
+  </data>
+  <data name="ItemVsCode" xml:space="preserve">
+    <value>VS Code</value>
+  </data>
+  <data name="ItemSteamBrowser" xml:space="preserve">
+    <value>Steam's web browser</value>
+  </data>
+  <data name="ItemNpm" xml:space="preserve">
+    <value>npm cache</value>
+  </data>
+  <data name="ItemPip" xml:space="preserve">
+    <value>pip cache</value>
+  </data>
+  <data name="ItemYarn" xml:space="preserve">
+    <value>Yarn cache</value>
+  </data>
+  <data name="ItemNuget" xml:space="preserve">
+    <value>NuGet web cache</value>
+  </data>
+  <data name="ItemDirectX" xml:space="preserve">
+    <value>DirectX</value>
+  </data>
+  <data name="ItemNvidia" xml:space="preserve">
+    <value>NVIDIA</value>
+  </data>
+  <data name="ItemSteamGames" xml:space="preserve">
+    <value>Steam games</value>
+  </data>
+  <data name="ItemAppCrashDumps" xml:space="preserve">
+    <value>App crash dumps</value>
+  </data>
+  <data name="ItemWindowsErrorReports" xml:space="preserve">
+    <value>Windows error reports</value>
+  </data>
+  <data name="ItemDownloadedUpdates" xml:space="preserve">
+    <value>Downloaded updates</value>
+  </data>
+  <data name="ItemDeliveryOptimization" xml:space="preserve">
+    <value>Delivery Optimization</value>
+  </data>
+  <data name="ItemWindowsTemp" xml:space="preserve">
+    <value>Windows temp folder</value>
+  </data>
+  <data name="ItemSystemCrashDumps" xml:space="preserve">
+    <value>System crash dumps</value>
+  </data>
+  <data name="WindowsLocksNote" xml:space="preserve">
+    <value>Windows locks these. Restart Roomy as admin to check them.</value>
+  </data>
+  <data name="RunningNote" xml:space="preserve">
+    <value>{0} is running now. Some files are locked — close it to clean everything.</value>
+  </data>
+  <data name="CheckingStep" xml:space="preserve">
+    <value>Checking {0}…</value>
+  </data>
+  <data name="ScanProblem" xml:space="preserve">
+    <value>The scan hit a problem: </value>
+  </data>
+  <data name="PlusMore" xml:space="preserve">
+    <value>Plus {0} more that's worth a look. That part is your call.</value>
+  </data>
+  <data name="EverythingFound" xml:space="preserve">
+    <value>That's everything we found.</value>
+  </data>
+  <data name="CleanUpAmount" xml:space="preserve">
+    <value>Clean up {0}</value>
+  </data>
+  <data name="PickSomething" xml:space="preserve">
+    <value>Pick something to clean</value>
+  </data>
+  <data name="DeleteTheseForGood" xml:space="preserve">
+    <value>Delete these for good?</value>
+  </data>
+  <data name="PickedFiles" xml:space="preserve">
+    <value>You picked {0} {1}</value>
+  </data>
+  <data name="DeleteWarning" xml:space="preserve">
+    <value>They'll be deleted permanently, not moved to the Recycle Bin, so make sure you don't need them.</value>
+  </data>
+  <data name="DeletePermanently" xml:space="preserve">
+    <value>Delete permanently</value>
+  </data>
+  <data name="GettingStarted" xml:space="preserve">
+    <value>Getting started…</value>
+  </data>
+  <data name="CleaningStopped" xml:space="preserve">
+    <value>Cleaning stopped: </value>
+  </data>
+  <data name="CleaningCategory" xml:space="preserve">
+    <value>Cleaning {0}…</value>
+  </data>
+  <data name="AdminButtonHint" xml:space="preserve">
+    <value>That button restarts Roomy with admin rights.</value>
+  </data>
+  <data name="NoAdminWorries" xml:space="preserve">
+    <value>No worries, Roomy keeps working without admin.</value>
+  </data>
+  <data name="LocalDisk" xml:space="preserve">
+    <value>Local Disk</value>
+  </data>
+  <data name="FreeOf" xml:space="preserve">
+    <value>free of {0}</value>
+  </data>
+  <data name="AlmostFull" xml:space="preserve">
+    <value>Almost full</value>
+  </data>
+  <data name="GettingFull" xml:space="preserve">
+    <value>Getting full</value>
+  </data>
+  <data name="LookingGood" xml:space="preserve">
+    <value>Looking good</value>
+  </data>
+  <data name="Rescan" xml:space="preserve">
+    <value>Rescan</value>
+  </data>
+  <data name="Scan" xml:space="preserve">
+    <value>Scan</value>
+  </data>
+  <data name="Starting" xml:space="preserve">
+    <value>Starting…</value>
+  </data>
+  <data name="CantMapDrive" xml:space="preserve">
+    <value>Couldn't map that drive: </value>
+  </data>
+  <data name="SystemFiles" xml:space="preserve">
+    <value>System files (pagefile, hibernation &amp; co.)</value>
+  </data>
+  <data name="FilesInFolder" xml:space="preserve">
+    <value>Files in this folder ({0})</value>
+  </data>
+  <data name="LockedSystemFiles" xml:space="preserve">
+    <value>Locked system files Roomy can't look inside</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>today</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>yesterday</value>
+  </data>
+  <data name="YearAgo" xml:space="preserve">
+    <value>a year ago</value>
+  </data>
+  <data name="DownloadedAgo" xml:space="preserve">
+    <value>Downloaded {0}</value>
+  </data>
+  <data name="UntouchedFor" xml:space="preserve">
+    <value>Untouched for {0}</value>
+  </data>
+  <data name="LastPlayed" xml:space="preserve">
+    <value>Last played {0}</value>
+  </data>
+  <data name="NeverPlayed" xml:space="preserve">
+    <value>Never played</value>
+  </data>
+  <data name="ItemsCountOne" xml:space="preserve">
+    <value>item</value>
+  </data>
+  <data name="ItemsCountFew" xml:space="preserve">
+    <value>items</value>
+  </data>
+  <data name="ItemsCountMany" xml:space="preserve">
+    <value>items</value>
+  </data>
+  <data name="FilesCountOne" xml:space="preserve">
+    <value>file</value>
+  </data>
+  <data name="FilesCountFew" xml:space="preserve">
+    <value>files</value>
+  </data>
+  <data name="FilesCountMany" xml:space="preserve">
+    <value>files</value>
+  </data>
+  <data name="AllDone" xml:space="preserve">
+    <value>All done</value>
+  </data>
+  <data name="CantReadSettings" xml:space="preserve">
+    <value>Couldn't read your saved settings. Background checks are off until you save them again.</value>
+  </data>
+  <data name="CantReadStartup" xml:space="preserve">
+    <value>Couldn't read the startup setting: </value>
+  </data>
+  <data name="WindowsManagesStartup" xml:space="preserve">
+    <value>Windows manages startup for this app. Change that setting in Windows first.</value>
+  </data>
+  <data name="RemindersPausedUntil" xml:space="preserve">
+    <value>Reminders paused until {0}.</value>
+  </data>
+  <data name="RemindersFollowWindows" xml:space="preserve">
+    <value>Reminders follow your Windows notification settings.</value>
+  </data>
+  <data name="ThresholdRange" xml:space="preserve">
+    <value>Choose a free-space threshold from 1 to 500 GB.</value>
+  </data>
+  <data name="WindowsDeniedStartup" xml:space="preserve">
+    <value>Windows didn't allow the startup change.</value>
+  </data>
+  <data name="CantSaveSettings" xml:space="preserve">
+    <value>Couldn't save settings: </value>
+  </data>
+  <data name="NotificationsUnavailable" xml:space="preserve">
+    <value>Windows notifications aren't available: </value>
+  </data>
+  <data name="CantSendNotification" xml:space="preserve">
+    <value>Couldn't send a Windows notification: </value>
+  </data>
+  <data name="NotificationReview" xml:space="preserve">
+    <value>Review</value>
+  </data>
+  <data name="NotificationTomorrow" xml:space="preserve">
+    <value>Tomorrow</value>
+  </data>
+  <data name="NotificationTurnOff" xml:space="preserve">
+    <value>Turn off</value>
+  </data>
+  <data name="WeeklyTitle" xml:space="preserve">
+    <value>Roomy found {0} of cleanup candidates</value>
+  </data>
+  <data name="WeeklyBody" xml:space="preserve">
+    <value>Temporary files and app caches have built up. Review them when you're ready.</value>
+  </data>
+  <data name="BackgroundCheckFailed" xml:space="preserve">
+    <value>Roomy background check: </value>
+  </data>
+  <data name="StartupDisabledByWindows" xml:space="preserve">
+    <value>Windows has disabled Roomy at startup. You can enable it in Windows Startup apps.</value>
+  </data>
+  <data name="CantFindExecutable" xml:space="preserve">
+    <value>Can't find Roomy's executable.</value>
+  </data>
+  <data name="RunExecutable" xml:space="preserve">
+    <value>Run the Roomy executable to enable startup.</value>
+  </data>
+  <data name="MoveToShorterPath" xml:space="preserve">
+    <value>Move Roomy to a shorter folder path before enabling startup.</value>
+  </data>
+  <data name="OrganizationControls" xml:space="preserve">
+    <value>Your organization controls this startup setting.</value>
+  </data>
+  <data name="SnagTitle" xml:space="preserve">
+    <value>Roomy hit a snag</value>
+  </data>
+  <data name="AlreadyOpening" xml:space="preserve">
+    <value>Roomy is already opening. Try again in a moment.</value>
+  </data>
+  <data name="OnMyPc" xml:space="preserve">
+    <value>on my PC</value>
+  </data>
+  <data name="OnMyDrive" xml:space="preserve">
+    <value>on my {0} drive</value>
+  </data>
+  <data name="CantMakeImage" xml:space="preserve">
+    <value>Couldn't make the image: </value>
+  </data>
+  <data name="ScanReportTitle" xml:space="preserve">
+    <value>Roomy scan report</value>
+  </data>
+  <data name="AndWord" xml:space="preserve">
+    <value>and</value>
+  </data>
+  <data name="InUseSkippedMessage" xml:space="preserve">
+    <value>{0} was in use by open apps, so we left it alone. Close them and scan again to grab it.</value>
+  </data>
+  <data name="FreeBytes" xml:space="preserve">
+    <value>{0} free</value>
+  </data>
+  <data name="UsedAmount" xml:space="preserve">
+    <value>{0} used</value>
+  </data>
+  <data name="DriveNowFree" xml:space="preserve">
+    <value>Your {0} drive now has {1} free.</value>
+  </data>
+  <data name="MoreItems" xml:space="preserve">
+    <value>+ {0} more (included when the box is ticked)</value>
+  </data>
+  <data name="AppVersion" xml:space="preserve">
+    <value>Roomy {0}</value>
+  </data>
+  <data name="StartupCheckHint" xml:space="preserve">
+    <value> Check Windows Startup apps to confirm its current setting.</value>
+  </data>
+  <data name="LowSpaceTitle" xml:space="preserve">
+    <value>Your {0} drive is getting full</value>
+  </data>
+  <data name="LowSpaceBody" xml:space="preserve">
+    <value>{0} remaining. Open Roomy to see what you can clear.</value>
+  </data>
+  <data name="CopiedToast" xml:space="preserve">
+    <value>Copied! Paste it anywhere. Also saved to Pictures\Roomy.</value>
+  </data>
+  <data name="AgoDays" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
+  <data name="AgoWeeks" xml:space="preserve">
+    <value>{0} weeks ago</value>
+  </data>
+  <data name="AgoMonths" xml:space="preserve">
+    <value>{0} months ago</value>
+  </data>
+  <data name="AgoYears" xml:space="preserve">
+    <value>{0} years ago</value>
+  </data>
+  <data name="DriveLabel" xml:space="preserve">
+    <value>{0} drive</value>
+  </data>
+  <data name="PercentFull" xml:space="preserve">
+    <value>{0}% full</value>
+  </data>
+  <data name="TrayOpen" xml:space="preserve">
+    <value>Open Roomy</value>
+  </data>
+  <data name="TrayScanNow" xml:space="preserve">
+    <value>Scan now</value>
+  </data>
+  <data name="TrayPauseReminders" xml:space="preserve">
+    <value>Pause reminders until tomorrow</value>
+  </data>
+  <data name="TrayResumeReminders" xml:space="preserve">
+    <value>Resume reminders</value>
+  </data>
+  <data name="TraySettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TrayQuit" xml:space="preserve">
+    <value>Quit Roomy</value>
+  </data>
+  <data name="DemoSettingsNote" xml:space="preserve">
+    <value>Demo settings are temporary. Startup and Windows notifications are disabled.</value>
+  </data>
+  <data name="OpenNormallyToChange" xml:space="preserve">
+    <value>Open Roomy normally to change background and startup settings.</value>
+  </data>
+  <data name="CantSaveReminders" xml:space="preserve">
+    <value>Couldn't save your reminder settings: </value>
+  </data>
+  <data name="FinishBeforeClosing" xml:space="preserve">
+    <value>Let the cleanup finish before closing Roomy.</value>
+  </data>
+  <data name="FinishBeforeQuitting" xml:space="preserve">
+    <value>Let the cleanup finish before quitting Roomy.</value>
+  </data>
+  <data name="StartupNeedsExe" xml:space="preserve">
+    <value>Run the Roomy executable to enable startup.</value>
+  </data>
+  <data name="AgoYearsOne" xml:space="preserve">
+    <value>{0} years ago</value>
+  </data>
+  <data name="AgoYearsFew" xml:space="preserve">
+    <value>{0} years ago</value>
+  </data>
+  <data name="StepShaders" xml:space="preserve">
+    <value>Shader cache</value>
+  </data>
+  <data name="StepWindows" xml:space="preserve">
+    <value>Windows Update</value>
+  </data>
+  <data name="StepDownloads" xml:space="preserve">
+    <value>Big downloads</value>
+  </data>
+  <data name="StepGames" xml:space="preserve">
+    <value>Unplayed games</value>
+  </data>
+  <data name="StepWinOld" xml:space="preserve">
+    <value>Old Windows</value>
+  </data>
+  <data name="AgoDaysOne" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
+  <data name="AgoDaysFew" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
+  <data name="RecycleDownloads" xml:space="preserve">
+    <value>Send files from Downloads to the Recycle Bin</value>
+  </data>
+  <data name="RecycleDownloadsHint" xml:space="preserve">
+    <value>Old installers and big downloads go to the Recycle Bin instead of being deleted, so you can get them back. The space is freed once you empty the bin. Caches are always deleted, since apps rebuild them.</value>
+  </data>
+  <data name="PickedFromDownloads" xml:space="preserve">
+    <value>You picked {0} {1} from your Downloads ({2}). </value>
+  </data>
+  <data name="MoveToBinTitle" xml:space="preserve">
+    <value>Move these to the Recycle Bin?</value>
+  </data>
+  <data name="MoveToBinWarning" xml:space="preserve">
+    <value>You can restore them from the Recycle Bin if you change your mind. The space is freed once you empty it.</value>
+  </data>
+  <data name="MoveToBin" xml:space="preserve">
+    <value>Move to Recycle Bin</value>
+  </data>
+  <data name="RecycledMessage" xml:space="preserve">
+    <value>{0} went to the Recycle Bin. Empty it when you're sure, to free that space too.</value>
+  </data>
+  <data name="StepHibernation" xml:space="preserve">
+    <value>Hibernation file</value>
+  </data>
+  <data name="CatHibernation" xml:space="preserve">
+    <value>Hibernation file</value>
+  </data>
+  <data name="CatHibernationDesc" xml:space="preserve">
+    <value>A hidden file as big as your memory that Windows keeps for hibernation and Fast Startup. If you never hibernate, turning it off gives the space back.</value>
+  </data>
+  <data name="TurnOffHibernation" xml:space="preserve">
+    <value>Turn off hibernation</value>
+  </data>
+  <data name="HibernationHint" xml:space="preserve">
+    <value>Asks for admin once. Fast Startup turns off too. You can turn it back on in Settings.</value>
+  </data>
+  <data name="HibernationConfirmTitle" xml:space="preserve">
+    <value>Turn off hibernation?</value>
+  </data>
+  <data name="HibernationConfirmBody" xml:space="preserve">
+    <value>Windows will remove the hibernation file and free {0}. Hibernate and Fast Startup won't be available until you turn it back on in Roomy's Settings. Nothing else changes.</value>
+  </data>
+  <data name="HibernationOff" xml:space="preserve">
+    <value>Hibernation is off. Freed {0}. You can turn it back on in Settings.</value>
+  </data>
+  <data name="HibernationUnchanged" xml:space="preserve">
+    <value>Hibernation wasn't changed.</value>
+  </data>
+  <data name="SettingsHibernation" xml:space="preserve">
+    <value>Hibernation is off</value>
+  </data>
+  <data name="HibernationIsOffHint" xml:space="preserve">
+    <value>Hibernate and Fast Startup aren't available. Turning hibernation back on uses about as much space as your memory.</value>
+  </data>
+  <data name="TurnOnHibernation" xml:space="preserve">
+    <value>Turn hibernation back on</value>
+  </data>
+  <data name="HibernationOnAgain" xml:space="preserve">
+    <value>Hibernation is back on.</value>
+  </data>
+  <data name="StepLeftovers" xml:space="preserve">
+    <value>Uninstalled app leftovers</value>
+  </data>
+  <data name="CatLeftovers" xml:space="preserve">
+    <value>Leftovers from uninstalled apps</value>
+  </data>
+  <data name="CatLeftoversDesc" xml:space="preserve">
+    <value>Folders in AppData that don't match anything installed and haven't changed in 3+ months. Check each one: some apps leave saves or settings behind on purpose.</value>
+  </data>
+  <data name="LeftoverDetail" xml:space="preserve">
+    <value>In {0} · untouched for {1}</value>
+  </data>
+</root>

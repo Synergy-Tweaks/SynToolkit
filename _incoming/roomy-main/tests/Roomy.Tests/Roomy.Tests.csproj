@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.1" PrivateAssets="all" />
+    <Using Include="Xunit" />
+    <Compile Include="../../src/Roomy/Core/Preferences.cs" Link="Core/Preferences.cs" />
+    <Compile Include="../../src/Roomy/Core/FileOps.cs" Link="Core/FileOps.cs" />
+    <Compile Include="../../src/Roomy/Core/SafeFs.cs" Link="Core/SafeFs.cs" />
+    <Compile Include="../../src/Roomy/Core/CacheFinder.cs" Link="Core/CacheFinder.cs" />
+    <Compile Include="../../src/Roomy/Core/LeftoverFinder.cs" Link="Core/LeftoverFinder.cs" />
+    <Compile Include="../../src/Roomy/Core/CrashLog.cs" Link="Core/CrashLog.cs" />
+    <Compile Include="../../src/Roomy/Core/Platform.cs" Link="Core/Platform.cs" />
+    <Compile Include="../../src/Roomy/Core/Env.cs" Link="Core/Env.cs" />
+    <Compile Include="../../src/Roomy/Core/Native.cs" Link="Core/Native.cs" />
+    <Compile Include="../../src/Roomy/Core/Models.cs" Link="Core/Models.cs" />
+    <Compile Include="../../src/Roomy/Core/Cleaner.cs" Link="Core/Cleaner.cs" />
+    <Compile Include="../../src/Roomy/Localization/Loc.cs" Link="Localization/Loc.cs" />
+    <Compile Include="../../src/Roomy/Localization/S.g.cs" Link="Localization/S.g.cs" />
+    <EmbeddedResource Include="../../src/Roomy/Localization/Strings.resx" Link="Localization/Strings.resx">
+      <LogicalName>Roomy.Localization.Strings.resources</LogicalName>
+    </EmbeddedResource>
+    <Compile Include="../../src/Roomy/Services/SingleInstance.cs" Link="Services/SingleInstance.cs" />
+    <Compile Include="../../src/Roomy/Services/NotificationService.cs" Link="Services/NotificationService.cs" />
+    <Compile Include="../../src/Roomy/Services/StartupRegistration.cs" Link="Services/StartupRegistration.cs" />
+  </ItemGroup>
+</Project>

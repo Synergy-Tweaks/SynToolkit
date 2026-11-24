@@ -223,6 +223,17 @@
                                 Style="{StaticResource BreadcrumbTabInactive}"
                                 Visibility="Collapsed"
                                 local:LocalizedText.ContentKey="GpuPage_TabTweaks" />
+                            <TextBlock
+                                x:Name="NvidiaTweaksTabChevron"
+                                Style="{StaticResource BreadcrumbChevron}"
+                                Text="/"
+                                Visibility="Collapsed" />
+                            <Button
+                                x:Name="NvidiaTweaksTabButton"
+                                Click="NvidiaTweaksTab_Click"
+                                Content="NVIDIA Tweaks"
+                                Style="{StaticResource BreadcrumbTabInactive}"
+                                Visibility="Collapsed" />
                         </StackPanel>
                     </ScrollViewer>
 
@@ -343,6 +354,23 @@
                             <InfoBar Margin="0,0,0,10" IsClosable="True" IsOpen="{Binding HasNvidiaApplyResult}" Message="{Binding NvidiaApplyResultSummary}" Severity="Informational" />
 
                             <TextBlock Style="{StaticResource GroupHeader}" Text="NVIDIA Profile Inspector" Margin="0,6,0,10" local:LocalizedText.TextKey="GpuPageText623166EBEAA8" />
+
+                            <controls:SettingsCard
+                                x:Name="NvidiaTweaksOverviewCard"
+                                Margin="0,0,0,10"
+                                Click="NvidiaTweaksOverviewCard_Click"
+                                Description="Open NVIDIA driver registry tweaks with per-value verification."
+                                Header="NVIDIA Performance Tweaks"
+                                IsClickEnabled="True"
+                                Style="{StaticResource ConfigurationSettingsCardTemplate}">
+                                <controls:SettingsCard.HeaderIcon>
+                                    <ImageIcon Source="ms-appx:///assets/Icons/Nvidia.png" />
+                                </controls:SettingsCard.HeaderIcon>
+                                <FontIcon
+                                    FontSize="14"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Glyph="&#xE76C;" />
+                            </controls:SettingsCard>
 
                             <controls:SettingsCard
                                 Margin="0,0,0,10"
@@ -644,6 +672,21 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel x:Name="NvidiaTweaksPanel" Visibility="Collapsed" Spacing="10">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Apply and verify NVIDIA registry tweaks. Changes are read back after each operation so you can confirm what is set."
+                            TextWrapping="Wrap" />
+                        <InfoBar
+                            x:Name="NvidiaTweaksWarningBanner"
+                            IsClosable="False"
+                            IsOpen="False"
+                            Severity="Warning"
+                            local:LocalizedText.TitleKey="TweaksWarningTitle"
+                            Message="These NVIDIA driver tweaks are optional and may behave differently across systems. Create a System Restore point before changing settings so you can roll back if needed. Some changes require a restart." />
+                        <Frame x:Name="NvidiaTweaksFrame" />
                     </StackPanel>
                 </StackPanel>
             </StackPanel>

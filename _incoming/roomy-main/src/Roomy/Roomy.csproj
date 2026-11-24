@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Roomy</RootNamespace>
+    <AssemblyName>Roomy</AssemblyName>
+    <Version>0.1.5</Version>
+    <Product>Roomy</Product>
+    <Company>krezio</Company>
+    <Authors>krezio</Authors>
+    <Description>Find out what's filling up your PC and free up space safely.</Description>
+    <Copyright>© 2026 krezio</Copyright>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <SatelliteResourceLanguages>en;ru;zh-Hans</SatelliteResourceLanguages>
+    <!-- WPF owns DPI awareness; Windows Forms is only used for the tray icon. -->
+    <NoWarn>$(NoWarn);SYSLIB1054;CA1416;WFO0003</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="Exists('Assets\roomy.ico')">
+    <ApplicationIcon>Assets\roomy.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup Condition="Exists('Assets\roomy.ico')">
+    <Resource Include="Assets\roomy.ico" />
+  </ItemGroup>
+
+</Project>

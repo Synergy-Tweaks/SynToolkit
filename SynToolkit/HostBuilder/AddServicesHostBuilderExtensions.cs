@@ -35,6 +35,7 @@ namespace SynToolkit.HostBuilder
                 services.AddSingleton<AudioMixerHotkeyService>();
                 services.AddSingleton<IGpuDriverCatalogService, GpuDriverCatalogService>();
                 services.AddSingleton<IGpuDriverPackageService, GpuDriverPackageService>();
+                services.AddSingleton<INvidiaPerformanceTweaksService, NvidiaPerformanceTweaksService>();
                 services.AddSingleton<GameLibraryStore>();
                 services.AddSingleton<IGameLibraryProvider, SteamGameLibraryProvider>();
                 services.AddSingleton<IGameLibraryProvider, EpicGameLibraryProvider>();

@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="SynToolkit.Views.DrivesCleanerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:SynToolkit.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodel="using:SynToolkit.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewmodel:DrivesCleanerViewModel}"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <local:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
+    </Page.Resources>
+
+    <Grid Margin="55,0,24,18" RowSpacing="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="6">
+            <TextBlock
+                Margin="0,24,0,0"
+                Style="{StaticResource TitleTextBlockStyle}"
+                Text="Drives Cleaner"
+                local:LocalizedText.TextKey="DrivesCleaner_Title" />
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Scan and clean temporary files, caches and other safe cleanup targets."
+                TextWrapping="Wrap"
+                local:LocalizedText.TextKey="DrivesCleaner_Description" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Spacing="6">
+            <InfoBar
+                Margin="0,0,0,4"
+                IsClosable="True"
+                IsOpen="{Binding HasError, Mode=OneWay}"
+                Message="{Binding ErrorMessage, Mode=OneWay}"
+                Severity="Error"
+                Title="Drives Cleaner" />
+            <InfoBar
+                Margin="0,0,0,4"
+                IsClosable="True"
+                IsOpen="True"
+                Message="Some Windows cleanup categories require administrator rights."
+                Severity="Warning"
+                Title="Administrator access recommended"
+                Visibility="{Binding IsElevated, Converter={StaticResource BoolToVisibilityInverseConverter}}" />
+            <InfoBar
+                Margin="0,0,0,8"
+                IsClosable="True"
+                IsOpen="True"
+                Message="{Binding LastResultText}"
+                Severity="Success"
+                Title="Cleanup complete"
+                Visibility="{Binding HasLastResult, Converter={StaticResource BoolToVisibilityConverter}}" />
+        </StackPanel>
+
+        <Pivot Grid.Row="2" SelectedIndex="{Binding SelectedSectionIndex, Mode=TwoWay}">
+            <PivotItem>
+                <PivotItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon FontSize="14" Glyph="&#xE74D;" />
+                        <TextBlock Text="Clean up" local:LocalizedText.TextKey="DrivesCleaner_TabCleanup" />
+                    </StackPanel>
+                </PivotItem.Header>
+
+                <Grid Margin="0,8,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" ColumnSpacing="8" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Command="{Binding ScanCommand}" Content="Scan" Style="{StaticResource AccentButtonStyle}" local:LocalizedText.ContentKey="DrivesCleaner_Scan" />
+                        <Button Grid.Column="1" Command="{Binding SelectSafeCommand}" Content="Select all safe" local:LocalizedText.ContentKey="DrivesCleaner_SelectSafe" />
+                        <Button Grid.Column="2" Command="{Binding ClearSelectionCommand}" Content="Clear selection" local:LocalizedText.ContentKey="DrivesCleaner_SelectNone" />
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <ProgressRing Width="18" Height="18" IsActive="{Binding IsScanning}" Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <ProgressRing Width="18" Height="18" IsActive="{Binding IsCleaning}" Visibility="{Binding IsCleaning, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <TextBlock VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding StatusText}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <ListView Grid.Row="1" ItemsSource="{Binding Categories}" SelectionMode="None" IsItemClickEnabled="False">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodel:CleanerCategoryViewModel">
+                                <Border
+                                    Margin="0,0,0,10"
+                                    Padding="12"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8">
+                                    <StackPanel Spacing="8">
+                                        <Grid ColumnSpacing="10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <CheckBox
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                IsThreeState="True"
+                                                IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                                IsEnabled="{x:Bind CanSelect}" />
+                                            <FontIcon Grid.Column="1" VerticalAlignment="Center" Glyph="{x:Bind Glyph}" />
+                                            <StackPanel Grid.Column="2" Spacing="2">
+                                                <TextBlock FontWeight="SemiBold" Text="{x:Bind Title}" />
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind Description}"
+                                                    TextWrapping="WrapWholeWords" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="3" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind SizeText}" />
+                                            <Border Grid.Column="4" Padding="8,2" CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                                                <TextBlock Text="{x:Bind SafetyText}" Style="{StaticResource CaptionTextBlockStyle}" />
+                                            </Border>
+                                            <Button
+                                                Grid.Column="5"
+                                                Padding="6"
+                                                VerticalAlignment="Center"
+                                                Command="{x:Bind ToggleExpandCommand}"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                AutomationProperties.Name="Expand category">
+                                                <FontIcon Glyph="{x:Bind ChevronGlyph}" />
+                                            </Button>
+                                        </Grid>
+
+                                        <StackPanel Spacing="6" Visibility="{x:Bind ShowDetails, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <TextBlock
+                                                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                                Text="{x:Bind Note}"
+                                                Visibility="{x:Bind HasNote, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                                            <Button
+                                                Content="Open Storage settings"
+                                                Command="{x:Bind OpenSettingsCommand}"
+                                                Visibility="{x:Bind IsSettings, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            <Button
+                                                Content="Turn off hibernation"
+                                                Command="{x:Bind TurnOffHibernationCommand}"
+                                                CommandParameter="{Binding}"
+                                                Visibility="{x:Bind IsHibernation, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            <StackPanel
+                                                Orientation="Horizontal"
+                                                Spacing="8"
+                                                Visibility="{x:Bind IsBlocked, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <TextBlock VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="This category needs administrator rights." />
+                                                <Button
+                                                    Content="Restart as admin"
+                                                    Command="{x:Bind RestartAdminCommand}"
+                                                    Visibility="{x:Bind CanRestartAsAdmin, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            </StackPanel>
+
+                                            <ListView
+                                                ItemsSource="{x:Bind VisibleItems}"
+                                                SelectionMode="None"
+                                                Visibility="{x:Bind ShowItemList, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <ListView.ItemTemplate>
+                                                    <DataTemplate x:DataType="viewmodel:CleanerItemViewModel">
+                                                        <Grid ColumnSpacing="8" Padding="2">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <CheckBox
+                                                                Grid.Column="0"
+                                                                VerticalAlignment="Center"
+                                                                IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                                                Visibility="{x:Bind Selectable, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                            <StackPanel Grid.Column="1" Spacing="1">
+                                                                <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                                                                <TextBlock
+                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                                    Text="{x:Bind Detail}"
+                                                                    TextTrimming="CharacterEllipsis" />
+                                                                <TextBlock
+                                                                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                                    Text="{x:Bind PathText}"
+                                                                    TextTrimming="CharacterEllipsis" />
+                                                            </StackPanel>
+                                                            <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind SizeText}" />
+                                                            <Button Grid.Column="3" Command="{x:Bind RevealCommand}" Content="Reveal" />
+                                                            <Button
+                                                                Grid.Column="4"
+                                                                Command="{x:Bind UninstallCommand}"
+                                                                Content="Uninstall"
+                                                                Visibility="{x:Bind IsSteam, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListView.ItemTemplate>
+                                            </ListView>
+
+                                            <TextBlock
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{x:Bind HiddenText}"
+                                                Visibility="{x:Bind HasHidden, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <Border
+                        Grid.Row="2"
+                        Margin="0,8,0,0"
+                        Padding="12"
+                        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding AppliedSummary}" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Text="{Binding ReviewSummary}" />
+                            </StackPanel>
+                            <Button
+                                Grid.Column="1"
+                                Click="CleanSelectedButton_Click"
+                                Content="{Binding CleanButtonText}"
+                                IsEnabled="{Binding CanClean}"
+                                Style="{StaticResource AccentButtonStyle}" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </PivotItem>
+
+            <PivotItem IsEnabled="{Binding CanSwitchToSpaceMap}">
+                <PivotItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Space map is unavailable while cleaning is running." />
+                        </ToolTipService.ToolTip>
+                        <FontIcon FontSize="14" Glyph="&#xECA5;" />
+                        <TextBlock Text="Space map" local:LocalizedText.TextKey="DrivesCleaner_TabSpaceMap" />
+                    </StackPanel>
+                </PivotItem.Header>
+
+                <StackPanel Spacing="10" Margin="0,8,0,0">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="320" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox
+                            Grid.Column="0"
+                            ItemsSource="{Binding Drives}"
+                            SelectedItem="{Binding SelectedDrive, Mode=TwoWay}"
+                            DisplayMemberPath="Title" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Command="{Binding ScanSpaceMapCommand}" Content="Scan map" />
+                            <ProgressRing Width="18" Height="18" IsActive="{Binding IsSpaceMapScanning}" Visibility="{Binding IsSpaceMapScanning, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <TextBlock VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding SpaceMapStatus}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <controls:SettingsCard Grid.Column="0" Header="Folders by size">
+                            <ListView ItemsSource="{Binding SpaceMapRows}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="viewmodel:SpaceMapRowViewModel">
+                                        <Grid ColumnSpacing="10" Padding="4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Grid.Column="1" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind SizeText}" />
+                                            <TextBlock Grid.Column="2" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind PercentText}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </controls:SettingsCard>
+                        <controls:SettingsCard Grid.Column="1" Header="Biggest files">
+                            <ListView ItemsSource="{Binding BiggestFiles}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="viewmodel:BigFileViewModel">
+                                        <StackPanel Spacing="2" Padding="4">
+                                            <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="{x:Bind Folder}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="{x:Bind SizeText}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </controls:SettingsCard>
+                    </Grid>
+                </StackPanel>
+            </PivotItem>
+        </Pivot>
+    </Grid>
+</Page>
