@@ -44,6 +44,7 @@ namespace SynToolkit.Views
             bool isTweaksCategory =
                 string.Equals(item.Key, "TweaksPerformanceSubMenu", StringComparison.Ordinal)
                 || string.Equals(item.Key, "TweaksNetworkPowerSubMenu", StringComparison.Ordinal)
+                || string.Equals(item.Key, "NicTweakerSubMenu", StringComparison.Ordinal)
                 || string.Equals(item.Key, "TweaksPrivacySubMenu", StringComparison.Ordinal)
                 || string.Equals(item.Key, "TweaksInterfaceSubMenu", StringComparison.Ordinal);
 
@@ -71,6 +72,13 @@ namespace SynToolkit.Views
                 Links.ItemsSource = item.LinksViewModels;
                 SubMenuItems.ItemsSource = item.ConfigurationSubMenuViewModels;
                 ConfigurationButton.ItemsSource = item.ConfigurationButtonViewModels;
+                bool showNicPanel = string.Equals(item.Key, "NicTweakerSubMenu", StringComparison.Ordinal);
+                NicTweakerPanel.Visibility = showNicPanel ? Visibility.Visible : Visibility.Collapsed;
+                ItemsControl.Visibility = showNicPanel ? Visibility.Collapsed : Visibility.Visible;
+                MultiOptionItemsControl.Visibility = showNicPanel ? Visibility.Collapsed : Visibility.Visible;
+                Links.Visibility = showNicPanel ? Visibility.Collapsed : Visibility.Visible;
+                SubMenuItems.Visibility = showNicPanel ? Visibility.Collapsed : Visibility.Visible;
+                ConfigurationButton.Visibility = showNicPanel ? Visibility.Collapsed : Visibility.Visible;
                 bool addFolderItem = true;
                 Folder folder = new Folder
                 {

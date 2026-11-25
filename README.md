@@ -85,6 +85,8 @@ Code, UI patterns, and libraries this project builds on:
 - [Ameliorated App Fetch](https://github.com/Ameliorated-LLC/appfetch) — installer / App Fetch catalog approach
 - [Roomy](https://github.com/krezio/roomy) — Drives Cleaner engine and cleanup UX foundation (MIT)
 - [SteamTrayWebHelper](https://github.com/NobbyBollocks/SteamTrayWebHelper) — Steam WebHelper toggle (GPL-3.0)
+- St1cky — original Network Tweaker script inspiration
+- Jayy and WinTuner — help remaking the NIC Tweaker workflow
 
 Portable tools shipped under `SynToolkit/Assets` (CrystalDiskMark, 7-Zip, and related licenses in those folders) keep their own copyright and license notices.
 

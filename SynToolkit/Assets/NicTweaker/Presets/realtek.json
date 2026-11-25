@@ -1,0 +1,12 @@
+{
+  "name": "Realtek",
+  "description": "Disables common Realtek NIC power-saving knobs.",
+  "values": {
+    "pow.green": "Disabled",
+    "pow.advancedeee": "Disabled",
+    "pow.powersaving": "Disabled",
+    "pow.gigalite": "Disabled",
+    "pow.autodisablegigabit": "Disabled",
+    "pow.s5wol": "Disabled"
+  }
+}

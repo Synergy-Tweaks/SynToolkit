@@ -10,6 +10,7 @@ using SynToolkit.Services.Bcd;
 using SynToolkit.Services.GpuDrivers;
 using SynToolkit.Services.Games;
 using SynToolkit.Services.Games.Providers;
+using SynToolkit.Services.NicTweaker;
 
 namespace SynToolkit.HostBuilder
 {
@@ -44,6 +45,7 @@ namespace SynToolkit.HostBuilder
                 services.AddSingleton<IGameLibraryService, GameLibraryService>();
                 services.AddSingleton<IGameLaunchService, GameLaunchService>();
                 services.AddSingleton<IGameArtworkService, GameArtworkService>();
+                services.AddSingleton<INicTweakerService, NicTweakerService>();
             });
 
             host.AddConfigurationServices();
@@ -191,6 +193,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedTransient<IConfigurationSubMenu, WindowsUpdateSubMenu>("WindowsUpdate");
                 services.AddKeyedTransient<IConfigurationSubMenu, TweaksPerformanceSubMenu>("TweaksPerformanceSubMenu");
                 services.AddKeyedTransient<IConfigurationSubMenu, TweaksNetworkPowerSubMenu>("TweaksNetworkPowerSubMenu");
+                services.AddKeyedTransient<IConfigurationSubMenu, NicTweakerSubMenu>("NicTweakerSubMenu");
                 services.AddKeyedTransient<IConfigurationSubMenu, TweaksPrivacySubMenu>("TweaksPrivacySubMenu");
                 services.AddKeyedTransient<IConfigurationSubMenu, TweaksInterfaceSubMenu>("TweaksInterfaceSubMenu");
             });

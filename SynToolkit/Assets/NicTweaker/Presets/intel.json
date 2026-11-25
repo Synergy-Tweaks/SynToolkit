@@ -1,0 +1,10 @@
+{
+  "name": "Intel",
+  "description": "Disables common Intel NIC power-saving knobs and ITR.",
+  "values": {
+    "pow.pme": "Disabled",
+    "pow.eee": "Disabled",
+    "pow.green": "Disabled",
+    "adv.intmod": "0 - Disabled"
+  }
+}

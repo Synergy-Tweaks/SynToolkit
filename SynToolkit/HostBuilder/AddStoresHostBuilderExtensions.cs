@@ -154,6 +154,7 @@ namespace SynToolkit.HostBuilder
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("WindowsUpdate");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("TweaksPerformanceSubMenu");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("TweaksNetworkPowerSubMenu");
+                services.AddKeyedSingleton<ConfigurationStoreSubMenu>("NicTweakerSubMenu");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("TweaksPrivacySubMenu");
                 services.AddKeyedSingleton<ConfigurationStoreSubMenu>("TweaksInterfaceSubMenu");
             });

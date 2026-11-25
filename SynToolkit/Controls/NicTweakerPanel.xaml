@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="SynToolkit.Controls.NicTweakerPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:local="using:SynToolkit.Controls">
+
+    <UserControl.Resources>
+        <local:StringEqualsConverter x:Key="StringEqualsConverter" />
+    </UserControl.Resources>
+
+    <Grid HorizontalAlignment="Stretch" MaxWidth="1400">
+        <StackPanel Spacing="12" HorizontalAlignment="Stretch">
+        <InfoBar
+            x:Name="ReadOnlyBar"
+            IsClosable="False"
+            IsOpen="False"
+            Severity="Warning"
+            Title="Administrator access required"
+            Message="SynToolkit is not running as administrator. NIC tweak writes are disabled." />
+
+        <InfoBar
+            x:Name="SnapshotCoverageWarning"
+            IsClosable="False"
+            IsOpen="True"
+            Severity="Warning"
+            Title="Snapshot coverage warning"
+            Message="RSS, NetIPInterface, and global offload cmdlet changes are not covered by registry snapshots. Create a restore point before applying." />
+
+        <InfoBar
+            x:Name="ResultBar"
+            IsClosable="True"
+            IsOpen="False" />
+
+        <controls:SettingsCard Header="Adapter" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ComboBox
+                    x:Name="AdapterCombo"
+                    Grid.Column="0"
+                    DisplayMemberPath="InterfaceDescription"
+                    SelectionChanged="AdapterCombo_SelectionChanged" />
+                <Button
+                    x:Name="RefreshAdaptersButton"
+                    Grid.Column="1"
+                    Click="RefreshAdaptersButton_Click"
+                    Content="Refresh adapters" />
+            </Grid>
+        </controls:SettingsCard>
+
+        <controls:SettingsCard Header="Presets" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ComboBox x:Name="PresetCombo" Grid.Column="0" />
+                <Button
+                    x:Name="LoadPresetButton"
+                    Grid.Column="1"
+                    Click="LoadPresetButton_Click"
+                    Content="Load preset" />
+            </Grid>
+        </controls:SettingsCard>
+
+        <controls:SettingsCard Header="Actions" Style="{StaticResource ConfigurationSettingsCardTemplate}">
+            <Grid ColumnSpacing="8" RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="ApplyButton" Grid.Row="0" Grid.Column="0" Click="ApplyButton_Click" Content="Apply" HorizontalAlignment="Stretch" />
+                <Button x:Name="RevertLastButton" Grid.Row="0" Grid.Column="1" Click="RevertLastButton_Click" Content="Revert last" HorizontalAlignment="Stretch" />
+                <Button x:Name="BackupButton" Grid.Row="0" Grid.Column="2" Click="BackupButton_Click" Content="Backup now" HorizontalAlignment="Stretch" />
+                <Button x:Name="RestoreSnapshotButton" Grid.Row="0" Grid.Column="3" Click="RestoreSnapshotButton_Click" Content="Restore snapshot" HorizontalAlignment="Stretch" />
+
+                <Button x:Name="ExportButton" Grid.Row="1" Grid.Column="0" Click="ExportButton_Click" Content="Export config" HorizontalAlignment="Stretch" />
+                <Button x:Name="ImportButton" Grid.Row="1" Grid.Column="1" Click="ImportButton_Click" Content="Import config" HorizontalAlignment="Stretch" />
+                <Button x:Name="RestorePointButton" Grid.Row="1" Grid.Column="2" Click="RestorePointButton_Click" Content="Create restore point" HorizontalAlignment="Stretch" />
+                <ProgressRing x:Name="BusyRing" Grid.Row="1" Grid.Column="3" Width="18" Height="18" IsActive="False" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Grid>
+        </controls:SettingsCard>
+
+        <Expander Header="NIC Tweaks" IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+            <ItemsControl x:Name="SectionItemsControl" HorizontalAlignment="Stretch">
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:NicSectionViewModel">
+                        <Expander
+                            Header="{Binding Header}"
+                            IsExpanded="True"
+                            Margin="0,0,0,10"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch">
+                            <ItemsRepeater ItemsSource="{Binding Rows}" HorizontalAlignment="Stretch">
+                                <ItemsRepeater.Layout>
+                                    <UniformGridLayout
+                                        ItemsStretch="Fill"
+                                        MinColumnSpacing="12"
+                                        MinItemWidth="340"
+                                        MinRowSpacing="12"
+                                        Orientation="Horizontal" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="local:NicTweakRowViewModel">
+                                        <Border
+                                            Padding="12"
+                                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            HorizontalAlignment="Stretch">
+                                            <Grid ColumnSpacing="12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                    <TextBlock
+                                                        FontWeight="SemiBold"
+                                                        Text="{Binding Label}"
+                                                        TextWrapping="WrapWholeWords" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="{Binding Id}"
+                                                        TextWrapping="WrapWholeWords" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        TextWrapping="WrapWholeWords">
+                                                        <Run Text="Current: " />
+                                                        <Run Text="{Binding CurrentDisplay}" />
+                                                    </TextBlock>
+                                                </StackPanel>
+                                                <ComboBox
+                                                    Grid.Column="1"
+                                                    MinWidth="160"
+                                                    HorizontalAlignment="Right"
+                                                    IsEditable="{Binding AllowFreeText}"
+                                                    IsEnabled="{Binding IsEditable}"
+                                                    ItemsSource="{Binding Options}"
+                                                    SelectedItem="{Binding TargetDisplay, Mode=TwoWay}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </Expander>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Expander>
+
+        <Expander
+            x:Name="LastApplyResultsExpander"
+            Header="Last apply results"
+            IsExpanded="True"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Stretch"
+            Visibility="Collapsed">
+            <ItemsControl x:Name="ResultsItemsControl">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:NicResultRowViewModel">
+                        <Grid Margin="0,0,0,4" ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="3*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Label}" />
+                            <TextBlock Grid.Column="1" Text="{Binding Status}" />
+                            <TextBlock Grid.Column="2" Text="{Binding Message}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Expander>
+        </StackPanel>
+    </Grid>
+</UserControl>

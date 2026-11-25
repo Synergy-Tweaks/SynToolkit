@@ -1028,6 +1028,8 @@
   "TweaksPerformanceSubMenuDescription": "CPU scheduling, memory, filesystem, and timer optimizations used by SynergyOS.",
   "TweaksNetworkPowerSubMenu": "Network & Power",
   "TweaksNetworkPowerSubMenuDescription": "Network latency tweaks and device power-saving controls.",
+  "NicTweakerSubMenu": "NIC Tweaker",
+  "NicTweakerSubMenuDescription": "Adapter-level NIC tuning, presets, snapshots, and .nttweak import/export.",
   "TweaksPrivacySubMenu": "Privacy & Updates",
   "TweaksPrivacySubMenuDescription": "Telemetry reduction, settings sync, and Windows Update driver delivery.",
   "TweaksInterfaceSubMenu": "Interface & QoL",

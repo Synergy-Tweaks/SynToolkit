@@ -225,6 +225,8 @@
                                     <HyperlinkButton Content="Windows UI Library" NavigateUri="https://learn.microsoft.com/en-us/windows/apps/winui/winui3/" />
                                     <HyperlinkButton Content="Windows Community Toolkit" NavigateUri="https://github.com/CommunityToolkit/WindowsCommunityToolkit" />
                                     <HyperlinkButton Content="Roomy (Drives Cleaner base) by krezio" NavigateUri="https://github.com/krezio/roomy" />
+                                    <HyperlinkButton Content="St1cky (original Network Tweaker script)" NavigateUri="https://github.com/kwanteks/NIC-Tweaker" />
+                                    <HyperlinkButton Content="Jayy and WinTuner (NIC Tweaker remake support)" NavigateUri="https://github.com/kwanteks/NIC-Tweaker" />
                                 </StackPanel>
                             </controls:SettingsCard>
                             <controls:SettingsCard
