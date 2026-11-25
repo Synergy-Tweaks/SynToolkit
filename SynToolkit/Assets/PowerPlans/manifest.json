@@ -175,10 +175,28 @@
       "activeSchemeNameHints": ["Kizzimo", "Latency Master", "Extreme Low Latency"]
     },
     {
-      "fileName": "Kwanteks.pow",
-      "displayName": "Kwanteks",
-      "description": "Power plan created by Kwanteks for the dsc.gg/kwanteks community.",
-      "activeSchemeNameHints": ["Kwanteks"]
+      "fileName": "Kwanteks Desktop.pow",
+      "displayName": "Kwanteks Desktop",
+      "description": "Kwanteks desktop plan for dsc.gg/kwanteks — full performance",
+      "activeSchemeNameHints": ["Kwanteks Desktop", "Kwanteks"]
+    },
+    {
+      "fileName": "Kwanteks Desktop OLED.pow",
+      "displayName": "Kwanteks Desktop OLED",
+      "description": "Kwanteks desktop OLED plan — same performance as Kwanteks Desktop; display off after 10 minutes idle.",
+      "activeSchemeNameHints": ["Kwanteks Desktop OLED"]
+    },
+    {
+      "fileName": "Kwanteks Laptop.pow",
+      "displayName": "Kwanteks Laptop",
+      "description": "Kwanteks laptop plan for dsc.gg/kwanteks — tuned for use on AC or battery.",
+      "activeSchemeNameHints": ["Kwanteks Laptop"]
+    },
+    {
+      "fileName": "Kwanteks Laptop OLED.pow",
+      "displayName": "Kwanteks Laptop OLED",
+      "description": "Kwanteks laptop OLED plan — same performance as Kwanteks Laptop; display off after 10 minutes idle on AC or battery.",
+      "activeSchemeNameHints": ["Kwanteks Laptop OLED"]
     },
     {
       "fileName": "lawliet.pow",
