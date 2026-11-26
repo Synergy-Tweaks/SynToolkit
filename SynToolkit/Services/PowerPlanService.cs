@@ -296,6 +296,10 @@ namespace SynToolkit.Services
                 // Skip the embedded SOS.pow if it somehow exists here
                 if (fileName.Equals("SOS.pow", StringComparison.OrdinalIgnoreCase))
                     continue;
+
+                // Retired single-file bundle; split into Desktop/Laptop (+ OLED) variants.
+                if (fileName.Equals("Kwanteks.pow", StringComparison.OrdinalIgnoreCase))
+                    continue;
                 
                 string displayName;
                 string description;

@@ -65,7 +65,7 @@
 	<TrimmerRootAssembly Include="Microsoft.WinUI" />
   </ItemGroup>
 	<ItemGroup>
-		<Content Include="assets\**" Exclude="assets\PowerPlans\SOS.pow">
+		<Content Include="assets\**" Exclude="assets\PowerPlans\SOS.pow;assets\PowerPlans\Kwanteks.pow">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<EmbeddedResource Include="assets\PowerPlans\SOS.pow" LogicalName="SynToolkit.PowerPlans.SOS.pow" />
@@ -222,4 +222,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+  <Target Name="RemoveRetiredBundledPowerPlans" AfterTargets="CopyFilesToOutputDirectory">
+    <Delete Files="$(TargetDir)assets\PowerPlans\Kwanteks.pow" ContinueOnError="true" />
+  </Target>
 </Project>

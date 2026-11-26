@@ -138,36 +138,99 @@ namespace SynToolkit.Views
 
         private bool IsBundledPlanActive(BundledPowerPlan plan)
         {
-            if (_snapshot?.ActiveSchemeId is not Guid activeSchemeId)
-            {
-                return false;
-            }
-
-            if (_bundledPlanSchemeIds.TryGetValue(plan.FilePath, out Guid storedSchemeId))
-            {
-                return activeSchemeId == storedSchemeId;
-            }
-
-            if (!IsBundledPlanMatchingActiveScheme(plan, _snapshot.ActiveSchemeName))
-            {
-                return false;
-            }
-
-            _bundledPlanSchemeIds[plan.FilePath] = activeSchemeId;
-            return true;
+            string? activePath = ResolveActiveBundledPlanFilePath();
+            return activePath is not null &&
+                string.Equals(activePath, plan.FilePath, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsBundledPlanMatchingActiveScheme(BundledPowerPlan plan, string activeSchemeName)
+        private string? ResolveActiveBundledPlanFilePath()
+        {
+            if (_snapshot?.ActiveSchemeId is not Guid activeSchemeId)
+            {
+                return null;
+            }
+
+            List<string> mappedPaths = _bundledPlanSchemeIds
+                .Where(pair => pair.Value == activeSchemeId)
+                .Select(pair => pair.Key)
+                .ToList();
+            if (mappedPaths.Count == 1)
+            {
+                return mappedPaths[0];
+            }
+
+            string activeSchemeName = _snapshot.ActiveSchemeName;
+            if (string.IsNullOrWhiteSpace(activeSchemeName))
+            {
+                return mappedPaths.Count > 0 ? mappedPaths[0] : null;
+            }
+
+            BundledPowerPlan? bestPlan = null;
+            int bestScore = -1;
+            foreach (BundledPowerPlan candidate in _allBundledPlans)
+            {
+                int score = GetBundledPlanMatchScore(candidate, activeSchemeName);
+                if (score < 0)
+                {
+                    continue;
+                }
+
+                if (score > bestScore ||
+                    (score == bestScore &&
+                        bestPlan is not null &&
+                        candidate.DisplayName.Length > bestPlan.DisplayName.Length))
+                {
+                    bestScore = score;
+                    bestPlan = candidate;
+                }
+            }
+
+            if (bestPlan is null)
+            {
+                return mappedPaths.Count > 0 ? mappedPaths[0] : null;
+            }
+
+            _bundledPlanSchemeIds[bestPlan.FilePath] = activeSchemeId;
+            return bestPlan.FilePath;
+        }
+
+        internal static int GetBundledPlanMatchScore(BundledPowerPlan plan, string activeSchemeName)
         {
             if (string.IsNullOrWhiteSpace(activeSchemeName))
             {
-                return false;
+                return -1;
             }
 
-            return string.Equals(plan.DisplayName, activeSchemeName, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(Path.GetFileNameWithoutExtension(plan.FileName), activeSchemeName, StringComparison.OrdinalIgnoreCase) ||
-                plan.ActiveSchemeNameHints.Any(hint =>
-                    activeSchemeName.Contains(hint, StringComparison.OrdinalIgnoreCase));
+            if (string.Equals(plan.DisplayName, activeSchemeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return 10_000 + plan.DisplayName.Length;
+            }
+
+            string fileStem = Path.GetFileNameWithoutExtension(plan.FileName);
+            if (string.Equals(fileStem, activeSchemeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return 9_000 + fileStem.Length;
+            }
+
+            int bestHintScore = -1;
+            foreach (string hint in plan.ActiveSchemeNameHints)
+            {
+                if (string.IsNullOrWhiteSpace(hint))
+                {
+                    continue;
+                }
+
+                if (string.Equals(hint, activeSchemeName, StringComparison.OrdinalIgnoreCase))
+                {
+                    bestHintScore = Math.Max(bestHintScore, 8_000 + hint.Length);
+                }
+                else if (activeSchemeName.Contains(hint, StringComparison.OrdinalIgnoreCase))
+                {
+                    bestHintScore = Math.Max(bestHintScore, hint.Length);
+                }
+            }
+
+            return bestHintScore;
         }
 
         private void ApplyActivePlanState(Guid schemeId, string schemeName)
