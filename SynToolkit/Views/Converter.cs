@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using System.Globalization;
 
 namespace SynToolkit.Views
 {
@@ -43,6 +44,53 @@ namespace SynToolkit.Views
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             return value is bool isWarning && isWarning ? InfoBarSeverity.Warning : InfoBarSeverity.Success;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class StringNullOrWhitespaceToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            return value is string text && !string.IsNullOrWhiteSpace(text)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class SelectedToBorderBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            bool selected = value is bool b && b;
+            return selected
+                ? (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"]
+                : (Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"];
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class SelectedToBackgroundConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            bool selected = value is bool b && b;
+            return selected
+                ? (Brush)Application.Current.Resources["LayerFillColorAltBrush"]
+                : (Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"];
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

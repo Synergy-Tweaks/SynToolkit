@@ -10,6 +10,7 @@ using SynToolkit.Services.Bcd;
 using SynToolkit.Services.GpuDrivers;
 using SynToolkit.Services.Games;
 using SynToolkit.Services.Games.Providers;
+using SynToolkit.Services.Uninstaller;
 
 namespace SynToolkit.HostBuilder
 {
@@ -26,6 +27,7 @@ namespace SynToolkit.HostBuilder
                 services.AddSingleton<IUserAccountInfoService, UserAccountInfoService>();
                 services.AddSingleton<AppFetchService>();
                 services.AddSingleton<WingetInstallerService>();
+                services.AddSingleton<IUninstallerWorkflowService, UninstallerWorkflowService>();
                 services.AddSingleton<PortableAppService>();
                 services.AddSingleton<NeedsAttentionService>();
                 services.AddSingleton<IRestorePointService, RestorePointService>();

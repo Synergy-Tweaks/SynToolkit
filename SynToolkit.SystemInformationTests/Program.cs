@@ -128,6 +128,7 @@ internal static class Program
         Run("SystemResponsiveness detection is fresh each call", SystemResponsivenessTests.DetectionAlwaysUsesFreshInput);
         Run("SystemResponsiveness uint conversion", SystemResponsivenessTests.UIntConversionHandlesSignedNegativeOne);
         Run("Context menu service tests", ContextMenuServiceTests.RunAll);
+        Run("Uninstaller queue tests", UninstallerQueueTests.RunAll);
         Run("Display rotation swaps only portrait modes", DisplayModeTests.RotationSwapsOnlyPortrait);
         Run("Display rotation flags match CCD values", DisplayModeTests.SwapsDimensionsMatchesCcdRotations);
         Run("Drives cache finder detects Chromium layouts", DrivesCoreTests.CacheFinderDetectsChromiumLayout);
