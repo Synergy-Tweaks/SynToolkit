@@ -54,6 +54,25 @@ public partial class NvidiaTweakRowViewModel : ObservableObject
         _ => "Safe"
     };
 
+    /// <summary>
+    /// The tweak's recommended value is live in the driver (no restart outstanding).
+    /// Shown as an "Active" badge, the same way Power Plans marks the active plan.
+    /// </summary>
+    public bool IsActive => State == NvidiaTweakValueState.Applied && !IsRestartPending;
+
+    public bool IsNotActive => !IsActive;
+
+    partial void OnStateChanged(NvidiaTweakValueState value) => RaiseStatusChanged();
+
+    partial void OnIsRestartPendingChanged(bool value) => RaiseStatusChanged();
+
+    private void RaiseStatusChanged()
+    {
+        OnPropertyChanged(nameof(StatusText));
+        OnPropertyChanged(nameof(IsActive));
+        OnPropertyChanged(nameof(IsNotActive));
+    }
+
     public string StatusText => IsRestartPending
         ? "Restart pending"
         : State switch
@@ -71,14 +90,15 @@ public partial class NvidiaTweakRowViewModel : ObservableObject
             State = NvidiaTweakValueState.NotSet;
             IsRestartPending = false;
             CurrentValueText = "Not set";
-            OnPropertyChanged(nameof(StatusText));
+            RaiseStatusChanged();
+            OnPropertyChanged(nameof(CurrentDisplay));
             return;
         }
 
         State = snapshot.State;
         IsRestartPending = snapshot.RestartPending;
         CurrentValueText = snapshot.CurrentValueText;
-        OnPropertyChanged(nameof(StatusText));
+        RaiseStatusChanged();
         OnPropertyChanged(nameof(CurrentDisplay));
     }
 
@@ -132,14 +152,14 @@ public partial class NvidiaTweakGroupViewModel : ObservableObject
     {
         get
         {
-            int applied = AllRows.Count(row => row.State == NvidiaTweakValueState.Applied && !row.IsRestartPending);
+            int active = AllRows.Count(row => row.IsActive);
             int pending = AllRows.Count(row => row.IsRestartPending);
             if (pending > 0)
             {
-                return $"{applied}/{AllRows.Count} applied · {pending} pending restart";
+                return $"{active}/{AllRows.Count} active · {pending} pending restart";
             }
 
-            return $"{applied}/{AllRows.Count} applied";
+            return $"{active}/{AllRows.Count} active";
         }
     }
 
