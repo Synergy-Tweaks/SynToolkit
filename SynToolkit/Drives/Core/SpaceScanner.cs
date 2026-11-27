@@ -19,6 +19,8 @@ public sealed class SpaceNode
 
 public sealed record BigFile(string FullPath, long Size);
 
+public sealed record SpaceMapResult(SpaceNode Root, IReadOnlyList<BigFile> BigFiles);
+
 public sealed class SpaceScanner
 {
     private const int BigCount = 40;

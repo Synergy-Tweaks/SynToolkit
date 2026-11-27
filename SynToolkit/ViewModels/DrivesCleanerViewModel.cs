@@ -286,24 +286,17 @@ public partial class DrivesCleanerViewModel : ObservableObject
         SpaceMapStatus = DrivesText.Get("DrivesCleaner_SpaceMapScanning", "Scanning drive map...");
         try
         {
-            SpaceNode root = await _service.ScanSpaceMapAsync(SelectedDrive.Root);
-            List<SpaceNode> nodes = root.Children.OrderByDescending(node => node.Size).Take(80).ToList();
-            SpaceMapRows.Clear();
-            foreach (SpaceNode node in nodes)
-            {
-                SpaceMapRows.Add(new SpaceMapRowViewModel(node.Name, node.FullPath, node.Size, root.Size));
-            }
+            SpaceMapResult result = await _service.ScanSpaceMapAsync(SelectedDrive.Root);
+            _spaceRoot = result.Root;
+            ShowSpaceNode(result.Root);
 
             BiggestFiles.Clear();
-            SpaceScanner scanner = new();
-            _ = await Task.Run(() => scanner.Scan(SelectedDrive.Root));
-            foreach (BigFile file in scanner.BigFiles)
+            foreach (BigFile file in result.BigFiles)
             {
                 BiggestFiles.Add(new BigFileViewModel(file.FullPath, file.Size));
             }
 
             SpaceMapStatus = DrivesText.Get("DrivesCleaner_SpaceMapReady", "Space map ready.");
-            OnPropertyChanged(nameof(HasSpaceMapData));
         }
         catch (Exception ex)
         {
@@ -312,6 +305,99 @@ public partial class DrivesCleanerViewModel : ObservableObject
         finally
         {
             IsSpaceMapScanning = false;
+            OnPropertyChanged(nameof(HasSpaceMapData));
+            OnPropertyChanged(nameof(ShowSpaceMapEmpty));
+            OnPropertyChanged(nameof(HasBiggestFiles));
+        }
+    }
+
+    private SpaceNode? _spaceRoot;
+    private SpaceNode? _spaceCurrent;
+
+    public bool HasBiggestFiles => BiggestFiles.Count > 0;
+    public bool ShowSpaceMapEmpty => !HasSpaceMapData && !IsSpaceMapScanning;
+    public bool CanSpaceMapGoUp => _spaceCurrent?.Parent is not null;
+    public string SpaceMapPath => _spaceCurrent?.FullPath ?? string.Empty;
+    public string SpaceMapCurrentSize => _spaceCurrent is null ? string.Empty : Format.Bytes(_spaceCurrent.Size);
+    public string SelectedDriveSummary => SelectedDrive?.Subtitle ?? string.Empty;
+    public double SelectedDriveUsedPercent => SelectedDrive is null || SelectedDrive.Total <= 0
+        ? 0
+        : SelectedDrive.Used * 100d / SelectedDrive.Total;
+
+    partial void OnSelectedDriveChanged(DriveItemViewModel? value)
+    {
+        OnPropertyChanged(nameof(SelectedDriveSummary));
+        OnPropertyChanged(nameof(SelectedDriveUsedPercent));
+
+        // A map from another drive is misleading, so drop it when the drive changes.
+        if (_spaceRoot is not null && value is not null &&
+            !string.Equals(_spaceRoot.FullPath, value.Root, StringComparison.OrdinalIgnoreCase))
+        {
+            _spaceRoot = null;
+            ShowSpaceNode(null);
+            BiggestFiles.Clear();
+            SpaceMapStatus = string.Empty;
+            OnPropertyChanged(nameof(HasBiggestFiles));
+        }
+    }
+
+    public bool CanPickSpaceMapDrive => !IsSpaceMapScanning;
+
+    partial void OnIsSpaceMapScanningChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowSpaceMapEmpty));
+        OnPropertyChanged(nameof(CanPickSpaceMapDrive));
+    }
+
+    private void ShowSpaceNode(SpaceNode? node)
+    {
+        _spaceCurrent = node;
+        SpaceMapRows.Clear();
+        if (node is not null)
+        {
+            long largest = node.Children.Count > 0 ? node.Children.Max(child => child.Size) : 0;
+            largest = Math.Max(largest, node.FileBytes);
+            foreach (SpaceNode child in node.Children.Where(child => child.Size > 0).Take(80))
+            {
+                SpaceMapRows.Add(new SpaceMapRowViewModel(child, node.Size, largest));
+            }
+
+            if (node.FileBytes > 0)
+            {
+                SpaceMapRows.Add(SpaceMapRowViewModel.ForLooseFiles(node, largest));
+            }
+        }
+
+        OnPropertyChanged(nameof(HasSpaceMapData));
+        OnPropertyChanged(nameof(ShowSpaceMapEmpty));
+        OnPropertyChanged(nameof(CanSpaceMapGoUp));
+        OnPropertyChanged(nameof(SpaceMapPath));
+        OnPropertyChanged(nameof(SpaceMapCurrentSize));
+    }
+
+    public void OpenSpaceMapRow(SpaceMapRowViewModel? row)
+    {
+        if (row?.Node is { Children.Count: > 0 } node)
+        {
+            ShowSpaceNode(node);
+        }
+    }
+
+    [RelayCommand]
+    private void SpaceMapUp()
+    {
+        if (_spaceCurrent?.Parent is SpaceNode parent)
+        {
+            ShowSpaceNode(parent);
+        }
+    }
+
+    [RelayCommand]
+    private void RevealSpaceMapCurrent()
+    {
+        if (_spaceCurrent is not null)
+        {
+            Shell.Open(_spaceCurrent.FullPath);
         }
     }
 
@@ -388,7 +474,27 @@ public partial class CleanerCategoryViewModel : ObservableObject
 
         IsExpanded = model.SelectedByDefault && CanSelect;
         ToggleExpandCommand = new RelayCommand(() => IsExpanded = !IsExpanded);
+        ToggleSelectedCommand = new RelayCommand(ToggleSelected);
     }
+
+    /// <summary>
+    /// Header checkbox click: a fully selected category clears, anything else
+    /// (none or some selected) selects everything. Driving this from a command
+    /// instead of a TwoWay three-state binding means a click always lands on a
+    /// real state; the old binding cycled through "indeterminate" and the UI
+    /// could get stuck showing a check that no longer matched the items.
+    /// </summary>
+    private void ToggleSelected()
+    {
+        if (!CanSelect)
+        {
+            return;
+        }
+
+        SetSelected(IsSelected != true);
+    }
+
+    public IRelayCommand ToggleSelectedCommand { get; }
 
     public CleanupCategory Model { get; }
     public List<CleanerItemViewModel> Items { get; } = [];
@@ -409,7 +515,7 @@ public partial class CleanerCategoryViewModel : ObservableObject
     public bool CanSelect => !Model.Blocked && Model.Size > 0 && Model.Action is CleanAction.Delete or CleanAction.EmptyRecycleBin;
     public bool ItemsSelectable => CanSelect && Items.Count > 1;
     public bool ShowItemList => Model.ShowItems && Items.Count > 0;
-    public bool ShowDetails => IsExpanded && (ShowItemList || IsSettings || IsHibernation || IsBlocked);
+    public bool ShowDetails => IsExpanded && ShowExpand;
     public string SafetyText => Model.Blocked
         ? DrivesText.Get("DrivesCleaner_NeedsAdmin", "Needs admin")
         : IsSafe
@@ -444,21 +550,10 @@ public partial class CleanerCategoryViewModel : ObservableObject
             int selected = Items.Count(item => item.IsSelected);
             return selected == 0 ? false : selected == Items.Count ? true : null;
         }
-        set
-        {
-            if (!CanSelect)
-            {
-                return;
-            }
-
-            bool next = value == true;
-            foreach (CleanerItemViewModel item in Items)
-            {
-                item.SetSilently(next);
-            }
-            Changed();
-        }
     }
+
+    public bool ShowCheckBox => CanSelect;
+    public bool ShowExpand => ShowItemList || IsSettings || IsHibernation || IsBlocked;
 
     public void SetSelected(bool selected)
     {
@@ -568,20 +663,36 @@ public sealed class DriveItemViewModel
 
 public sealed class SpaceMapRowViewModel
 {
-    public SpaceMapRowViewModel(string name, string path, long size, long total)
+    public SpaceMapRowViewModel(SpaceNode node, long total, long largest)
+        : this(node.Name, node.FullPath, node.Size, total, largest, node)
+    {
+    }
+
+    private SpaceMapRowViewModel(string name, string path, long size, long total, long largest, SpaceNode? node)
     {
         Name = name;
         Path = path;
         Size = size;
         Total = total;
+        Node = node;
+        BarValue = largest <= 0 ? 0 : Math.Clamp(size * 100d / largest, 0, 100);
+        RevealCommand = new RelayCommand(() => Shell.Reveal(Path));
     }
 
+    public static SpaceMapRowViewModel ForLooseFiles(SpaceNode parent, long largest) =>
+        new($"Files in this folder ({parent.FileCount:N0})", parent.FullPath, parent.FileBytes, parent.Size, largest, null);
+
+    public SpaceNode? Node { get; }
     public string Name { get; }
     public string Path { get; }
     public long Size { get; }
     public long Total { get; }
+    public double BarValue { get; }
+    public bool CanOpen => Node is { Children.Count: > 0 };
+    public string Glyph => Node is null ? "" : "";
     public string SizeText => Format.Bytes(Size);
     public string PercentText => Total <= 0 ? "0%" : $"{Size * 100d / Total:0.#}%";
+    public IRelayCommand RevealCommand { get; }
 }
 
 public sealed class BigFileViewModel
@@ -590,7 +701,10 @@ public sealed class BigFileViewModel
     {
         Path = path;
         Size = size;
+        RevealCommand = new RelayCommand(() => Shell.Reveal(Path));
     }
+
+    public IRelayCommand RevealCommand { get; }
 
     public string Path { get; }
     public long Size { get; }

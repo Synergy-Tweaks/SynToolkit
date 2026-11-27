@@ -7,6 +7,7 @@ using SynToolkit.Services.Uninstaller;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -135,6 +136,27 @@ public partial class InstalledAppItemViewModel : ObservableObject
     }
 }
 
+/// <summary>
+/// ObservableCollection that can swap its whole contents with a single Reset.
+/// </summary>
+public sealed class BulkObservableCollection<T> : ObservableCollection<T>
+{
+    public void ReplaceAll(IEnumerable<T> items)
+    {
+        List<T> snapshot = items.ToList();
+        CheckReentrancy();
+        Items.Clear();
+        foreach (T item in snapshot)
+        {
+            Items.Add(item);
+        }
+
+        OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+        OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+    }
+}
+
 public partial class UninstallerPageViewModel : ObservableObject
 {
     private readonly IUninstallerWorkflowService _workflowService;
@@ -190,7 +212,9 @@ public partial class UninstallerPageViewModel : ObservableObject
     [ObservableProperty]
     public partial bool? SelectAllFilteredState { get; set; } = false;
 
-    public ObservableCollection<InstalledAppItemViewModel> FilteredApps { get; } = new();
+    private bool _isBatchUpdatingSelection;
+
+    public BulkObservableCollection<InstalledAppItemViewModel> FilteredApps { get; } = new();
     public IReadOnlyList<InstalledAppItemViewModel> AllApps => _allApps;
     public bool IsProgressVisible => IsUninstallQueueRunning;
     public bool CanEditSelection => !IsUninstallQueueRunning && !IsScanning;
@@ -215,9 +239,19 @@ public partial class UninstallerPageViewModel : ObservableObject
             return;
         }
 
-        foreach (InstalledAppItemViewModel app in FilteredApps)
+        // Each IsSelected change used to recount every app and re-sync the
+        // header checkbox, which made Select all O(n^2). Batch it instead.
+        _isBatchUpdatingSelection = true;
+        try
         {
-            app.IsSelected = value.Value;
+            foreach (InstalledAppItemViewModel app in FilteredApps)
+            {
+                app.IsSelected = value.Value;
+            }
+        }
+        finally
+        {
+            _isBatchUpdatingSelection = false;
         }
 
         RefreshSelectionState();
@@ -345,6 +379,7 @@ public partial class UninstallerPageViewModel : ObservableObject
             skipped = queueResult.Skipped;
             cancelled = queueResult.Cancelled;
 
+            _isBatchUpdatingSelection = true;
             foreach (QueueStepResult<InstalledAppItemViewModel> step in queueResult.Steps)
             {
                 QueueProgressValue = Math.Min(QueueProgressMaximum, QueueProgressValue + 1);
@@ -379,11 +414,18 @@ public partial class UninstallerPageViewModel : ObservableObject
         }
         finally
         {
+            _isBatchUpdatingSelection = false;
             foreach (InstalledAppItemViewModel removedApp in successfullyRemoved)
             {
                 removedApp.PropertyChanged -= App_PropertyChanged;
                 _allApps.Remove(removedApp);
-                FilteredApps.Remove(removedApp);
+            }
+
+            if (successfullyRemoved.Count > 0)
+            {
+                HashSet<InstalledAppItemViewModel> gone = new(successfullyRemoved);
+                FilteredApps.ReplaceAll(FilteredApps.Where(app => !gone.Contains(app)).ToList());
+                CountText = $"{_allApps.Count} apps";
             }
 
             QueueStatusText = IsCancelRequested
@@ -412,7 +454,7 @@ public partial class UninstallerPageViewModel : ObservableObject
 
     private void App_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(InstalledAppItemViewModel.IsSelected))
+        if (e.PropertyName == nameof(InstalledAppItemViewModel.IsSelected) && !_isBatchUpdatingSelection)
         {
             RefreshSelectionState();
         }
@@ -452,17 +494,16 @@ public partial class UninstallerPageViewModel : ObservableObject
 
     private void ApplyFilter()
     {
-        FilteredApps.Clear();
-        IEnumerable<InstalledAppItemViewModel> matches = string.IsNullOrWhiteSpace(SearchText)
+        string search = SearchText?.Trim() ?? string.Empty;
+        IEnumerable<InstalledAppItemViewModel> matches = search.Length == 0
             ? _allApps
             : _allApps.Where(application =>
-                application.DisplayName.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                (application.Publisher?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true));
+                application.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                (application.Publisher?.Contains(search, StringComparison.OrdinalIgnoreCase) == true));
 
-        foreach (InstalledAppItemViewModel match in matches)
-        {
-            FilteredApps.Add(match);
-        }
+        // One Reset notification instead of Clear + N Adds: the ItemsRepeater
+        // used to re-layout once per app on every scan and every keystroke.
+        FilteredApps.ReplaceAll(matches);
 
         CountText = HasScanned ? $"{_allApps.Count} apps" : string.Empty;
         RefreshSelectionState();

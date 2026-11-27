@@ -81,6 +81,11 @@ namespace SynToolkit.Views
         private async Task LoadIconsAsync()
         {
             CancellationToken cancellationToken = _lifetimeCancellation.Token;
+            if (XamlRoot is not null)
+            {
+                InstalledAppIconHelper.DisplayScale = XamlRoot.RasterizationScale;
+            }
+
             Dictionary<string, List<Services.Uninstaller.ShortcutIconEntry>> shortcutMap;
             try
             {
@@ -93,9 +98,24 @@ namespace SynToolkit.Views
                 return;
             }
 
-            foreach (InstalledAppItemViewModel app in _viewModel.AllApps.ToArray())
+            // Icons used to load strictly one after another, so the last rows waited
+            // for every thumbnail before them. Extraction runs on the thread pool, so
+            // let several run at once; only the BitmapImage step comes back to the UI
+            // thread. Visible apps (the filtered list) go first.
+            InstalledAppItemViewModel[] apps = _viewModel.FilteredApps
+                .Concat(_viewModel.AllApps)
+                .Where(app => !app.HasCustomIcon)
+                .Distinct()
+                .ToArray();
+
+            using SemaphoreSlim gate = new(6);
+            IEnumerable<Task> loads = apps.Select(async app =>
             {
-                if (cancellationToken.IsCancellationRequested)
+                try
+                {
+                    await gate.WaitAsync(cancellationToken);
+                }
+                catch (OperationCanceledException)
                 {
                     return;
                 }
@@ -115,9 +135,14 @@ namespace SynToolkit.Views
                 }
                 catch (OperationCanceledException)
                 {
-                    return;
                 }
-            }
+                finally
+                {
+                    gate.Release();
+                }
+            });
+
+            await Task.WhenAll(loads);
         }
 
         private void AppSelectionCheckBox_Click(object sender, RoutedEventArgs e)

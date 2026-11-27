@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using SynToolkit.Drives.Core;
 using SynToolkit.ViewModels;
 
@@ -19,6 +20,20 @@ public sealed partial class DrivesCleanerPage : Page
         InitializeComponent();
         _viewModel = App._host.Services.GetRequiredService<DrivesCleanerViewModel>();
         DataContext = _viewModel;
+    }
+
+    private void CategoryHeader_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: CleanerCategoryViewModel category } && category.ShowExpand)
+        {
+            category.ToggleExpandCommand.Execute(null);
+            e.Handled = true;
+        }
+    }
+
+    private void SpaceMapList_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        _viewModel.OpenSpaceMapRow(e.ClickedItem as SpaceMapRowViewModel);
     }
 
     private async void CleanSelectedButton_Click(object sender, RoutedEventArgs e)
