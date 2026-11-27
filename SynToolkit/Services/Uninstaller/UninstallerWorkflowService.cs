@@ -83,8 +83,14 @@ public sealed class UninstallerWorkflowService : IUninstallerWorkflowService
     public async Task<IReadOnlyList<UninstallableAppInfo>> GetInstalledAppsAsync(
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<UninstallableAppInfo> win32Apps = await Task.Run(ReadWin32Apps, cancellationToken);
-        IReadOnlyList<UninstallableAppInfo> appxApps = await Task.Run(ReadAppxApps, cancellationToken);
+        // Registry and PackageManager reads are independent; run them side by side.
+        Task<IReadOnlyList<UninstallableAppInfo>> win32Task = Task.Run(ReadWin32Apps, cancellationToken);
+        Task<IReadOnlyList<UninstallableAppInfo>> appxTask = Task.Run(() => ReadAppxApps(cancellationToken), cancellationToken);
+        await Task.WhenAll(win32Task, appxTask);
+
+        IReadOnlyList<UninstallableAppInfo> win32Apps = win32Task.Result;
+        IEnumerable<UninstallableAppInfo> appxApps = appxTask.Result
+            .Where(appx => !IsShellExtensionOfWin32App(appx, win32Apps));
 
         return win32Apps
             .Concat(appxApps)
@@ -139,20 +145,63 @@ public sealed class UninstallerWorkflowService : IUninstallerWorkflowService
         return apps;
     }
 
-    private static IReadOnlyList<UninstallableAppInfo> ReadAppxApps()
+    /// <summary>
+    /// Desktop apps such as WinRAR, 7-Zip or VS Code register a tiny "sparse" Appx
+    /// package only to add a Windows 11 context-menu entry. Listing it as a second
+    /// Store app is confusing and removing it does not uninstall anything, so hide
+    /// it when a Win32 entry from the same publisher has the same name.
+    /// </summary>
+    internal static bool IsShellExtensionOfWin32App(
+        UninstallableAppInfo appx,
+        IReadOnlyList<UninstallableAppInfo> win32Apps)
+    {
+        if (string.IsNullOrWhiteSpace(appx.Publisher))
+        {
+            return false;
+        }
+
+        string appxName = NormalizeAppName(appx.DisplayName);
+        if (appxName.Length == 0)
+        {
+            return false;
+        }
+
+        return win32Apps.Any(win32 =>
+            string.Equals(win32.Publisher?.Trim(), appx.Publisher.Trim(), StringComparison.OrdinalIgnoreCase) &&
+            NormalizeAppName(win32.DisplayName).StartsWith(appxName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string NormalizeAppName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return string.Empty;
+        }
+
+        // "WinRAR 7.01 (64-bit)" -> "winrar"
+        string cleaned = Regex.Replace(name, @"\([^)]*\)", " ", RegexOptions.CultureInvariant);
+        cleaned = Regex.Replace(cleaned, @"\bv?\d+(\.\d+)*\b", " ", RegexOptions.CultureInvariant);
+        return Regex.Replace(cleaned, @"\s+", " ").Trim().ToLowerInvariant();
+    }
+
+    private static IReadOnlyList<UninstallableAppInfo> ReadAppxApps(CancellationToken cancellationToken)
     {
         var packageManager = new PackageManager();
         List<UninstallableAppInfo> apps = new();
 
         foreach (Package package in packageManager.FindPackagesForUser(string.Empty))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                if (!package.Status.VerifyIsOK() ||
-                    package.IsFramework ||
+                // Cheap identity checks first; Status/DisplayName/InstalledLocation hit
+                // the deployment service and resource loader, so only pay for them
+                // on packages that can actually be listed.
+                if (package.IsFramework ||
                     package.IsResourcePackage ||
                     package.IsBundle ||
-                    package.SignatureKind == PackageSignatureKind.System)
+                    package.SignatureKind == PackageSignatureKind.System ||
+                    !package.Status.VerifyIsOK())
                 {
                     continue;
                 }
@@ -256,61 +305,91 @@ public sealed class UninstallerWorkflowService : IUninstallerWorkflowService
             startInfo.FileName,
             startInfo.Arguments);
 
-        using Process process = new() { StartInfo = startInfo };
         try
         {
-            if (!process.Start())
+            return await RunUninstallProcessAsync(app, startInfo, cancellationToken);
+        }
+        catch (Win32Exception exception) when (exception.NativeErrorCode == ErrorElevationRequired)
+        {
+            // The uninstaller's manifest asks for admin and we are not elevated:
+            // ShellExecute with "runas" shows one UAC prompt instead of failing.
+            App.logger.Info("[Uninstaller] {AppName} needs elevation, retrying with runas.", app.DisplayName);
+            ProcessStartInfo elevated = new(startInfo.FileName)
             {
-                return new UninstallExecutionResult(false, -1, "Unable to start the app uninstaller.", null, null);
-            }
-
-            Task<string> stdOutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-            Task<string> stdErrTask = process.StandardError.ReadToEndAsync(cancellationToken);
-
-            using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeoutSource.CancelAfter(Win32UninstallTimeout);
+                Arguments = startInfo.Arguments,
+                UseShellExecute = true,
+                Verb = "runas"
+            };
 
             try
             {
-                await process.WaitForExitAsync(timeoutSource.Token);
+                return await RunUninstallProcessAsync(app, elevated, cancellationToken);
             }
-            catch (OperationCanceledException)
+            catch (Win32Exception elevationException)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    throw;
-                }
-
-                TryKillProcessTree(process);
-                return new UninstallExecutionResult(
-                    false,
-                    -1,
-                    $"Uninstallation timed out after {Win32UninstallTimeout.TotalMinutes:0} minutes.",
-                    await stdOutTask,
-                    await stdErrTask);
+                string reason = elevationException.NativeErrorCode == ErrorCancelled
+                    ? "Administrator permission was declined."
+                    : elevationException.Message;
+                return new UninstallExecutionResult(false, elevationException.NativeErrorCode, reason, null, null);
             }
-
-            string stdOut = await stdOutTask;
-            string stdErr = await stdErrTask;
-            bool succeeded = process.ExitCode is 0 or 3010;
-            string message = succeeded
-                ? "The app uninstaller completed."
-                : $"The app uninstaller exited with code {process.ExitCode}.";
-
-            App.logger.Info(
-                "[Uninstaller] Finished uninstall for {AppName} with exit code {ExitCode}. stdout: {StdOut} stderr: {StdErr}",
-                app.DisplayName,
-                process.ExitCode,
-                stdOut,
-                stdErr);
-
-            return new UninstallExecutionResult(succeeded, process.ExitCode, message, stdOut, stdErr);
         }
         catch (Win32Exception exception)
         {
             App.logger.Warn(exception, "[Uninstaller] Unable to start uninstaller for {AppName}.", app.DisplayName);
             return new UninstallExecutionResult(false, exception.NativeErrorCode, exception.Message, null, null);
         }
+    }
+
+    private const int ErrorElevationRequired = 740;
+    private const int ErrorCancelled = 1223;
+
+    private static async Task<UninstallExecutionResult> RunUninstallProcessAsync(
+        UninstallableAppInfo app,
+        ProcessStartInfo startInfo,
+        CancellationToken cancellationToken)
+    {
+        using Process process = new() { StartInfo = startInfo };
+        if (!process.Start())
+        {
+            return new UninstallExecutionResult(false, -1, "Unable to start the app uninstaller.", null, null);
+        }
+
+        using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutSource.CancelAfter(Win32UninstallTimeout);
+
+        try
+        {
+            await process.WaitForExitAsync(timeoutSource.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+
+            TryKillProcessTree(process);
+            return new UninstallExecutionResult(
+                false,
+                -1,
+                $"Uninstallation timed out after {Win32UninstallTimeout.TotalMinutes:0} minutes.",
+                null,
+                null);
+        }
+
+        bool succeeded = process.ExitCode is 0 or 3010 or 1641;
+        string message = succeeded
+            ? "The app uninstaller completed."
+            : process.ExitCode == 1602
+                ? "The uninstall was cancelled in the app's uninstaller."
+                : $"The app uninstaller exited with code {process.ExitCode}.";
+
+        App.logger.Info(
+            "[Uninstaller] Finished uninstall for {AppName} with exit code {ExitCode}.",
+            app.DisplayName,
+            process.ExitCode);
+
+        return new UninstallExecutionResult(succeeded, process.ExitCode, message, null, null);
     }
 
     private static bool ReadUninstallRegistryView(
@@ -447,22 +526,38 @@ public sealed class UninstallerWorkflowService : IUninstallerWorkflowService
         }
         else if (!commandAlreadyQuiet && !ContainsSilentSwitch(arguments))
         {
-            string defaultSilentSwitches = executableName.Contains("unins", StringComparison.OrdinalIgnoreCase)
-                ? "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-"
-                : "/quiet";
-            arguments = $"{arguments} {defaultSilentSwitches}".Trim();
+            arguments = $"{arguments} {GetDefaultSilentSwitches(executableName)}".Trim();
         }
 
+        // The window is NOT hidden and output is NOT redirected on purpose:
+        // - an uninstaller that ignores the silent switch used to run invisibly and
+        //   sit there until the 15 minute timeout, waiting on a dialog nobody saw;
+        // - redirected pipes are inherited by helper processes many uninstallers
+        //   spawn, so WaitForExit kept blocking until those exited too.
+        // Silent uninstallers still show nothing; the rest show their own UI.
         startInfo = new ProcessStartInfo(executable)
         {
             Arguments = arguments,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            WindowStyle = ProcessWindowStyle.Hidden
+            UseShellExecute = false
         };
         return true;
+    }
+
+    internal static string GetDefaultSilentSwitches(string executableName)
+    {
+        // Inno Setup always names its uninstaller unins000.exe, unins001.exe, ...
+        if (Regex.IsMatch(executableName, @"^unins\d{3}\.exe$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            return "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-";
+        }
+
+        // NSIS uninstallers (uninst.exe, uninstall.exe, "Uninstall Foo.exe") only take /S.
+        if (executableName.StartsWith("uninst", StringComparison.OrdinalIgnoreCase))
+        {
+            return "/S";
+        }
+
+        return "/quiet";
     }
 
     private static bool ContainsSilentSwitch(string arguments)

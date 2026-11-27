@@ -41,12 +41,17 @@ public sealed class DrivesCleanerService
         return Task.Run(() => Cleaner.Run(jobs, progress, recycleReview, cancellationToken), cancellationToken);
     }
 
-    public Task<SpaceNode> ScanSpaceMapAsync(string driveRoot, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Walks the drive once and returns both the folder tree and the biggest files
+    /// found along the way (previously the drive was walked twice).
+    /// </summary>
+    public Task<SpaceMapResult> ScanSpaceMapAsync(string driveRoot, CancellationToken cancellationToken = default)
     {
         return Task.Run(() =>
         {
             SpaceScanner scanner = new();
-            return scanner.Scan(driveRoot, cancellationToken);
+            SpaceNode root = scanner.Scan(driveRoot, cancellationToken);
+            return new SpaceMapResult(root, scanner.BigFiles);
         }, cancellationToken);
     }
 

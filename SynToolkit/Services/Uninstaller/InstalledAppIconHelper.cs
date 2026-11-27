@@ -155,21 +155,18 @@ namespace SynToolkit.Services.Uninstaller
             return bitmap;
         }
 
+        /// <summary>
+        /// XamlRoot.RasterizationScale of the page showing the icons. Set by the page;
+        /// DisplayInformation.GetForCurrentView() has no CoreWindow in a WinUI 3
+        /// desktop app and threw (and was caught) once per icon.
+        /// </summary>
+        internal static double DisplayScale { get; set; } = 1.0;
+
         private static int GetDecodePixelSize()
         {
-            try
-            {
-                // Logical slot is 36px; decode a bit larger so 125%/150% DPI stays sharp.
-                double scale = Windows.Graphics.Display.DisplayInformation
-                    .GetForCurrentView()
-                    .RawPixelsPerViewPixel;
-                int px = (int)Math.Ceiling(DisplaySlotPx * Math.Max(1.0, scale));
-                return Math.Clamp(px, DisplaySlotPx, 128);
-            }
-            catch
-            {
-                return DisplaySlotPx * 2;
-            }
+            // Logical slot is 36px; decode a bit larger so 125%/150% DPI stays sharp.
+            int px = (int)Math.Ceiling(DisplaySlotPx * Math.Max(1.0, DisplayScale));
+            return Math.Clamp(px, DisplaySlotPx, 128);
         }
 
         internal static string? ResolveIconPath(string? displayIconRaw, string? installLocation)
