@@ -18,6 +18,13 @@ public static class FileOps
 
     private static DateTime Cutoff(TimeSpan? minAge) => minAge is { } age ? DateTime.UtcNow - age : DateTime.MaxValue;
 
+    /// <summary>
+    /// ".net" folders hold the files that single-file .NET apps unpack and load while they run
+    /// (%TEMP%\.net by default). Deleting them under a running app breaks it, so cleanup never goes inside.
+    /// </summary>
+    private static bool IsRuntimeCache(ref FileSystemEntry entry) =>
+        entry.IsDirectory && entry.FileName.Equals(".net", StringComparison.OrdinalIgnoreCase);
+
     public static bool Exists(string path) => File.Exists(path) || Directory.Exists(path);
 
     public static (long Bytes, int Files) Measure(string path, TimeSpan? minAge, CancellationToken ct = default)
@@ -48,7 +55,8 @@ public static class FileOps
                 static (ref FileSystemEntry entry) => (entry.Length, entry.LastWriteTimeUtc.UtcDateTime),
                 Deep())
             {
-                ShouldIncludePredicate = static (ref FileSystemEntry entry) => !entry.IsDirectory
+                ShouldIncludePredicate = static (ref FileSystemEntry entry) => !entry.IsDirectory,
+                ShouldRecursePredicate = static (ref FileSystemEntry entry) => !IsRuntimeCache(ref entry)
             };
 
             foreach ((long length, DateTime modifiedUtc) in entries)
@@ -108,7 +116,8 @@ public static class FileOps
                 static (ref FileSystemEntry entry) => (entry.ToFullPath(), entry.Length, entry.LastWriteTimeUtc.UtcDateTime),
                 Deep())
             {
-                ShouldIncludePredicate = static (ref FileSystemEntry entry) => !entry.IsDirectory
+                ShouldIncludePredicate = static (ref FileSystemEntry entry) => !entry.IsDirectory,
+                ShouldRecursePredicate = static (ref FileSystemEntry entry) => !IsRuntimeCache(ref entry)
             }.ToList();
         }
         catch
@@ -142,7 +151,8 @@ public static class FileOps
         {
             List<string> directories = new FileSystemEnumerable<string>(root, static (ref FileSystemEntry entry) => entry.ToFullPath(), Deep())
             {
-                ShouldIncludePredicate = static (ref FileSystemEntry entry) => entry.IsDirectory
+                ShouldIncludePredicate = static (ref FileSystemEntry entry) => entry.IsDirectory && !IsRuntimeCache(ref entry),
+                ShouldRecursePredicate = static (ref FileSystemEntry entry) => !IsRuntimeCache(ref entry)
             }.ToList();
 
             foreach (string dir in directories.OrderByDescending(value => value.Count(ch => ch == '\\')))
