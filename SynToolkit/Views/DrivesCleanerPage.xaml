@@ -219,21 +219,28 @@
 
                                             <!--  ItemsControl, not a nested ListView: a ListView inside a ListView item
                                                   steals pointer and wheel input from the checkboxes and buttons.  -->
+                                            <!--  Left margin = header checkbox slot (32) + column spacing (10), so each
+                                                  item's checkbox sits under the category icon and its name lines up
+                                                  with the category title.  -->
                                             <ItemsControl
+                                                Margin="42,0,0,0"
                                                 ItemsSource="{x:Bind VisibleItems}"
                                                 Visibility="{x:Bind ShowItemList, Converter={StaticResource BoolToVisibilityConverter}}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate x:DataType="viewmodel:CleanerItemViewModel">
-                                                        <Grid ColumnSpacing="8" Padding="2,4">
+                                                        <Grid ColumnSpacing="8" Padding="0,4">
                                                             <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="22" />
                                                                 <ColumnDefinition Width="*" />
                                                                 <ColumnDefinition Width="Auto" />
                                                                 <ColumnDefinition Width="Auto" />
                                                                 <ColumnDefinition Width="Auto" />
                                                             </Grid.ColumnDefinitions>
+                                                            <!--  CheckBox defaults to MinWidth 120, which pushed the names far right.  -->
                                                             <CheckBox
                                                                 Grid.Column="0"
+                                                                MinWidth="0"
+                                                                Padding="0"
                                                                 VerticalAlignment="Center"
                                                                 IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
                                                                 Visibility="{x:Bind Selectable, Converter={StaticResource BoolToVisibilityConverter}}" />
