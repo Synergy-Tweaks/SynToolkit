@@ -12,12 +12,13 @@
         <views:NvidiaRiskToBrushConverter x:Key="NvidiaRiskToBrushConverter" />
         <views:NvidiaCurrentValueBrushConverter x:Key="NvidiaCurrentValueBrushConverter" />
         <views:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <views:NvidiaActiveToBorderBrushConverter x:Key="NvidiaActiveToBorderBrushConverter" />
     </UserControl.Resources>
 
     <Border
         Padding="12"
         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+        BorderBrush="{x:Bind Item.IsActive, Mode=OneWay, Converter={StaticResource NvidiaActiveToBorderBrushConverter}}"
         BorderThickness="1"
         CornerRadius="8">
         <StackPanel Spacing="8">
@@ -40,11 +41,28 @@
                     CornerRadius="10">
                     <TextBlock FontSize="11" Text="{x:Bind Item.RiskText, Mode=OneWay}" />
                 </Border>
+                <!--  Active: accent badge, same look as the active power plan.  -->
                 <Border
                     Grid.Column="2"
                     Padding="8,2"
-                    Background="{x:Bind Item.StatusText, Converter={StaticResource NvidiaStatusToBrushConverter}}"
-                    CornerRadius="10">
+                    VerticalAlignment="Center"
+                    Background="{ThemeResource AccentFillColorDefaultBrush}"
+                    CornerRadius="10"
+                    Visibility="{x:Bind Item.IsActive, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                        Text="Active" />
+                </Border>
+                <!--  Any other state (Not set, Different, Partial, Restart pending).  -->
+                <Border
+                    Grid.Column="2"
+                    Padding="8,2"
+                    VerticalAlignment="Center"
+                    Background="{x:Bind Item.StatusText, Mode=OneWay, Converter={StaticResource NvidiaStatusToBrushConverter}}"
+                    CornerRadius="10"
+                    Visibility="{x:Bind Item.IsNotActive, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock FontSize="11" Text="{x:Bind Item.StatusText, Mode=OneWay}" />
                 </Border>
             </Grid>
@@ -77,7 +95,7 @@
                     Text="Current:" />
                 <TextBlock
                     FontSize="12"
-                    Foreground="{x:Bind Item.StatusText, Converter={StaticResource NvidiaCurrentValueBrushConverter}}"
+                    Foreground="{x:Bind Item.StatusText, Mode=OneWay, Converter={StaticResource NvidiaCurrentValueBrushConverter}}"
                     Text="{x:Bind Item.CurrentValueText, Mode=OneWay}" />
             </StackPanel>
 
@@ -87,7 +105,8 @@
                     Click="ApplyButton_Click"
                     Content="Apply"
                     IsEnabled="{x:Bind Item.CanWrite, Mode=OneWay}"
-                    ToolTipService.ToolTip="Apply the recommended value(s)." />
+                    ToolTipService.ToolTip="Apply the recommended value(s)."
+                    Visibility="{x:Bind Item.IsNotActive, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <Button
                     AutomationProperties.Name="Revert tweak"
                     Click="RevertButton_Click"

@@ -108,7 +108,7 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page
         int total = _rowsById.Count;
         int applied = _rowsById.Values.Count(row => row.State == NvidiaTweakValueState.Applied && !row.IsRestartPending);
         int pending = _rowsById.Values.Count(row => row.IsRestartPending);
-        ViewModel.SummaryText = $"{applied} of {total} applied";
+        ViewModel.SummaryText = $"{applied} of {total}";
         ViewModel.HasRestartPending = pending > 0;
     }
 
@@ -430,7 +430,7 @@ public sealed partial class NvidiaPerformanceTweaksPage : Page
         int total = _rowsById.Count;
         int applied = _rowsById.Values.Count(row => row.State == NvidiaTweakValueState.Applied && !row.IsRestartPending);
         int pending = _rowsById.Values.Count(row => row.IsRestartPending);
-        ViewModel.SummaryText = $"{applied} of {total} applied";
+        ViewModel.SummaryText = $"{applied} of {total}";
         ViewModel.HasRestartPending = pending > 0;
     }
 

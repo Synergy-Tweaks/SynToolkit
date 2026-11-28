@@ -40,6 +40,23 @@ public sealed class NvidiaStatusToBrushConverter : IValueConverter
     }
 }
 
+/// <summary>
+/// Accent card border for an active tweak, the default card stroke otherwise
+/// (mirrors how Power Plans outlines the active plan).
+/// </summary>
+public sealed class NvidiaActiveToBorderBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        string key = value is true ? "AccentFillColorDefaultBrush" : "CardStrokeColorDefaultBrush";
+        return Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue(key, out object brush) && brush is Brush resolved
+            ? resolved
+            : new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
+}
+
 public sealed class NvidiaRiskToBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
